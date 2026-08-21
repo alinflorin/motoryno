@@ -2,55 +2,60 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+# Project purpose
 
-1. Install dependencies
+The Motoryno app helps users track the service intervals on their car parts, automatically or semi-automatically.
 
-   ```bash
-   npm install
-   ```
+# How it works/Requirements
 
-2. Start the app
+## Platforms
 
-   ```bash
-   npx expo start
-   ```
+Expo (Universal look and feel) app with React Native, targeting latest Android and iOS.
 
-In the output, you'll find options to open the app in a
+## Data collected:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- List of cars (VIN is the unique identifier). For each car:
+  - Nickname
+  - Make, model, year
+  - Number of km/miles on the odometer (filled in manually or automatically)
+  - A list of default tracked service items will be loaded and activated for tracking. But still editable and configurable. Examples:
+    - Engine oil - every 10k km or 1 year
+    - Battery - every 5y
+    - Oil filter - every 10k km or 1 year
+    - Etc.
+  - Service visits log. These would be manually added by the user. Each service visit log to include:
+    - Shop name
+    - Price
+    - Date of intervention
+    - Odometer at the time of the visit
+    - Items performed (multiselect from the active tracking list of items)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Automations:
 
-## Get a fresh project
+- Odometer live update - via OBD2 (BLE). This is the most complex component of the app. It requires a broad compatibility configuration for car makes and models, as each will store this information differently in the OBD modules (different modules, PIDs..). The app should allow configuring an OBD adapter connection and, when the connection is being sensed (BLE) - it will detect which car it is, read the odometer and perform a live update.
 
-When you're ready, run:
+- Possibility of all app data to be stored/synced to either iCloud (for iOS), or Google Drive (or other alternative) for Android.
 
-```bash
-npm run reset-project
-```
+## Notification feature:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Every morning (configurable), a notification will be sent to the user, if there are any overdue service items, for any car.
 
-### Other setup steps
+## DYI service intervention feature + parts search
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Provide documentation and schemas/diagrams (and parts and prices) on how to perform servicing for items (and overdue items). Like WIS/EPC for Mercedes.
 
-## Learn more
+## DTC detector feature:
 
-To learn more about developing your project with Expo, look at the following resources:
+We can leverage the OBD connectivity to scan for DTCs at a scheduled interval. It will scan only when connected to the car and report the found DTCs.
+Nice to have: Online search for DTC explanation.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Agent integration:
 
-## Join the community
+Ability to share all this app data, including DTCs, with AI apps (Claude, Gemini, ChatGPT). Not sure how to do the integration. Share button?
 
-Join our community of developers creating universal apps.
+## Settings:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Units of measurement (imperial/metric)
+- Theme (system - default / dark / light)
+- Language (app should support i18n for en and ro)
+- Data sync/backup settings (Google Drive or iCloud)
