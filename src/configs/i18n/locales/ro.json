@@ -1,0 +1,34 @@
+{
+  "common": {
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "add": "Adaugă"
+  },
+  "home": {
+    "title": "Motoryno"
+  },
+  "car": {
+    "nickname": "Nume",
+    "make": "Marcă",
+    "model": "Model",
+    "year": "An",
+    "odometer": "Kilometraj",
+    "vin": "Serie șasiu"
+  },
+  "service": {
+    "engineOil": "Ulei motor",
+    "oilFilter": "Filtru de ulei",
+    "battery": "Baterie",
+    "overdue_one": "{{count}} element restant",
+    "overdue_few": "{{count}} elemente restante",
+    "overdue_other": "{{count}} de elemente restante"
+  },
+  "settings": {
+    "title": "Setări",
+    "units": "Unități",
+    "theme": "Temă",
+    "language": "Limbă"
+  }
+}
