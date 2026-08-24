@@ -197,7 +197,12 @@
     "importConfirmCancel": "Anulează",
     "importConfirmProceed": "Înlocuiește",
     "importSuccess": "Datele au fost importate cu succes.",
-    "importError": "Fișierul nu a putut fi importat. Asigură-te că este o copie de rezervă Motoryno validă."
+    "importError": "Fișierul nu a putut fi importat. Asigură-te că este o copie de rezervă Motoryno validă.",
+    "shareWithAISubtitle": "Distribuie mașinile, elementele urmărite și istoricul de service unei aplicații AI la alegere.",
+    "shareWithAI": "Distribuie datele cu AI",
+    "sharing": "Se distribuie…",
+    "shareUnavailable": "Distribuirea nu este disponibilă pe acest dispozitiv.",
+    "shareError": "Datele nu au putut fi distribuite. Te rugăm să încerci din nou."
   },
   "settingsReset": {
     "title": "Resetare",

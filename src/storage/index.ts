@@ -3,6 +3,7 @@ export type { NewCarInput, NewServiceVisitInput, StorageApi } from '@/storage/St
 export { DEFAULT_TRACKED_SERVICE_ITEMS } from '@/storage/defaultData';
 export { downloadAppData } from '@/storage/export';
 export { InvalidAppDataError, pickAppData } from '@/storage/import';
+export { shareCarsData } from '@/storage/share';
 export type {
   AppData,
   Car,

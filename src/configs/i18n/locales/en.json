@@ -191,7 +191,12 @@
     "importConfirmCancel": "Cancel",
     "importConfirmProceed": "Replace",
     "importSuccess": "Your data was imported successfully.",
-    "importError": "Couldn't import that file. Make sure it's a valid Motoryno backup."
+    "importError": "Couldn't import that file. Make sure it's a valid Motoryno backup.",
+    "shareWithAISubtitle": "Share your cars, tracked items and service history with an AI app of your choice.",
+    "shareWithAI": "Share data with AI",
+    "sharing": "Sharing…",
+    "shareUnavailable": "Sharing isn't available on this device.",
+    "shareError": "Couldn't share your data. Please try again."
   },
   "settingsReset": {
     "title": "Reset",

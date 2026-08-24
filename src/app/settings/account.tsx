@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
-import { downloadAppData, pickAppData, useStorage } from '@/storage';
+import { downloadAppData, pickAppData, shareCarsData, useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync, notify } from '@/utils/confirm';
@@ -16,6 +16,7 @@ export default function SettingsAccountScreen() {
   const { settings, cars, replaceAllData } = useStorage();
   const [downloading, setDownloading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -50,6 +51,19 @@ export default function SettingsAccountScreen() {
       notify(t('settingsAccount.importError'));
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const shared = await shareCarsData(cars);
+      if (!shared) notify(t('settingsAccount.shareUnavailable'));
+    } catch (error) {
+      console.warn('[settings/account] Failed to share data.', error);
+      notify(t('settingsAccount.shareError'));
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -108,6 +122,23 @@ export default function SettingsAccountScreen() {
           >
             <Text style={styles.downloadButtonText}>
               {importing ? t('settingsAccount.importing') : t('settingsAccount.importData')}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.downloadBlock}>
+          <Text style={styles.downloadSubtitle}>{t('settingsAccount.shareWithAISubtitle')}</Text>
+          <Pressable
+            onPress={handleShare}
+            disabled={sharing}
+            style={({ pressed }) => [
+              styles.downloadButton,
+              pressed && styles.downloadButtonPressed,
+              sharing && styles.downloadButtonDisabled,
+            ]}
+          >
+            <Text style={styles.downloadButtonText}>
+              {sharing ? t('settingsAccount.sharing') : t('settingsAccount.shareWithAI')}
             </Text>
           </Pressable>
         </View>
