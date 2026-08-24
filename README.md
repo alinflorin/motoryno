@@ -32,7 +32,7 @@ Expo (Universal look and feel) app with React Native, targeting latest Android a
 
 ## Automations:
 
-- Odometer live update - via OBD2 (BLE). This is the most complex component of the app. It requires a broad compatibility configuration for car makes and models, as each will store this information differently in the OBD modules (different modules, PIDs..). The app should allow configuring an OBD adapter connection and, when the connection is being sensed (BLE) - it will detect which car it is, read the odometer and perform a live update.
+- Odometer read (when car is created, and afterwards) + live update - via OBD2 (BLE). This is the most complex component of the app. It requires a broad compatibility configuration for car makes and models, as each will store this information differently in the OBD modules (different modules, PIDs..). The app should allow configuring an OBD adapter connection and, when the connection is being sensed (BLE) - it will detect which car it is, read the odometer and perform a live update.
 
 - Possibility of all app data to be stored/synced to either iCloud (for iOS), or Google Drive (or other alternative) for Android.
 
@@ -59,3 +59,24 @@ Ability to share all this app data, including DTCs, with AI apps (Claude, Gemini
 - Theme (system - default / dark / light)
 - Language (app should support i18n for en and ro)
 - Data sync/backup settings (Google Drive or iCloud)
+
+# Technical implementation details
+
+The application will store all its data and settings into a single SQLite file when running on Android or iOS, and Local Storage when running on Web (storage shall be abstractized in the code).
+For Android and iOS, the Sync feature should be enabled only (syncing the SQLite file to iCloud or Drive?). This is so users won't have to log in into the app at all.
+
+Data Model:
+
+- Cars table (vin, display_name, make, model, year, odometer_km, obd_config_deviceName, obd_config_device_address, obd_last_sync_timestamp)
+- ServiceVisits table (uuid, vin, timestamp, odometer_km, shop_name, spend)
+- TrackedServiceItems table (uuid, vin, item_name)
+- ServiceVisitsPerformedTrackedServiceItems(service_visit_uuid, tracked_service_item_uuid)
+- Settings table (onboarding_done, imperial_units_of_measurement, currency (default EUR), language, notification_enabled (default true), notification_cron (default 0 8 \* \* \*), notification_ring, notification_vibrate)
+
+When first time opening the app, the Intro and Welcome/Set language/etc steps shall be followed. If there's an existing SQLite file in the cloud, it has to be pulled, and if the onboarding has already happened, don't show those screens.
+
+When adding a new car, if a BLE OBD adapter is selected, the app should try and self-detect where relevant data is located, by trying PIDs.
+The name, VIN, odometer of the car should be pulled.
+The OBD adapter details shall also be stored in SQLite.
+
+When the OBD BLE adapter is detected and the connection is established, the app should always, in the background, identify which car it is, read the odometer and store the value, once.
