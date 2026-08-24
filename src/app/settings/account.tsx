@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { downloadAppData, useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 
@@ -10,6 +12,20 @@ export default function SettingsAccountScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = getStyles(colors);
+  const { settings, cars } = useStorage();
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadAppData({ settings, data: { cars } });
+    } catch (error) {
+      console.warn('[settings/account] Failed to download data.', error);
+      Alert.alert(t('settingsAccount.downloadError'));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <Screen>
@@ -41,6 +57,25 @@ export default function SettingsAccountScreen() {
           </Pressable>
           <Pressable style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutButtonPressed]}>
             <Text style={styles.logoutButtonText}>{t('settingsAccount.logOut')}</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.downloadBlock}>
+          <Text style={styles.downloadSubtitle}>{t('settingsAccount.downloadSubtitle')}</Text>
+          <Pressable
+            onPress={handleDownload}
+            disabled={downloading}
+            style={({ pressed }) => [
+              styles.downloadButton,
+              pressed && styles.downloadButtonPressed,
+              downloading && styles.downloadButtonDisabled,
+            ]}
+          >
+            <Text style={styles.downloadButtonText}>
+              {downloading ? t('settingsAccount.downloading') : t('settingsAccount.downloadData')}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -131,6 +166,36 @@ function getStyles(colors: ColorTokens) {
     },
     logoutButtonText: {
       color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.borderStrong,
+    },
+    downloadBlock: {
+      gap: 10,
+    },
+    downloadSubtitle: {
+      color: colors.textFaint,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    downloadButton: {
+      alignItems: 'center',
+      paddingVertical: 13,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    downloadButtonPressed: {
+      backgroundColor: colors.surface,
+    },
+    downloadButtonDisabled: {
+      opacity: 0.6,
+    },
+    downloadButtonText: {
+      color: colors.textPrimary,
       fontSize: 13,
       fontWeight: '700',
     },

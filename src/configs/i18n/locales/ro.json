@@ -184,7 +184,11 @@
     "syncNow": "Sincronizează acum!",
     "logOut": "Deconectare",
     "syncSubtitle": "Datele tale se sincronizează automat, astfel încât mașinile și istoricul de service te urmează pe orice dispozitiv nou.",
-    "notConnected": "Neconectat"
+    "notConnected": "Neconectat",
+    "downloadSubtitle": "Descarcă o copie a tuturor mașinilor, elementelor urmărite și istoricului de service ca fișier JSON.",
+    "downloadData": "Descarcă datele",
+    "downloading": "Se descarcă…",
+    "downloadError": "Datele nu au putut fi descărcate. Te rugăm să încerci din nou."
   },
   "settingsReset": {
     "title": "Resetare",

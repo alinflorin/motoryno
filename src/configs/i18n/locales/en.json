@@ -178,7 +178,11 @@
     "syncNow": "Sync now!",
     "logOut": "Log out",
     "syncSubtitle": "Your data syncs automatically so your cars and service history follow you to a new device.",
-    "notConnected": "Not connected"
+    "notConnected": "Not connected",
+    "downloadSubtitle": "Download a copy of all your cars, tracked items and service history as a JSON file.",
+    "downloadData": "Download data",
+    "downloading": "Downloading…",
+    "downloadError": "Couldn't download your data. Please try again."
   },
   "settingsReset": {
     "title": "Reset",
