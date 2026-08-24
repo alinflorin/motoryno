@@ -76,9 +76,7 @@ Data Model (JSON object with arrays):
     "useImperialUnits": false,
     "currency": "EUR",
     "notifications": {
-      "cron": "0 8 * * *", // or null
-      "ring": true,
-      "vibrate": true
+      "cron": "0 8 * * *" // or null
     },
 
   },

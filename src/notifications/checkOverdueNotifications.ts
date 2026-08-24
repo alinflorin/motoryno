@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 
-import { syncAndroidChannel } from '@/notifications/androidChannel';
+import { ensureAndroidChannel } from '@/notifications/androidChannel';
 import { getLastCheckedDate, localDateKey, setLastCheckedDate } from '@/notifications/lastCheckStore';
 import { buildOverdueNotificationContent } from '@/notifications/notificationContent';
 import { readAppData } from '@/storage/persistence';
@@ -20,7 +20,7 @@ export async function checkAndNotifyOverdueItems(now = new Date()): Promise<void
   const appData = await readAppData();
   if (!appData) return;
 
-  const { cron, ring } = appData.settings.notifications;
+  const { cron } = appData.settings.notifications;
   if (cron === null) return;
 
   const todayKey = localDateKey(now);
@@ -39,14 +39,14 @@ export async function checkAndNotifyOverdueItems(now = new Date()): Promise<void
   const summary = getOverdueSummaryForAllCars(appData.data.cars, now.getTime());
   if (summary.length === 0) return;
 
-  await syncAndroidChannel(appData.settings.notifications);
+  await ensureAndroidChannel();
   const { title, body } = buildOverdueNotificationContent(summary);
 
   await Notifications.scheduleNotificationAsync({
     content: {
       title,
       body,
-      sound: ring ? 'default' : undefined,
+      sound: 'default',
       data: { url: '/' },
     },
     trigger: null,

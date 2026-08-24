@@ -8,8 +8,6 @@ export type ThemePreference = 'system' | 'dark' | 'light';
 export interface NotificationSettings {
   /** Cron expression for the daily overdue-items check, or null to disable. */
   cron: string | null;
-  ring: boolean;
-  vibrate: boolean;
 }
 
 export interface Settings {

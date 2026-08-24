@@ -207,9 +207,7 @@
     "title": "Notifications",
     "enabled": "Daily reminder",
     "enabledSubtitle": "Notify me about overdue service items every morning",
-    "time": "Reminder time",
-    "sound": "Ring",
-    "vibrate": "Vibrate"
+    "time": "Reminder time"
   },
   "overdueNotification": {
     "title_one": "{{count}} overdue service item",

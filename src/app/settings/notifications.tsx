@@ -16,7 +16,7 @@ export default function SettingsNotificationsScreen() {
   const colors = useThemeColors();
   const styles = getStyles(colors);
   const { settings, updateNotificationSettings } = useStorage();
-  const { cron, ring: sound, vibrate } = settings.notifications;
+  const { cron } = settings.notifications;
   const enabled = cron !== null;
   const time = parseCronTime(cron);
 
@@ -45,28 +45,6 @@ export default function SettingsNotificationsScreen() {
             value={time}
             disabled={!enabled}
             onChange={(next) => updateNotificationSettings({ cron: formatCronTime(next) })}
-          />
-          <SettingsRow
-            label={t('settingsNotifications.sound')}
-            right={
-              <Switch
-                value={sound}
-                onValueChange={(next) => updateNotificationSettings({ ring: next })}
-                trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                thumbColor={colors.textPrimary}
-              />
-            }
-          />
-          <SettingsRow
-            label={t('settingsNotifications.vibrate')}
-            right={
-              <Switch
-                value={vibrate}
-                onValueChange={(next) => updateNotificationSettings({ vibrate: next })}
-                trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                thumbColor={colors.textPrimary}
-              />
-            }
           />
         </SettingsSection>
       </ScrollView>

@@ -213,9 +213,7 @@
     "title": "Notificări",
     "enabled": "Memento zilnic",
     "enabledSubtitle": "Anunță-mă despre elementele de service restante în fiecare dimineață",
-    "time": "Ora mementoului",
-    "sound": "Sonerie",
-    "vibrate": "Vibrații"
+    "time": "Ora mementoului"
   },
   "overdueNotification": {
     "title_one": "{{count}} element de service restant",

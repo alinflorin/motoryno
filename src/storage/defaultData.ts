@@ -52,8 +52,6 @@ export function createDefaultAppData(): AppData {
       currency: 'EUR',
       notifications: {
         cron: '0 10 * * *',
-        ring: true,
-        vibrate: true,
       },
     },
     data: {

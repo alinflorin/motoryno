@@ -3,7 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 
-import { syncAndroidChannel } from '@/notifications/androidChannel';
+import { ensureAndroidChannel } from '@/notifications/androidChannel';
 // Importing this also defines the background task at module scope — see there for why.
 import { syncBackgroundNotificationTask } from '@/notifications/backgroundTask';
 import { checkAndNotifyOverdueItems } from '@/notifications/checkOverdueNotifications';
@@ -26,7 +26,7 @@ Notifications.setNotificationHandler({
 export function NotificationsController() {
   const router = useRouter();
   const { loading, settings } = useStorage();
-  const { cron, ring, vibrate } = settings.notifications;
+  const { cron } = settings.notifications;
 
   // Tapping the notification should always land on the app's home screen.
   useEffect(() => {
@@ -52,20 +52,20 @@ export function NotificationsController() {
     return () => subscription.remove();
   }, []);
 
-  // Keep the background job (and the Android channel it posts through) immediately in sync with
-  // the notification settings, whichever screen changed them.
+  // Keep the background job immediately in sync with the notification setting, whichever screen
+  // changed it.
   useEffect(() => {
     if (loading || Platform.OS === 'web') return;
 
     const enabled = cron !== null;
     void (async () => {
-      await syncAndroidChannel({ cron, ring, vibrate });
+      await ensureAndroidChannel();
       if (enabled) {
         await Notifications.requestPermissionsAsync();
       }
       await syncBackgroundNotificationTask(enabled);
     })();
-  }, [loading, cron, ring, vibrate]);
+  }, [loading, cron]);
 
   return null;
 }
