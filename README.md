@@ -71,7 +71,7 @@ Data Model:
 - ServiceVisits table (uuid, vin, timestamp, odometer_km, shop_name, spend)
 - TrackedServiceItems table (uuid, vin, item_name)
 - ServiceVisitsPerformedTrackedServiceItems(service_visit_uuid, tracked_service_item_uuid)
-- Settings table (onboarding_done, imperial_units_of_measurement, currency (default EUR), language, notification_enabled (default true), notification_cron (default 0 8 \* \* \*), notification_ring, notification_vibrate)
+- Settings table (onboarding_done, imperial_units_of_measurement, currency (default EUR), language, notification_enabled (default true), notification_cron (default 0 8 \* \* \*), notification_ring, notification_vibrate, theme)
 
 When first time opening the app, the Intro and Welcome/Set language/etc steps shall be followed. If there's an existing SQLite file in the cloud, it has to be pulled, and if the onboarding has already happened, don't show those screens.
 
