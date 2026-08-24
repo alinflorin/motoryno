@@ -9,7 +9,7 @@ export interface DailyTime {
   minute: number;
 }
 
-export const DEFAULT_NOTIFICATION_TIME: DailyTime = { hour: 8, minute: 0 };
+export const DEFAULT_NOTIFICATION_TIME: DailyTime = { hour: 10, minute: 0 };
 
 export function parseCronTime(cron: string | null): DailyTime {
   if (!cron) return DEFAULT_NOTIFICATION_TIME;

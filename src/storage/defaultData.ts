@@ -51,7 +51,7 @@ export function createDefaultAppData(): AppData {
       useImperialUnits: false,
       currency: 'EUR',
       notifications: {
-        cron: '0 8 * * *',
+        cron: '0 10 * * *',
         ring: true,
         vibrate: true,
       },
