@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/Icon';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
@@ -27,11 +28,11 @@ export default function OnboardingAccountScreen() {
 
         <View style={styles.loginButtons}>
           <Pressable style={({ pressed }) => [styles.loginButton, pressed && styles.loginButtonPressed]}>
-            <Text style={styles.loginGlyph}>G</Text>
+            <Icon name="logo-google" size={18} color={colors.textSecondary} />
             <Text style={styles.loginText}>{t('settingsAccount.loginWithGoogle')}</Text>
           </Pressable>
           <Pressable style={({ pressed }) => [styles.loginButton, pressed && styles.loginButtonPressed]}>
-            <Text style={styles.loginGlyph}>🍎</Text>
+            <Icon name="logo-apple" size={18} color={colors.textSecondary} />
             <Text style={styles.loginText}>{t('settingsAccount.loginWithApple')}</Text>
           </Pressable>
         </View>
@@ -76,11 +77,6 @@ function getStyles(colors: ColorTokens) {
     },
     loginButtonPressed: {
       borderColor: colors.amberBorder,
-    },
-    loginGlyph: {
-      color: colors.textSecondary,
-      fontSize: 15,
-      fontWeight: '700',
     },
     loginText: {
       color: colors.textPrimary,

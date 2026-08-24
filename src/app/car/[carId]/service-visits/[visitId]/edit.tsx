@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { ServiceVisitForm } from '@/components/ServiceVisitForm';
 import { useStorage } from '@/storage';
@@ -45,7 +46,7 @@ export default function EditServiceVisitScreen() {
           headerRight: () => (
             <View style={styles.headerRightContainer}>
               <Pressable hitSlop={8} onPress={confirmDelete}>
-                <Text style={styles.deleteGlyph}>🗑</Text>
+                <Icon name="trash-outline" size={18} color={colors.red} />
               </Pressable>
             </View>
           ),
@@ -76,10 +77,6 @@ function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
     headerRightContainer: {
       paddingRight: 16,
-    },
-    deleteGlyph: {
-      fontSize: 18,
-      color: colors.red,
     },
   });
 }

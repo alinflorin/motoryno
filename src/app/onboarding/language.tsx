@@ -1,8 +1,9 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/Icon';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
@@ -37,7 +38,7 @@ export default function OnboardingLanguageScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <OnboardingHeader title={t('onboarding.languageTitle')} right={<Text style={styles.globe}>🌐</Text>} />
+      <OnboardingHeader title={t('onboarding.languageTitle')} right={<Icon name="globe-outline" size={20} color={colors.textMuted} />} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SettingsSection title={t('settingsLanguage.language')}>
           {LANGUAGES.map((language) => (
@@ -45,7 +46,7 @@ export default function OnboardingLanguageScreen() {
               key={language.code}
               label={t(language.labelKey)}
               onPress={() => setLanguageAndPersist(language.code)}
-              right={i18n.language === language.code ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={i18n.language === language.code ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -56,7 +57,7 @@ export default function OnboardingLanguageScreen() {
               key={code}
               label={code}
               onPress={() => updateSettings({ currency: code })}
-              right={currency === code ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={currency === code ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -75,18 +76,10 @@ export default function OnboardingLanguageScreen() {
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    globe: {
-      fontSize: 18,
-    },
     content: {
       padding: 16,
       paddingTop: 20,
       gap: 20,
-    },
-    checkmark: {
-      color: colors.amber,
-      fontSize: 15,
-      fontWeight: '700',
     },
   });
 }

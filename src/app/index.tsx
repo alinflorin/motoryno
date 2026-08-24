@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CountBadge } from '@/components/CountBadge';
+import { Icon } from '@/components/Icon';
 import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -93,7 +94,7 @@ export default function HomeScreen() {
           onPress={() => setMenuOpen((open) => !open)}
           style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
         >
-          <Text style={styles.iconGlyph}>⋮</Text>
+          <Icon name="ellipsis-vertical" size={18} color={colors.textMuted} />
         </Pressable>
       </View>
 
@@ -102,8 +103,8 @@ export default function HomeScreen() {
         onDismiss={() => setMenuOpen(false)}
         top={topBarTop + 42}
         items={[
-          { key: 'settings', label: t('home.settings'), glyph: '⚙︎', onPress: () => router.push('/settings') },
-          { key: 'about', label: t('home.about'), glyph: 'ⓘ', onPress: () => router.push('/about') },
+          { key: 'settings', label: t('home.settings'), icon: 'settings-outline', onPress: () => router.push('/settings') },
+          { key: 'about', label: t('home.about'), icon: 'information-circle-outline', onPress: () => router.push('/about') },
         ]}
       />
 
@@ -169,7 +170,7 @@ export default function HomeScreen() {
                               }}
                               style={styles.cardKebab}
                             >
-                              <Text style={styles.cardKebabGlyph}>⋮</Text>
+                              <Icon name="ellipsis-vertical" size={16} color={colors.textFaint} />
                             </Pressable>
                           </View>
                         </View>
@@ -192,7 +193,7 @@ export default function HomeScreen() {
                 {({ pressed }) => (
                   <View style={[styles.addCarCard, pressed && styles.cardPressed]}>
                     <View style={styles.addCarPlus}>
-                      <Text style={styles.addCarPlusGlyph}>+</Text>
+                      <Icon name="add" size={20} color={colors.textFaint} />
                     </View>
                     <Text style={styles.addCarLabel}>{t('home.addCar')}</Text>
                   </View>
@@ -213,19 +214,19 @@ export default function HomeScreen() {
             {
               key: 'view',
               label: t('home.viewCar'),
-              glyph: '⌕',
+              icon: 'eye-outline',
               onPress: () => router.push({ pathname: '/car/[carId]', params: { carId: cardMenu.carId } }),
             },
             {
               key: 'edit',
               label: t('home.editCar'),
-              glyph: '✎',
+              icon: 'create-outline',
               onPress: () => router.push({ pathname: '/car/[carId]/edit', params: { carId: cardMenu.carId } }),
             },
             {
               key: 'delete',
               label: t('home.deleteCar'),
-              glyph: '⌫',
+              icon: 'trash-outline',
               onPress: () => {
                 const car = cars.find((existing) => existing.vin === cardMenu.carId);
                 confirmDeleteCar(cardMenu.carId, car?.displayName ?? cardMenu.carId);
@@ -282,10 +283,6 @@ function getStyles(colors: ColorTokens) {
   },
   iconButtonPressed: {
     backgroundColor: colors.surface,
-  },
-  iconGlyph: {
-    color: colors.textMuted,
-    fontSize: 18,
   },
   content: {
     padding: 16,
@@ -365,10 +362,6 @@ function getStyles(colors: ColorTokens) {
     marginRight: -6,
     marginTop: -4,
   },
-  cardKebabGlyph: {
-    color: colors.textFaint,
-    fontSize: 16,
-  },
   carNickname: {
     color: colors.textPrimary,
     fontSize: 16,
@@ -411,12 +404,6 @@ function getStyles(colors: ColorTokens) {
     borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addCarPlusGlyph: {
-    color: colors.textFaint,
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 20,
   },
   addCarLabel: {
     color: colors.textMuted,

@@ -2,6 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
@@ -27,7 +28,7 @@ export default function SettingsResetScreen() {
     <Screen>
       <Stack.Screen options={{ title: t('settingsReset.title') }} />
       <View style={styles.content}>
-        <Text style={styles.icon}>⚠️</Text>
+        <Icon name="warning-outline" size={32} color={colors.yellow} />
         <Text style={styles.confirm}>{t('settingsReset.confirm')}</Text>
         <Text style={styles.warning}>{t('settingsReset.warning')}</Text>
 
@@ -61,10 +62,6 @@ function getStyles(colors: ColorTokens) {
       paddingTop: 32,
       alignItems: 'center',
       gap: 14,
-    },
-    icon: {
-      fontSize: 32,
-      marginBottom: 4,
     },
     confirm: {
       color: colors.textPrimary,

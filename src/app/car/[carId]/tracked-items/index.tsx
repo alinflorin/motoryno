@@ -2,6 +2,7 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
@@ -39,7 +40,7 @@ export default function TrackedItemsScreen() {
             <View style={styles.headerRightContainer}>
               <Link href={{ pathname: '/car/[carId]/tracked-items/add', params: { carId } }} asChild>
                 <Pressable hitSlop={8} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-                  <Text style={styles.addButtonGlyph}>+</Text>
+                  <Icon name="add" size={26} color={colors.amber} />
                 </Pressable>
               </Link>
             </View>
@@ -208,12 +209,6 @@ function getStyles(colors: ColorTokens) {
     },
     addButtonPressed: {
       opacity: 0.5,
-    },
-    addButtonGlyph: {
-      color: colors.amber,
-      fontSize: 26,
-      fontWeight: '600',
-      lineHeight: 28,
     },
   });
 }

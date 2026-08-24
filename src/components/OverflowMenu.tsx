@@ -1,12 +1,14 @@
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 
 export interface OverflowMenuItem {
   key: string;
   label: string;
-  glyph: string;
+  icon: ComponentProps<typeof Icon>['name'];
   onPress: () => void;
 }
 
@@ -47,7 +49,7 @@ export function OverflowMenu({
               pressed && styles.rowPressed,
             ]}
           >
-            <Text style={styles.glyph}>{item.glyph}</Text>
+            <Icon name={item.icon} size={16} color={colors.textMuted} />
             <Text style={styles.label}>{item.label}</Text>
           </Pressable>
         ))}
@@ -91,12 +93,6 @@ function getStyles(colors: ColorTokens) {
     },
     rowPressed: {
       backgroundColor: colors.surfaceAlt,
-    },
-    glyph: {
-      color: colors.textMuted,
-      fontSize: 15,
-      width: 18,
-      textAlign: 'center',
     },
     label: {
       color: colors.textSecondary,

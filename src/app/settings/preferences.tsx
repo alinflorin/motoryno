@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
@@ -56,7 +57,7 @@ export default function SettingsPreferencesScreen() {
               key={option.key}
               label={t(option.labelKey)}
               onPress={() => setUnit(option.key)}
-              right={unit === option.key ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={unit === option.key ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -67,7 +68,7 @@ export default function SettingsPreferencesScreen() {
               key={option.key}
               label={t(option.labelKey)}
               onPress={() => setTheme(option.key)}
-              right={theme === option.key ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={theme === option.key ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -78,7 +79,7 @@ export default function SettingsPreferencesScreen() {
               key={language.code}
               label={t(language.labelKey)}
               onPress={() => setLanguageAndPersist(language.code)}
-              right={i18n.language === language.code ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={i18n.language === language.code ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -89,7 +90,7 @@ export default function SettingsPreferencesScreen() {
               key={code}
               label={code}
               onPress={() => setCurrency(code)}
-              right={currency === code ? <Text style={styles.checkmark}>✓</Text> : undefined}
+              right={currency === code ? <Icon name="checkmark" size={18} color={colors.amber} /> : undefined}
             />
           ))}
         </SettingsSection>
@@ -104,11 +105,6 @@ function getStyles(colors: ColorTokens) {
       padding: 16,
       gap: 20,
       paddingBottom: 32,
-    },
-    checkmark: {
-      color: colors.amber,
-      fontSize: 15,
-      fontWeight: '700',
     },
   });
 }

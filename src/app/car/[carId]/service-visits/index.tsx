@@ -2,6 +2,7 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
@@ -30,7 +31,7 @@ export default function ServiceVisitsScreen() {
             <View style={styles.headerRightContainer}>
               <Link href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }} asChild>
                 <Pressable hitSlop={8} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-                  <Text style={styles.addButtonGlyph}>+</Text>
+                  <Icon name="add" size={26} color={colors.amber} />
                 </Pressable>
               </Link>
             </View>
@@ -54,7 +55,7 @@ export default function ServiceVisitsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {visits.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyGlyph}>🔧</Text>
+            <Icon name="construct-outline" size={32} color={colors.textFaint} />
             <Text style={styles.emptyTitle}>{t('serviceVisits.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>{t('serviceVisits.emptySubtitle')}</Text>
           </View>
@@ -141,10 +142,6 @@ function getStyles(colors: ColorTokens) {
       paddingVertical: 48,
       gap: 4,
     },
-    emptyGlyph: {
-      fontSize: 32,
-      marginBottom: 8,
-    },
     emptyTitle: {
       color: colors.textMuted,
       fontSize: 14,
@@ -218,12 +215,6 @@ function getStyles(colors: ColorTokens) {
     },
     addButtonPressed: {
       opacity: 0.5,
-    },
-    addButtonGlyph: {
-      color: colors.amber,
-      fontSize: 26,
-      fontWeight: '600',
-      lineHeight: 28,
     },
   });
 }

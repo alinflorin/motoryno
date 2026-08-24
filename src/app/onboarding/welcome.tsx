@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Chevron } from '@/components/Chevron';
+import { MCIcon } from '@/components/Icon';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
@@ -28,7 +30,7 @@ export default function OnboardingWelcomeScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <OnboardingHeader title={t('onboarding.welcomeTitle')} right={<Text style={styles.wave}>👋</Text>} />
+      <OnboardingHeader title={t('onboarding.welcomeTitle')} right={<MCIcon name="hand-wave-outline" size={22} color={colors.amber} />} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.greeting}>{t('onboarding.welcomeGreeting')}</Text>
         <Text style={styles.body}>{t('onboarding.welcomeBody')}</Text>
@@ -37,7 +39,7 @@ export default function OnboardingWelcomeScreen() {
           <Text style={styles.stepsTitle}>{t('onboarding.stepsTitle')}</Text>
           {steps.map((step) => (
             <View key={step} style={styles.stepRow}>
-              <Text style={styles.stepBullet}>›</Text>
+              <Chevron color={colors.amber} size={15} />
               <Text style={styles.stepText}>{step}</Text>
             </View>
           ))}
@@ -57,9 +59,6 @@ export default function OnboardingWelcomeScreen() {
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    wave: {
-      fontSize: 20,
-    },
     content: {
       padding: 16,
       paddingTop: 24,
@@ -91,11 +90,6 @@ function getStyles(colors: ColorTokens) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-    },
-    stepBullet: {
-      color: colors.amber,
-      fontSize: 15,
-      fontWeight: '700',
     },
     stepText: {
       color: colors.textSecondary,

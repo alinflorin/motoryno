@@ -10,6 +10,7 @@ import { ComboBoxInput } from '@/components/ComboBoxInput';
 import { DatePickerField } from '@/components/DatePickerField';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
+import { Icon } from '@/components/Icon';
 import { StatusDot } from '@/components/StatusDot';
 import type { Car, ServiceVisit } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
@@ -244,7 +245,7 @@ export function ServiceVisitForm({
                   style={[styles.itemRow, selected && styles.itemRowSelected]}
                 >
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
-                    {selected && <Text style={styles.checkmark}>✓</Text>}
+                    {selected && <Icon name="checkmark" size={12} color={colors.onAmber} />}
                   </View>
                   <Text style={styles.itemRowText}>{entry.item.name}</Text>
                   <StatusDot status={entry.status} />
@@ -340,11 +341,6 @@ function getStyles(colors: ColorTokens) {
     checkboxSelected: {
       backgroundColor: colors.amber,
       borderColor: colors.amber,
-    },
-    checkmark: {
-      color: colors.onAmber,
-      fontSize: 11,
-      fontWeight: '700',
     },
   });
 }

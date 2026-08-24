@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
@@ -142,7 +143,7 @@ export default function CarScreen() {
           <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.vin } }} asChild>
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
               <View style={styles.navRowLeft}>
-                <Text style={styles.statsIcon}>📊</Text>
+                <Icon name="stats-chart-outline" size={18} color={colors.textMuted} />
                 <Text style={styles.navRowText}>{t('car.stats')}</Text>
               </View>
               <View style={styles.navRowButton}>
@@ -298,9 +299,6 @@ function getStyles(colors: ColorTokens) {
     navRowSubtext: {
       color: colors.textFaint,
       fontSize: 11,
-    },
-    statsIcon: {
-      fontSize: 20,
     },
     navRowButton: {
       marginTop: 8,

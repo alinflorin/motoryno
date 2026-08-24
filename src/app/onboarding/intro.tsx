@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon } from '@/components/Icon';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
@@ -25,7 +26,7 @@ export default function OnboardingIntroScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.body}>{t('onboarding.introBody1')}</Text>
         <View style={styles.illustration}>
-          <Text style={styles.illustrationGlyph}>🚗</Text>
+          <Icon name="car-sport-outline" size={48} color={colors.amber} />
         </View>
         <Text style={styles.body}>{t('onboarding.introBody2')}</Text>
       </ScrollView>
@@ -61,9 +62,6 @@ function getStyles(colors: ColorTokens) {
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
-    },
-    illustrationGlyph: {
-      fontSize: 48,
     },
   });
 }
