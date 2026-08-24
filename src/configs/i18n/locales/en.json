@@ -211,6 +211,10 @@
     "sound": "Ring",
     "vibrate": "Vibrate"
   },
+  "overdueNotification": {
+    "title_one": "{{count}} overdue service item",
+    "title_other": "{{count}} overdue service items"
+  },
   "settingsLanguage": {
     "language": "Language",
     "systemDefault": "System default",

@@ -217,6 +217,11 @@
     "sound": "Sonerie",
     "vibrate": "Vibrații"
   },
+  "overdueNotification": {
+    "title_one": "{{count}} element de service restant",
+    "title_few": "{{count}} elemente de service restante",
+    "title_other": "{{count}} de elemente de service restante"
+  },
   "settingsLanguage": {
     "language": "Limbă",
     "systemDefault": "Implicit sistem",
