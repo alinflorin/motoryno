@@ -6,13 +6,16 @@ import { Chevron } from '@/components/Chevron';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { getCarById, getServiceVisitsForCar, getTrackedItemsForCar } from '@/data/seed';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 import type { ServiceItemStatus } from '@/types/models';
 
 export default function CarScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const car = getCarById(carId);
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   if (!car) return null;
 
@@ -65,7 +68,7 @@ export default function CarScreen() {
                 <View key={item.id} style={styles.attentionRow}>
                   <StatusDot status={item.status} />
                   <Text style={styles.attentionName}>{item.name}</Text>
-                  <Text style={[styles.attentionStatus, { color: statusTextColor(item.status) }]}>
+                  <Text style={[styles.attentionStatus, { color: statusTextColor(item.status, colors) }]}>
                     {item.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
                   </Text>
                 </View>
@@ -142,145 +145,147 @@ export default function CarScreen() {
   );
 }
 
-function statusTextColor(status: ServiceItemStatus) {
+function statusTextColor(status: ServiceItemStatus, colors: ColorTokens) {
   return status === 'overdue' ? colors.red : colors.yellow;
 }
 
-const styles = StyleSheet.create({
-  content: {
-    paddingBottom: 32,
-  },
-  hero: {
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  heroLabel: {
-    color: colors.textFaint,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  heroValueRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  heroValue: {
-    color: colors.amber,
-    fontSize: 40,
-    fontWeight: '700',
-  },
-  heroUnit: {
-    color: colors.amber,
-    opacity: 0.7,
-    fontSize: 18,
-    marginBottom: 6,
-  },
-  heroSubtitle: {
-    color: colors.textFaint,
-    fontSize: 13,
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  statCell: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  statCellDivider: {
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: colors.border,
-    borderRightColor: colors.border,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  statLabel: {
-    color: colors.textFaint,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  section: {
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  sectionHeadRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  sectionCount: {
-    color: colors.textFaint,
-    fontSize: 12,
-  },
-  attentionList: {
-    gap: 6,
-  },
-  attentionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  attentionName: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    flex: 1,
-  },
-  attentionStatus: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  navRowPressed: {
-    borderColor: colors.amberBorder,
-  },
-  navRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  navRowTextGroup: {
-    gap: 3,
-  },
-  navRowText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  navRowSubtext: {
-    color: colors.textFaint,
-    fontSize: 11,
-  },
-  statsIcon: {
-    fontSize: 20,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      paddingBottom: 32,
+    },
+    hero: {
+      padding: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    heroLabel: {
+      color: colors.textFaint,
+      fontSize: 12,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 4,
+    },
+    heroValueRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 6,
+    },
+    heroValue: {
+      color: colors.amber,
+      fontSize: 40,
+      fontWeight: '700',
+    },
+    heroUnit: {
+      color: colors.amber,
+      opacity: 0.7,
+      fontSize: 18,
+      marginBottom: 6,
+    },
+    heroSubtitle: {
+      color: colors.textFaint,
+      fontSize: 13,
+      marginTop: 4,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    statCell: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 14,
+    },
+    statCellDivider: {
+      borderLeftWidth: StyleSheet.hairlineWidth,
+      borderRightWidth: StyleSheet.hairlineWidth,
+      borderLeftColor: colors.border,
+      borderRightColor: colors.border,
+    },
+    statValue: {
+      fontSize: 20,
+      fontWeight: '700',
+    },
+    statLabel: {
+      color: colors.textFaint,
+      fontSize: 11,
+      marginTop: 2,
+    },
+    section: {
+      padding: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    sectionHeadRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    sectionTitle: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    sectionCount: {
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    attentionList: {
+      gap: 6,
+    },
+    attentionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+    },
+    attentionName: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      flex: 1,
+    },
+    attentionStatus: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    navRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+    },
+    navRowPressed: {
+      borderColor: colors.amberBorder,
+    },
+    navRowLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    navRowTextGroup: {
+      gap: 3,
+    },
+    navRowText: {
+      color: colors.textSecondary,
+      fontSize: 13,
+    },
+    navRowSubtext: {
+      color: colors.textFaint,
+      fontSize: 11,
+    },
+    statsIcon: {
+      fontSize: 20,
+    },
+  });
+}

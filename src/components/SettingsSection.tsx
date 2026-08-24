@@ -1,9 +1,12 @@
 import { Children, Fragment, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export function SettingsSection({ title, children }: { title?: string; children: ReactNode }) {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
   const rows = Children.toArray(children);
 
   return (
@@ -21,28 +24,30 @@ export function SettingsSection({ title, children }: { title?: string; children:
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: 8,
-  },
-  title: {
-    color: colors.textFaint,
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginLeft: 4,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.border,
-    marginLeft: 16,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    section: {
+      gap: 8,
+    },
+    title: {
+      color: colors.textFaint,
+      fontSize: 12,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginLeft: 4,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.border,
+      marginLeft: 16,
+    },
+  });
+}

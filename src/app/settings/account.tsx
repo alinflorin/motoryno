@@ -3,10 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function SettingsAccountScreen() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <Screen>
@@ -45,89 +48,91 @@ export default function SettingsAccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    gap: 20,
-    paddingBottom: 32,
-  },
-  intro: {
-    color: colors.textFaint,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  loginButtons: {
-    gap: 10,
-  },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
-    paddingVertical: 13,
-  },
-  loginButtonPressed: {
-    borderColor: colors.amberBorder,
-  },
-  loginGlyph: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  loginText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  statusBlock: {
-    gap: 4,
-  },
-  statusText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  statusMeta: {
-    color: colors.textFaint,
-    fontSize: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  syncButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 13,
-    borderRadius: 14,
-    backgroundColor: colors.amber,
-  },
-  syncButtonPressed: {
-    opacity: 0.85,
-  },
-  syncButtonText: {
-    color: colors.onAmber,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  logoutButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 13,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-  },
-  logoutButtonPressed: {
-    backgroundColor: colors.surface,
-  },
-  logoutButtonText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      padding: 16,
+      gap: 20,
+      paddingBottom: 32,
+    },
+    intro: {
+      color: colors.textFaint,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    loginButtons: {
+      gap: 10,
+    },
+    loginButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 14,
+      paddingVertical: 13,
+    },
+    loginButtonPressed: {
+      borderColor: colors.amberBorder,
+    },
+    loginGlyph: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    loginText: {
+      color: colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    statusBlock: {
+      gap: 4,
+    },
+    statusText: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    statusMeta: {
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    syncButton: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 13,
+      borderRadius: 14,
+      backgroundColor: colors.amber,
+    },
+    syncButtonPressed: {
+      opacity: 0.85,
+    },
+    syncButtonText: {
+      color: colors.onAmber,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    logoutButton: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 13,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    logoutButtonPressed: {
+      backgroundColor: colors.surface,
+    },
+    logoutButtonText: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });
+}

@@ -9,7 +9,8 @@ import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
 import { cars, getOverdueCountForCar, overdueAlerts } from '@/data/seed';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 const CARD_MENU_WIDTH = 176;
 
@@ -17,6 +18,8 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
   const kebabRefs = useRef<Record<string, View | null>>({});
@@ -185,7 +188,8 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -286,12 +290,12 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     borderRadius: 16,
     padding: 14,
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.6)',
+    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
     shadowColor: '#000',
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   cardPressed: {
     borderColor: colors.amberBorder,
@@ -350,12 +354,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     gap: 10,
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.6)',
+    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
     shadowColor: '#000',
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   addCarPlus: {
     width: 32,
@@ -377,4 +381,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-});
+  });
+}

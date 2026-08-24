@@ -4,7 +4,8 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 import type { Car, DistanceUnit } from '@/types/models';
 
 export interface CarFormValues {
@@ -47,6 +48,8 @@ export function CarFormFields({
   setField: <K extends keyof CarFormValues>(key: K, value: CarFormValues[K]) => void;
 }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <>
@@ -150,6 +153,8 @@ export function CarForm({
   insetBottom: number;
 }) {
   const { values, setField } = useCarFormState(car);
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -167,84 +172,86 @@ export function CarForm({
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  content: {
-    padding: 16,
-    gap: 18,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: colors.textPrimary,
-    fontSize: 14,
-  },
-  twoCol: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  twoColItem: {
-    flex: 1,
-  },
-  suffixField: {
-    justifyContent: 'center',
-  },
-  suffixInput: {
-    paddingRight: 40,
-  },
-  inputSuffix: {
-    position: 'absolute',
-    right: 14,
-    color: colors.textFaint,
-    fontSize: 12,
-  },
-  obdCard: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  obdHeader: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  obdTitle: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  obdBody: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  obdSubtitle: {
-    color: colors.textFaint,
-    fontSize: 12,
-    flex: 1,
-    paddingRight: 12,
-  },
-  scanButton: {
-    backgroundColor: colors.amber,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  scanButtonPressed: {
-    opacity: 0.85,
-  },
-  scanButtonText: {
-    color: colors.onAmber,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    flex: { flex: 1 },
+    content: {
+      padding: 16,
+      gap: 18,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.textPrimary,
+      fontSize: 14,
+    },
+    twoCol: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    twoColItem: {
+      flex: 1,
+    },
+    suffixField: {
+      justifyContent: 'center',
+    },
+    suffixInput: {
+      paddingRight: 40,
+    },
+    inputSuffix: {
+      position: 'absolute',
+      right: 14,
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    obdCard: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 16,
+      overflow: 'hidden',
+    },
+    obdHeader: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    obdTitle: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    obdBody: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    obdSubtitle: {
+      color: colors.textFaint,
+      fontSize: 12,
+      flex: 1,
+      paddingRight: 12,
+    },
+    scanButton: {
+      backgroundColor: colors.amber,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 10,
+    },
+    scanButtonPressed: {
+      opacity: 0.85,
+    },
+    scanButtonText: {
+      color: colors.onAmber,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+  });
+}

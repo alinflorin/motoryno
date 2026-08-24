@@ -10,7 +10,8 @@ import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 import { setLanguage, type SupportedLanguage } from '@/configs/i18n';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 const LANGUAGES: { code: SupportedLanguage; labelKey: 'settingsLanguage.english' | 'settingsLanguage.romanian' }[] = [
   { code: 'en', labelKey: 'settingsLanguage.english' },
@@ -24,6 +25,8 @@ export default function OnboardingLanguageScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>('EUR');
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <Screen>
@@ -61,18 +64,20 @@ export default function OnboardingLanguageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  globe: {
-    fontSize: 18,
-  },
-  content: {
-    padding: 16,
-    paddingTop: 20,
-    gap: 20,
-  },
-  checkmark: {
-    color: colors.amber,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    globe: {
+      fontSize: 18,
+    },
+    content: {
+      padding: 16,
+      paddingTop: 20,
+      gap: 20,
+    },
+    checkmark: {
+      color: colors.amber,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+  });
+}

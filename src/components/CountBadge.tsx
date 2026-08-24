@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export function CountBadge({ count }: { count: number }) {
+  const colors = useThemeColors();
   return (
-    <View style={styles.badge}>
-      <Text style={styles.text}>{count}</Text>
+    <View style={[styles.badge, { backgroundColor: colors.red }]}>
+      <Text style={[styles.text, { color: colors.onRed }]}>{count}</Text>
     </View>
   );
 }
@@ -16,12 +17,10 @@ const styles = StyleSheet.create({
     height: 20,
     paddingHorizontal: 6,
     borderRadius: 10,
-    backgroundColor: colors.red,
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    color: colors.textPrimary,
     fontSize: 11,
     fontWeight: '700',
   },

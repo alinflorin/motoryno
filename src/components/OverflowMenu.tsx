@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export interface OverflowMenuItem {
   key: string;
@@ -24,6 +25,9 @@ export function OverflowMenu({
   right?: number;
   left?: number;
 }) {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
+
   if (!visible) return null;
 
   return (
@@ -52,52 +56,54 @@ export function OverflowMenu({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 40,
-  },
-  panel: {
-    position: 'absolute',
-    minWidth: 180,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
-    overflow: 'hidden',
-    zIndex: 50,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-  },
-  rowDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  rowPressed: {
-    backgroundColor: colors.surfaceAlt,
-  },
-  glyph: {
-    color: colors.textMuted,
-    fontSize: 15,
-    width: 18,
-    textAlign: 'center',
-  },
-  label: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    backdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 40,
+    },
+    panel: {
+      position: 'absolute',
+      minWidth: 180,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 14,
+      overflow: 'hidden',
+      zIndex: 50,
+      elevation: 8,
+      shadowColor: '#000',
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 13,
+    },
+    rowDivider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    rowPressed: {
+      backgroundColor: colors.surfaceAlt,
+    },
+    glyph: {
+      color: colors.textMuted,
+      fontSize: 15,
+      width: 18,
+      textAlign: 'center',
+    },
+    label: {
+      color: colors.textSecondary,
+      fontSize: 14,
+    },
+  });
+}

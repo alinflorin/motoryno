@@ -6,7 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/Screen';
 import { getCarById } from '@/data/seed';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 
@@ -16,6 +17,8 @@ export default function AddTrackedItemScreen() {
   const insets = useSafeAreaInsets();
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const car = getCarById(carId);
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   const [name, setName] = useState('');
   const [months, setMonths] = useState('');
@@ -79,43 +82,45 @@ export default function AddTrackedItemScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-    gap: 20,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: colors.textPrimary,
-    fontSize: 14,
-  },
-  intervalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  intervalField: {
-    flex: 1,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputSuffix: {
-    position: 'absolute',
-    right: 14,
-    color: colors.textFaint,
-    fontSize: 12,
-  },
-  orLabel: {
-    color: colors.textFainter,
-    fontSize: 13,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+    content: {
+      padding: 16,
+      gap: 20,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.textPrimary,
+      fontSize: 14,
+    },
+    intervalRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    intervalField: {
+      flex: 1,
+      position: 'relative',
+      justifyContent: 'center',
+    },
+    inputSuffix: {
+      position: 'absolute',
+      right: 14,
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    orLabel: {
+      color: colors.textFainter,
+      fontSize: 13,
+    },
+  });
+}

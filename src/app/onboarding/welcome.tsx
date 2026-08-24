@@ -6,12 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   const steps = [
     t('onboarding.stepIntro'),
@@ -47,49 +50,51 @@ export default function OnboardingWelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  wave: {
-    fontSize: 20,
-  },
-  content: {
-    padding: 16,
-    paddingTop: 24,
-    gap: 14,
-  },
-  greeting: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  body: {
-    color: colors.textMuted,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  steps: {
-    marginTop: 12,
-    gap: 10,
-  },
-  stepsTitle: {
-    color: colors.textFaint,
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepBullet: {
-    color: colors.amber,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  stepText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    wave: {
+      fontSize: 20,
+    },
+    content: {
+      padding: 16,
+      paddingTop: 24,
+      gap: 14,
+    },
+    greeting: {
+      color: colors.textPrimary,
+      fontSize: 20,
+      fontWeight: '700',
+    },
+    body: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    steps: {
+      marginTop: 12,
+      gap: 10,
+    },
+    stepsTitle: {
+      color: colors.textFaint,
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 2,
+    },
+    stepRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    stepBullet: {
+      color: colors.amber,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    stepText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+    },
+  });
+}

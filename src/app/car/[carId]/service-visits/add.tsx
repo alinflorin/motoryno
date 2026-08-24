@@ -9,7 +9,8 @@ import { FormField } from '@/components/FormField';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { getCarById, getTrackedItemsForCar } from '@/data/seed';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function AddServiceVisitScreen() {
   const { t } = useTranslation();
@@ -18,6 +19,8 @@ export default function AddServiceVisitScreen() {
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const car = getCarById(carId);
   const items = getTrackedItemsForCar(carId);
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   const [shop, setShop] = useState('');
   const [date, setDate] = useState('');
@@ -123,78 +126,80 @@ export default function AddServiceVisitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  content: {
-    padding: 16,
-    gap: 18,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: colors.textPrimary,
-    fontSize: 14,
-  },
-  twoCol: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  twoColItem: {
-    flex: 1,
-  },
-  suffixField: {
-    justifyContent: 'center',
-  },
-  inputSuffix: {
-    position: 'absolute',
-    right: 14,
-    color: colors.textFaint,
-    fontSize: 12,
-  },
-  itemList: {
-    gap: 6,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  itemRowSelected: {
-    backgroundColor: colors.amberMuted,
-    borderColor: colors.amberBorder,
-  },
-  itemRowText: {
-    flex: 1,
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: colors.amber,
-    borderColor: colors.amber,
-  },
-  checkmark: {
-    color: colors.onAmber,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    flex: { flex: 1 },
+    content: {
+      padding: 16,
+      gap: 18,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.textPrimary,
+      fontSize: 14,
+    },
+    twoCol: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    twoColItem: {
+      flex: 1,
+    },
+    suffixField: {
+      justifyContent: 'center',
+    },
+    inputSuffix: {
+      position: 'absolute',
+      right: 14,
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    itemList: {
+      gap: 6,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    itemRowSelected: {
+      backgroundColor: colors.amberMuted,
+      borderColor: colors.amberBorder,
+    },
+    itemRowText: {
+      flex: 1,
+      color: colors.textSecondary,
+      fontSize: 13,
+    },
+    checkbox: {
+      width: 18,
+      height: 18,
+      borderRadius: 5,
+      borderWidth: 2,
+      borderColor: colors.borderStrong,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkboxSelected: {
+      backgroundColor: colors.amber,
+      borderColor: colors.amber,
+    },
+    checkmark: {
+      color: colors.onAmber,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+  });
+}

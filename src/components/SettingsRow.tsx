@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export function SettingsRow({
   label,
@@ -15,6 +16,9 @@ export function SettingsRow({
   onPress?: () => void;
   right?: ReactNode;
 }) {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
+
   const content = (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -35,28 +39,30 @@ export function SettingsRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  pressed: {
-    backgroundColor: colors.surface,
-  },
-  label: {
-    color: colors.textPrimary,
-    fontSize: 14,
-  },
-  right: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  value: {
-    color: colors.textFaint,
-    fontSize: 13,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    pressed: {
+      backgroundColor: colors.surface,
+    },
+    label: {
+      color: colors.textPrimary,
+      fontSize: 14,
+    },
+    right: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    value: {
+      color: colors.textFaint,
+      fontSize: 13,
+    },
+  });
+}

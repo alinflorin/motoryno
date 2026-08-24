@@ -6,10 +6,13 @@ import { ScrollView, StyleSheet, Switch, Text } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function SettingsNotificationsScreen() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   // Local-only UI state — not wired to real scheduling yet.
   const [enabled, setEnabled] = useState(true);
@@ -65,17 +68,19 @@ export default function SettingsNotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    gap: 10,
-    paddingBottom: 32,
-  },
-  footnote: {
-    color: colors.textFaint,
-    fontSize: 12,
-    paddingHorizontal: 4,
-    marginTop: -4,
-    marginBottom: 6,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      padding: 16,
+      gap: 10,
+      paddingBottom: 32,
+    },
+    footnote: {
+      color: colors.textFaint,
+      fontSize: 12,
+      paddingHorizontal: 4,
+      marginTop: -4,
+      marginBottom: 6,
+    },
+  });
+}

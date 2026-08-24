@@ -5,10 +5,13 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function AboutScreen() {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <Screen>
@@ -33,31 +36,33 @@ export default function AboutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    paddingTop: 24,
-    gap: 24,
-  },
-  version: {
-    color: colors.textFaint,
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  legalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  legalDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 14,
-    backgroundColor: colors.borderStrong,
-  },
-  legalLink: {
-    color: colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      padding: 16,
+      paddingTop: 24,
+      gap: 24,
+    },
+    version: {
+      color: colors.textFaint,
+      fontSize: 13,
+      textAlign: 'center',
+    },
+    legalRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 16,
+    },
+    legalDivider: {
+      width: StyleSheet.hairlineWidth,
+      height: 14,
+      backgroundColor: colors.borderStrong,
+    },
+    legalLink: {
+      color: colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+  });
+}

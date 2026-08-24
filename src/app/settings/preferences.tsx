@@ -7,7 +7,8 @@ import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 import { setLanguage, type SupportedLanguage } from '@/configs/i18n';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors, useThemePreference, type ThemePreference } from '@/theme/ThemeContext';
 import type { DistanceUnit } from '@/types/models';
 
 const LANGUAGES: { code: SupportedLanguage; labelKey: 'settingsLanguage.english' | 'settingsLanguage.romanian' }[] = [
@@ -17,9 +18,7 @@ const LANGUAGES: { code: SupportedLanguage; labelKey: 'settingsLanguage.english'
 
 const CURRENCIES = ['EUR', 'RON', 'USD'] as const;
 
-type Theme = 'system' | 'dark' | 'light';
-
-const THEMES: { key: Theme; labelKey: 'settings.themeSystem' | 'settings.themeDark' | 'settings.themeLight' }[] = [
+const THEMES: { key: ThemePreference; labelKey: 'settings.themeSystem' | 'settings.themeDark' | 'settings.themeLight' }[] = [
   { key: 'system', labelKey: 'settings.themeSystem' },
   { key: 'dark', labelKey: 'settings.themeDark' },
   { key: 'light', labelKey: 'settings.themeLight' },
@@ -32,9 +31,11 @@ const UNITS: { key: DistanceUnit; labelKey: 'settings.unitsMetric' | 'settings.u
 
 export default function SettingsPreferencesScreen() {
   const { t, i18n } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
+  const { preference: theme, setPreference: setTheme } = useThemePreference();
   // Local-only UI state — none of these persist yet.
   const [unit, setUnit] = useState<DistanceUnit>('km');
-  const [theme, setTheme] = useState<Theme>('system');
   const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>('EUR');
 
   return (
@@ -89,15 +90,17 @@ export default function SettingsPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    gap: 20,
-    paddingBottom: 32,
-  },
-  checkmark: {
-    color: colors.amber,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      padding: 16,
+      gap: 20,
+      paddingBottom: 32,
+    },
+    checkmark: {
+      color: colors.amber,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+  });
+}

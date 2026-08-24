@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export function FormButtonRow({
   onCancel,
@@ -17,6 +18,8 @@ export function FormButtonRow({
   insetBottom: number;
 }) {
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <View style={[styles.row, { paddingBottom: Math.max(16, insetBottom) }]}>
@@ -44,44 +47,46 @@ export function FormButtonRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  cancelButton: {
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-  },
-  cancelText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  submitButton: {
-    backgroundColor: colors.amber,
-  },
-  submitButtonDisabled: {
-    opacity: 0.4,
-  },
-  submitText: {
-    color: colors.onAmber,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  submitTextDisabled: {
-    color: colors.onAmber,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingTop: 10,
+    },
+    button: {
+      flex: 1,
+      paddingVertical: 14,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    cancelButton: {
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    cancelText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    submitButton: {
+      backgroundColor: colors.amber,
+    },
+    submitButtonDisabled: {
+      opacity: 0.4,
+    },
+    submitText: {
+      color: colors.onAmber,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    submitTextDisabled: {
+      color: colors.onAmber,
+    },
+  });
+}

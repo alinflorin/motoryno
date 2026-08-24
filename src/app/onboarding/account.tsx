@@ -6,12 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function OnboardingAccountScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <Screen>
@@ -40,42 +43,44 @@ export default function OnboardingAccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    paddingTop: 24,
-    gap: 20,
-  },
-  intro: {
-    color: colors.textFaint,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  loginButtons: {
-    gap: 10,
-  },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
-    paddingVertical: 13,
-  },
-  loginButtonPressed: {
-    borderColor: colors.amberBorder,
-  },
-  loginGlyph: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  loginText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    content: {
+      padding: 16,
+      paddingTop: 24,
+      gap: 20,
+    },
+    intro: {
+      color: colors.textFaint,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    loginButtons: {
+      gap: 10,
+    },
+    loginButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 14,
+      paddingVertical: 13,
+    },
+    loginButtonPressed: {
+      borderColor: colors.amberBorder,
+    },
+    loginGlyph: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    loginText: {
+      color: colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });
+}

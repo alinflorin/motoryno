@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { getCarById, getServiceVisitsForCar } from '@/data/seed';
-import { colors } from '@/theme/colors';
+import type { ColorTokens } from '@/theme/colors';
+import { useThemeColors } from '@/theme/ThemeContext';
 
 export default function ServiceVisitsScreen() {
   const { t } = useTranslation();
@@ -13,6 +14,8 @@ export default function ServiceVisitsScreen() {
   const visits = getServiceVisitsForCar(carId);
   const totalSpent = visits.reduce((sum, visit) => sum + visit.price, 0);
   const currency = visits[0]?.currency ?? 'RON';
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
 
   return (
     <Screen>
@@ -81,120 +84,122 @@ export default function ServiceVisitsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  statsRow: {
-    flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  statCell: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  statCellDivider: {
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: colors.border,
-  },
-  statValue: {
-    color: colors.amber,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  statValueNeutral: {
-    color: colors.textPrimary,
-  },
-  statLabel: {
-    color: colors.textFaint,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  content: {
-    padding: 16,
-    gap: 10,
-    paddingBottom: 32,
-    flexGrow: 1,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-    gap: 4,
-  },
-  emptyGlyph: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    color: colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  emptySubtitle: {
-    color: colors.textFainter,
-    fontSize: 13,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 16,
-    padding: 14,
-    gap: 10,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  cardTopLeft: {
-    gap: 3,
-  },
-  shopName: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  visitMeta: {
-    color: colors.textFaint,
-    fontSize: 11,
-  },
-  price: {
-    color: colors.amber,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  chip: {
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  chipText: {
-    color: colors.textSecondary,
-    fontSize: 11,
-  },
-  addButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.amber,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonPressed: {
-    opacity: 0.85,
-  },
-  addButtonGlyph: {
-    color: colors.onAmber,
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: -1,
-  },
-});
+function getStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    statsRow: {
+      flexDirection: 'row',
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    statCell: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    statCellDivider: {
+      borderLeftWidth: StyleSheet.hairlineWidth,
+      borderLeftColor: colors.border,
+    },
+    statValue: {
+      color: colors.amber,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    statValueNeutral: {
+      color: colors.textPrimary,
+    },
+    statLabel: {
+      color: colors.textFaint,
+      fontSize: 11,
+      marginTop: 2,
+    },
+    content: {
+      padding: 16,
+      gap: 10,
+      paddingBottom: 32,
+      flexGrow: 1,
+    },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 48,
+      gap: 4,
+    },
+    emptyGlyph: {
+      fontSize: 32,
+      marginBottom: 8,
+    },
+    emptyTitle: {
+      color: colors.textMuted,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    emptySubtitle: {
+      color: colors.textFainter,
+      fontSize: 13,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: 16,
+      padding: 14,
+      gap: 10,
+    },
+    cardTop: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+    },
+    cardTopLeft: {
+      gap: 3,
+    },
+    shopName: {
+      color: colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    visitMeta: {
+      color: colors.textFaint,
+      fontSize: 11,
+    },
+    price: {
+      color: colors.amber,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    chip: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    chipText: {
+      color: colors.textSecondary,
+      fontSize: 11,
+    },
+    addButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.amber,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonPressed: {
+      opacity: 0.85,
+    },
+    addButtonGlyph: {
+      color: colors.onAmber,
+      fontSize: 16,
+      fontWeight: '700',
+      marginTop: -1,
+    },
+  });
+}
