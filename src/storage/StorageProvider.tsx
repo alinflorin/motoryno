@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
+import { syncLanguageFromSettings } from '@/configs/i18n';
 import { createDefaultAppData, DEFAULT_TRACKED_SERVICE_ITEMS } from '@/storage/defaultData';
 import { readAppData, writeAppData } from '@/storage/persistence';
 import type { AppData, Car, NotificationSettings, ObdConfig, ServiceVisit, Settings, TrackedServiceItem } from '@/storage/types';
@@ -86,6 +87,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       dataRef.current = initial;
       setAppData(initial);
       setLoading(false);
+      void syncLanguageFromSettings(initial.settings.language);
       if (!loaded) {
         void writeAppData(initial);
       }

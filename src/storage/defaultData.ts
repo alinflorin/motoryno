@@ -1,3 +1,4 @@
+import { detectDeviceLanguage } from '@/configs/i18n/resources';
 import type { AppData, TrackedServiceItem } from '@/storage/types';
 
 /** The default set of service items copied onto every new car, active for tracking from the start. */
@@ -17,7 +18,7 @@ export function createDefaultAppData(): AppData {
     settings: {
       onboardingDone: false,
       theme: 'system',
-      language: 'en',
+      language: detectDeviceLanguage(),
       useImperialUnits: false,
       currency: 'EUR',
       notifications: {

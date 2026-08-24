@@ -11,20 +11,33 @@ import { ThemeProvider, useThemeColors, useThemePreference } from '@/theme/Theme
 SplashScreen.preventAutoHideAsync();
 
 // On web, expo-router's <Link> renders an <a>. When it's pressed, React
-// Navigation marks the outgoing screen's container aria-hidden before the
-// clicked link has given up focus, which trips an a11y warning ("Blocked
-// aria-hidden on an element because its descendant retained focus"). Blur
-// the link the moment it's pressed so focus is already gone by then.
+// Navigation marks the outgoing screen's container aria-hidden while the
+// clicked link (or focus that later lands back on it) is still inside it,
+// which trips an a11y warning ("Blocked aria-hidden on an element because
+// its descendant retained focus"). Guessing at event timing (blurring on
+// pointerdown/click) doesn't reliably win the race against the browser's
+// own focus-on-click behavior, so instead watch for aria-hidden actually
+// being applied and, if it lands on an element that still contains focus,
+// move focus away immediately.
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
-  document.addEventListener(
-    'pointerdown',
-    (event) => {
-      const target = event.target as HTMLElement | null;
-      const anchor = target?.closest?.('a');
-      anchor?.blur();
-    },
-    true,
-  );
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      const target = mutation.target as HTMLElement;
+      if (
+        target.getAttribute('aria-hidden') === 'true' &&
+        document.activeElement instanceof HTMLElement &&
+        target.contains(document.activeElement)
+      ) {
+        document.activeElement.blur();
+      }
+    }
+  });
+
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['aria-hidden'],
+    subtree: true,
+  });
 }
 
 function RootLayoutNav() {
