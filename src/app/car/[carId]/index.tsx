@@ -102,7 +102,10 @@ export default function CarScreen() {
                       : t('car.allItemsOk')}
                 </Text>
               </View>
-              <Chevron />
+              <View style={styles.navRowButton}>
+                <Text style={styles.navRowButtonText}>{t('common.view')}</Text>
+                <Chevron color={colors.onAmber} size={14} />
+              </View>
             </Pressable>
           </Link>
         </View>
@@ -127,7 +130,10 @@ export default function CarScreen() {
                   {t('car.totalSpent')}: {totalSpent.toLocaleString()} {settings.currency}
                 </Text>
               </View>
-              <Chevron />
+              <View style={styles.navRowButton}>
+                <Text style={styles.navRowButtonText}>{t('common.view')}</Text>
+                <Chevron color={colors.onAmber} size={14} />
+              </View>
             </Pressable>
           </Link>
         </View>
@@ -139,7 +145,10 @@ export default function CarScreen() {
                 <Text style={styles.statsIcon}>📊</Text>
                 <Text style={styles.navRowText}>{t('car.stats')}</Text>
               </View>
-              <Chevron />
+              <View style={styles.navRowButton}>
+                <Text style={styles.navRowButtonText}>{t('common.view')}</Text>
+                <Chevron color={colors.onAmber} size={14} />
+              </View>
             </Pressable>
           </Link>
         </View>
@@ -259,7 +268,7 @@ function getStyles(colors: ColorTokens) {
     },
     navRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
       backgroundColor: colors.surface,
       borderWidth: 1,
@@ -272,14 +281,17 @@ function getStyles(colors: ColorTokens) {
       borderColor: colors.amberBorder,
     },
     navRowLeft: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
     },
     navRowTextGroup: {
+      flex: 1,
       gap: 3,
     },
     navRowText: {
+      flexShrink: 1,
       color: colors.textSecondary,
       fontSize: 13,
     },
@@ -289,6 +301,24 @@ function getStyles(colors: ColorTokens) {
     },
     statsIcon: {
       fontSize: 20,
+    },
+    navRowButton: {
+      marginTop: 8,
+      alignSelf: 'flex-start',
+      flexShrink: 0,
+      flexGrow: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+      backgroundColor: colors.amber,
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+    },
+    navRowButtonText: {
+      color: colors.onAmber,
+      fontSize: 12,
+      fontWeight: '700',
     },
   });
 }
