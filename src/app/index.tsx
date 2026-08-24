@@ -8,10 +8,10 @@ import { CountBadge } from '@/components/CountBadge';
 import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { confirmAsync } from '@/utils/confirm';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
 
@@ -36,7 +36,6 @@ export default function HomeScreen() {
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
   const kebabRefs = useRef<Record<string, View | null>>({});
   const topBarTop = insets.top + 8;
-  const { confirm, dialog } = useConfirmDialog();
 
   const overdueAlerts = useMemo<OverdueAlert[]>(
     () =>
@@ -52,11 +51,12 @@ export default function HomeScreen() {
   );
 
   const confirmDeleteCar = async (carId: string, carNickname: string) => {
-    const confirmed = await confirm({
-      title: t('home.deleteCar'),
-      message: t('home.deleteCarConfirm', { car: carNickname }),
-      destructive: true,
-    });
+    const confirmed = await confirmAsync(
+      t('home.deleteCar'),
+      t('home.deleteCarConfirm', { car: carNickname }),
+      t('common.delete'),
+      t('common.cancel')
+    );
     if (confirmed) removeCar(carId);
   };
 
@@ -234,8 +234,6 @@ export default function HomeScreen() {
           ]}
         />
       )}
-
-      {dialog}
     </Screen>
   );
 }

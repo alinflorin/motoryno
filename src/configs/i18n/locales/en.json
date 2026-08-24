@@ -182,7 +182,16 @@
     "downloadSubtitle": "Download a copy of all your cars, tracked items and service history as a JSON file.",
     "downloadData": "Download data",
     "downloading": "Downloading…",
-    "downloadError": "Couldn't download your data. Please try again."
+    "downloadError": "Couldn't download your data. Please try again.",
+    "importSubtitle": "Restore your cars, tracked items and service history from a previously downloaded JSON file. This replaces all data currently on this device.",
+    "importData": "Import data",
+    "importing": "Importing…",
+    "importConfirmTitle": "Replace all data?",
+    "importConfirmMessage": "Importing will overwrite everything currently stored on this device with the contents of the selected file. This can't be undone.",
+    "importConfirmCancel": "Cancel",
+    "importConfirmProceed": "Replace",
+    "importSuccess": "Your data was imported successfully.",
+    "importError": "Couldn't import that file. Make sure it's a valid Motoryno backup."
   },
   "settingsReset": {
     "title": "Reset",

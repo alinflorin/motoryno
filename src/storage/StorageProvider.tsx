@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { syncLanguageFromSettings } from '@/configs/i18n';
 import { createDefaultAppData, DEFAULT_TRACKED_SERVICE_ITEMS } from '@/storage/defaultData';
+import { normalizeAppData } from '@/storage/normalize';
 import { readAppData, writeAppData } from '@/storage/persistence';
 import type { AppData, Car, NotificationSettings, ObdConfig, ServiceVisit, Settings, TrackedServiceItem } from '@/storage/types';
 import { generateId } from '@/storage/uuid';
@@ -40,6 +41,8 @@ export interface StorageApi {
 
   /** Wipes all persisted data back to defaults. Used by Settings > Reset. */
   resetAllData: () => void;
+  /** Replaces all persisted data wholesale. Used by Settings > Account's import. */
+  replaceAllData: (data: AppData) => void;
 }
 
 const StorageContext = createContext<StorageApi | null>(null);
@@ -50,23 +53,6 @@ function mapCar(data: AppData, vin: string, fn: (car: Car) => Car): AppData {
     data: {
       ...data.data,
       cars: data.data.cars.map((car) => (car.vin === vin ? fn(car) : car)),
-    },
-  };
-}
-
-/** Fills in `isActive: true` on tracked items persisted before that field existed. */
-function normalizeAppData(data: AppData): AppData {
-  return {
-    ...data,
-    data: {
-      ...data.data,
-      cars: data.data.cars.map((car) => ({
-        ...car,
-        trackedServiceItems: car.trackedServiceItems.map((item) => ({
-          ...item,
-          isActive: item.isActive ?? true,
-        })),
-      })),
     },
   };
 }
@@ -263,6 +249,13 @@ export function StorageProvider({ children }: { children: ReactNode }) {
     commit(() => createDefaultAppData());
   }, [commit]);
 
+  const replaceAllData = useCallback<StorageApi['replaceAllData']>(
+    (data) => {
+      commit(() => data);
+    },
+    [commit]
+  );
+
   const value = useMemo<StorageApi>(
     () => ({
       loading,
@@ -284,6 +277,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       updateSettings,
       updateNotificationSettings,
       resetAllData,
+      replaceAllData,
     }),
     [
       loading,
@@ -304,6 +298,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       updateSettings,
       updateNotificationSettings,
       resetAllData,
+      replaceAllData,
     ]
   );
 

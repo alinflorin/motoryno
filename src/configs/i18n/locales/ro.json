@@ -188,7 +188,16 @@
     "downloadSubtitle": "Descarcă o copie a tuturor mașinilor, elementelor urmărite și istoricului de service ca fișier JSON.",
     "downloadData": "Descarcă datele",
     "downloading": "Se descarcă…",
-    "downloadError": "Datele nu au putut fi descărcate. Te rugăm să încerci din nou."
+    "downloadError": "Datele nu au putut fi descărcate. Te rugăm să încerci din nou.",
+    "importSubtitle": "Restaurează mașinile, elementele urmărite și istoricul de service dintr-un fișier JSON descărcat anterior. Aceasta va înlocui toate datele existente pe acest dispozitiv.",
+    "importData": "Importă datele",
+    "importing": "Se importă…",
+    "importConfirmTitle": "Înlocuiești toate datele?",
+    "importConfirmMessage": "Importul va suprascrie tot ce este stocat momentan pe acest dispozitiv cu conținutul fișierului selectat. Această acțiune nu poate fi anulată.",
+    "importConfirmCancel": "Anulează",
+    "importConfirmProceed": "Înlocuiește",
+    "importSuccess": "Datele au fost importate cu succes.",
+    "importError": "Fișierul nu a putut fi importat. Asigură-te că este o copie de rezervă Motoryno validă."
   },
   "settingsReset": {
     "title": "Resetare",
