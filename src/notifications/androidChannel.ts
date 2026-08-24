@@ -10,7 +10,6 @@ export async function ensureAndroidChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync(OVERDUE_CHANNEL_ID, {
     name: 'Overdue service items',
     importance: Notifications.AndroidImportance.HIGH,
-    sound: 'default',
     enableVibrate: true,
     vibrationPattern: [0, 250, 250, 250],
   });
