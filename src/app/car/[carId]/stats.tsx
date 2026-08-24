@@ -3,22 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
-import { getCarById, getServiceVisitsForCar, getTrackedItemsForCar } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { formatDateDMY } from '@/utils/date';
+import { formatSinceLabel, getOverdueItemsForCar } from '@/utils/serviceStatus';
 
 export default function CarStatsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const car = getCarById(carId);
-  const visits = getServiceVisitsForCar(carId);
-  const items = getTrackedItemsForCar(carId);
-  const overdueItems = items.filter((item) => item.status === 'overdue');
-  const maxPrice = Math.max(1, ...visits.map((visit) => visit.price));
+  const { getCar } = useStorage();
+  const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   if (!car) return null;
+
+  const visits = [...car.serviceVisits].sort((a, b) => a.timestamp - b.timestamp);
+  const overdueItems = getOverdueItemsForCar(car);
+  const maxPrice = Math.max(1, ...visits.map((visit) => visit.spend));
 
   return (
     <Screen>
@@ -34,17 +37,12 @@ export default function CarStatsScreen() {
             <Text style={styles.emptyText}>{t('car.noVisitsYet')}</Text>
           ) : (
             <View style={styles.chart}>
-              {visits
-                .slice()
-                .reverse()
-                .map((visit) => (
-                  <View key={visit.id} style={styles.chartBarColumn}>
-                    <View
-                      style={[styles.chartBar, { height: Math.max(8, (visit.price / maxPrice) * 96) }]}
-                    />
-                    <Text style={styles.chartBarLabel}>{visit.dateLabel.slice(0, 5)}</Text>
-                  </View>
-                ))}
+              {visits.map((visit) => (
+                <View key={visit.uuid} style={styles.chartBarColumn}>
+                  <View style={[styles.chartBar, { height: Math.max(8, (visit.spend / maxPrice) * 96) }]} />
+                  <Text style={styles.chartBarLabel}>{formatDateDMY(visit.timestamp).slice(0, 5)}</Text>
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -55,10 +53,10 @@ export default function CarStatsScreen() {
             <Text style={styles.emptyText}>{t('car.allItemsOk')}</Text>
           ) : (
             <View style={styles.overdueList}>
-              {overdueItems.map((item) => (
-                <View key={item.id} style={styles.overdueRow}>
-                  <Text style={styles.overdueName}>{item.name}</Text>
-                  <Text style={styles.overdueMeta}>{item.sinceLabel}</Text>
+              {overdueItems.map((entry) => (
+                <View key={entry.item.name} style={styles.overdueRow}>
+                  <Text style={styles.overdueName}>{entry.item.name}</Text>
+                  <Text style={styles.overdueMeta}>{formatSinceLabel(entry, car)}</Text>
                 </View>
               ))}
             </View>

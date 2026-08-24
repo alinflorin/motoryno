@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { getStatusColors } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
-import type { ServiceItemStatus } from '@/types/models';
+import type { ServiceItemStatus } from '@/utils/serviceStatus';
 
 export function StatusDot({ status }: { status: ServiceItemStatus }) {
   const colors = useThemeColors();

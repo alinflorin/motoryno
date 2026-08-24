@@ -9,6 +9,7 @@
     "view": "Vizualizează",
     "yes": "Da",
     "no": "Nu",
+    "done": "Gata",
     "km": "km",
     "mi": "mi"
   },
@@ -22,7 +23,8 @@
     "about": "Despre",
     "viewCar": "Vizualizează",
     "editCar": "Editează",
-    "deleteCar": "Șterge"
+    "deleteCar": "Șterge",
+    "deleteCarConfirm": "Ștergi {{car}} și toate datele sale? Această acțiune nu poate fi anulată."
   },
   "about": {
     "title": "Despre",
@@ -73,6 +75,7 @@
     "overdueGroup": "Restante",
     "dueSoonGroup": "Aproape Scadente",
     "okGroup": "OK",
+    "availableGroup": "Neurmărite",
     "every": "La fiecare {{interval}}"
   },
   "addTrackedItem": {

@@ -3,17 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
-import { getCarById, getServiceVisitsForCar } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { formatDateDMY } from '@/utils/date';
+import { distanceUnitFor, formatDistance } from '@/utils/units';
 
 export default function ServiceVisitsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const car = getCarById(carId);
-  const visits = getServiceVisitsForCar(carId);
-  const totalSpent = visits.reduce((sum, visit) => sum + visit.price, 0);
-  const currency = visits[0]?.currency ?? 'RON';
+  const { settings, getCar } = useStorage();
+  const car = getCar(carId);
+  const distanceUnit = distanceUnitFor(settings.useImperialUnits);
+  const visits = [...(car?.serviceVisits ?? [])].sort((a, b) => b.timestamp - a.timestamp);
+  const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
+  const currency = settings.currency;
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
@@ -54,22 +58,22 @@ export default function ServiceVisitsScreen() {
           </View>
         ) : (
           visits.map((visit) => (
-            <View key={visit.id} style={styles.card}>
+            <View key={visit.uuid} style={styles.card}>
               <View style={styles.cardTop}>
                 <View style={styles.cardTopLeft}>
                   <Text style={styles.shopName}>{visit.shopName}</Text>
                   <Text style={styles.visitMeta}>
-                    {visit.odometer.toLocaleString()} {car ? t(`common.${car.unit}`) : t('common.km')} ·{' '}
-                    {visit.dateLabel}
+                    {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} ·{' '}
+                    {formatDateDMY(visit.timestamp)}
                   </Text>
                 </View>
                 <Text style={styles.price}>
-                  {visit.price} {visit.currency}
+                  {visit.spend} {currency}
                 </Text>
               </View>
-              {visit.itemNames.length > 0 && (
+              {visit.itemsDone.length > 0 && (
                 <View style={styles.chipRow}>
-                  {visit.itemNames.map((name) => (
+                  {visit.itemsDone.map((name) => (
                     <View key={name} style={styles.chip}>
                       <Text style={styles.chipText}>{name}</Text>
                     </View>

@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 
@@ -7,9 +6,10 @@ import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 import { setLanguage, type SupportedLanguage } from '@/configs/i18n';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors, useThemePreference, type ThemePreference } from '@/theme/ThemeContext';
-import type { DistanceUnit } from '@/types/models';
+import type { DistanceUnit } from '@/utils/units';
 
 const LANGUAGES: { code: SupportedLanguage; labelKey: 'settingsLanguage.english' | 'settingsLanguage.romanian' }[] = [
   { code: 'en', labelKey: 'settingsLanguage.english' },
@@ -34,9 +34,17 @@ export default function SettingsPreferencesScreen() {
   const colors = useThemeColors();
   const styles = getStyles(colors);
   const { preference: theme, setPreference: setTheme } = useThemePreference();
-  // Local-only UI state — none of these persist yet.
-  const [unit, setUnit] = useState<DistanceUnit>('km');
-  const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>('EUR');
+  const { settings, updateSettings } = useStorage();
+  const unit: DistanceUnit = settings.useImperialUnits ? 'mi' : 'km';
+  const currency = settings.currency;
+
+  const setUnit = (next: DistanceUnit) => updateSettings({ useImperialUnits: next === 'mi' });
+  const setCurrency = (next: string) => updateSettings({ currency: next });
+
+  const setLanguageAndPersist = (code: SupportedLanguage) => {
+    void setLanguage(code);
+    updateSettings({ language: code });
+  };
 
   return (
     <Screen>
@@ -69,7 +77,7 @@ export default function SettingsPreferencesScreen() {
             <SettingsRow
               key={language.code}
               label={t(language.labelKey)}
-              onPress={() => setLanguage(language.code)}
+              onPress={() => setLanguageAndPersist(language.code)}
               right={i18n.language === language.code ? <Text style={styles.checkmark}>✓</Text> : undefined}
             />
           ))}

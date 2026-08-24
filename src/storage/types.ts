@@ -23,6 +23,15 @@ export interface Settings {
   notifications: NotificationSettings;
 }
 
+export interface TrackedServiceItem {
+  /** Also its identifier — must be unique within a car's tracked list; `ServiceVisit.itemsDone` references it by name. */
+  name: string;
+  /** Recommended interval in days, or null if this item isn't time-based. */
+  timeIntervalDays: number | null;
+  /** Recommended interval in km, or null if this item isn't distance-based. */
+  kmInterval: number | null;
+}
+
 export interface ServiceVisit {
   uuid: string;
   /** Unix epoch milliseconds. */
@@ -30,7 +39,7 @@ export interface ServiceVisit {
   odometerKm: number;
   shopName: string;
   spend: number;
-  /** Ids/names of tracked service items performed during this visit. */
+  /** Names of the tracked service items performed during this visit. */
   itemsDone: string[];
 }
 
@@ -49,8 +58,8 @@ export interface Car {
   model: string;
   year: number;
   odometerKm: number;
-  /** Ids/names of the service items currently tracked for this car. */
-  trackedServiceItems: string[];
+  /** The active tracking list — items not in here aren't tracked for due/overdue purposes. */
+  trackedServiceItems: TrackedServiceItem[];
   serviceVisits: ServiceVisit[];
   obd: ObdConfig | null;
 }

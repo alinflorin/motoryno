@@ -9,6 +9,7 @@
     "view": "View",
     "yes": "Yes",
     "no": "No",
+    "done": "Done",
     "km": "km",
     "mi": "mi"
   },
@@ -22,7 +23,8 @@
     "about": "About",
     "viewCar": "View",
     "editCar": "Edit",
-    "deleteCar": "Delete"
+    "deleteCar": "Delete",
+    "deleteCarConfirm": "Remove {{car}} and all its data? This can't be undone."
   },
   "about": {
     "title": "About",
@@ -69,6 +71,7 @@
     "overdueGroup": "Overdue",
     "dueSoonGroup": "Due Soon",
     "okGroup": "OK",
+    "availableGroup": "Not tracked",
     "every": "Every {{interval}}"
   },
   "addTrackedItem": {

@@ -1,18 +1,27 @@
 import { Link, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CountBadge } from '@/components/CountBadge';
 import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
-import { cars, getOverdueCountForCar, overdueAlerts } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { distanceUnitFor, formatDistance } from '@/utils/units';
+import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
 
 const CARD_MENU_WIDTH = 176;
+
+interface OverdueAlert {
+  id: string;
+  carId: string;
+  carNickname: string;
+  itemName: string;
+}
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -20,10 +29,32 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const styles = getStyles(colors);
+  const { settings, cars, removeCar } = useStorage();
+  const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
   const kebabRefs = useRef<Record<string, View | null>>({});
   const topBarTop = insets.top + 8;
+
+  const overdueAlerts = useMemo<OverdueAlert[]>(
+    () =>
+      cars.flatMap((car) =>
+        getOverdueItemsForCar(car).map((entry) => ({
+          id: `${car.vin}-${entry.item.name}`,
+          carId: car.vin,
+          carNickname: car.displayName,
+          itemName: entry.item.name,
+        }))
+      ),
+    [cars]
+  );
+
+  const confirmDeleteCar = (carId: string, carNickname: string) => {
+    Alert.alert(t('home.deleteCar'), t('home.deleteCarConfirm', { car: carNickname }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removeCar(carId) },
+    ]);
+  };
 
   const openCardMenu = (carId: string) => {
     kebabRefs.current[carId]?.measureInWindow((x, y, width, height) => {
@@ -103,23 +134,23 @@ export default function HomeScreen() {
           <SectionLabel>{t('home.myCars')}</SectionLabel>
           <View style={styles.carGrid}>
             {cars.map((car) => {
-              const overdueCount = getOverdueCountForCar(car.id);
+              const overdueCount = getOverdueCountForCar(car);
               return (
                 <Link
-                  key={car.id}
-                  href={{ pathname: '/car/[carId]', params: { carId: car.id } }}
+                  key={car.vin}
+                  href={{ pathname: '/car/[carId]', params: { carId: car.vin } }}
                   asChild
                 >
                   <Pressable style={styles.cardHit}>
                     {({ pressed }) => (
                       <View style={[styles.carCard, pressed && styles.cardPressed]}>
                         <View style={styles.carCardTop}>
-                          <Text style={styles.carNickname}>{car.nickname}</Text>
+                          <Text style={styles.carNickname}>{car.displayName}</Text>
                           <View style={styles.carCardTopRight}>
                             {overdueCount > 0 && <CountBadge count={overdueCount} />}
                             <Pressable
                               ref={(node) => {
-                                kebabRefs.current[car.id] = node;
+                                kebabRefs.current[car.vin] = node;
                               }}
                               hitSlop={8}
                               accessibilityRole="button"
@@ -127,7 +158,7 @@ export default function HomeScreen() {
                               onPress={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
-                                openCardMenu(car.id);
+                                openCardMenu(car.vin);
                               }}
                               style={styles.cardKebab}
                             >
@@ -140,7 +171,7 @@ export default function HomeScreen() {
                           {car.model} · {car.year}
                         </Text>
                         <Text style={styles.carOdometer}>
-                          {car.odometer.toLocaleString()} {t(`common.${car.unit}`)}
+                          {formatDistance(car.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)}
                         </Text>
                       </View>
                     )}
@@ -188,8 +219,10 @@ export default function HomeScreen() {
               key: 'delete',
               label: t('home.deleteCar'),
               glyph: '⌫',
-              // Not wired up yet — UI only.
-              onPress: () => {},
+              onPress: () => {
+                const car = cars.find((existing) => existing.vin === cardMenu.carId);
+                confirmDeleteCar(cardMenu.carId, car?.displayName ?? cardMenu.carId);
+              },
             },
           ]}
         />

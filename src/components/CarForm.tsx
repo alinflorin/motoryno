@@ -4,9 +4,10 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
+import type { Car } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
-import type { Car, DistanceUnit } from '@/types/models';
+import { displayToKm, formatDistance, type DistanceUnit } from '@/utils/units';
 
 export interface CarFormValues {
   nickname: string;
@@ -14,24 +15,49 @@ export interface CarFormValues {
   model: string;
   year: string;
   odometer: string;
-  unit: DistanceUnit;
   vin: string;
 }
 
-function carToFormValues(car?: Car): CarFormValues {
+function carToFormValues(car: Car | undefined, distanceUnit: DistanceUnit): CarFormValues {
   return {
-    nickname: car?.nickname ?? '',
+    nickname: car?.displayName ?? '',
     make: car?.make ?? '',
     model: car?.model ?? '',
     year: car ? String(car.year) : '',
-    odometer: car ? String(car.odometer) : '',
-    unit: car?.unit ?? 'km',
+    odometer: car ? formatDistance(car.odometerKm, distanceUnit) : '',
     vin: car?.vin ?? '',
   };
 }
 
-export function useCarFormState(car?: Car) {
-  const [values, setValues] = useState<CarFormValues>(() => carToFormValues(car));
+export interface ParsedCarFormValues {
+  vin: string;
+  displayName: string;
+  make: string;
+  model: string;
+  year: number;
+  odometerKm: number;
+}
+
+/** Converts form text back into storage-ready values, or null if required fields are missing/invalid. */
+export function parseCarFormValues(values: CarFormValues, distanceUnit: DistanceUnit): ParsedCarFormValues | null {
+  const vin = values.vin.trim();
+  const displayName = values.nickname.trim();
+  if (!vin || !displayName) return null;
+
+  const year = Number(values.year);
+  const odometer = Number(values.odometer);
+  return {
+    vin,
+    displayName,
+    make: values.make.trim(),
+    model: values.model.trim(),
+    year: Number.isFinite(year) ? year : new Date().getFullYear(),
+    odometerKm: Math.round(displayToKm(Number.isFinite(odometer) ? odometer : 0, distanceUnit)),
+  };
+}
+
+export function useCarFormState(car: Car | undefined, distanceUnit: DistanceUnit) {
+  const [values, setValues] = useState<CarFormValues>(() => carToFormValues(car, distanceUnit));
 
   const setField = <K extends keyof CarFormValues>(key: K, value: CarFormValues[K]) =>
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -43,9 +69,11 @@ export function useCarFormState(car?: Car) {
 export function CarFormFields({
   values,
   setField,
+  distanceUnit,
 }: {
   values: CarFormValues;
   setField: <K extends keyof CarFormValues>(key: K, value: CarFormValues[K]) => void;
+  distanceUnit: DistanceUnit;
 }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -119,7 +147,7 @@ export function CarFormFields({
                 value={values.odometer}
                 onChangeText={(text) => setField('odometer', text)}
               />
-              <Text style={styles.inputSuffix}>{t(`common.${values.unit}`)}</Text>
+              <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
             </View>
           </FormField>
         </View>
@@ -141,32 +169,34 @@ export function CarFormFields({
 
 export function CarForm({
   car,
+  distanceUnit,
   onCancel,
   onSubmit,
   submitLabel,
   insetBottom,
 }: {
   car?: Car;
+  distanceUnit: DistanceUnit;
   onCancel: () => void;
   onSubmit: (values: CarFormValues) => void;
   submitLabel: string;
   insetBottom: number;
 }) {
-  const { values, setField } = useCarFormState(car);
+  const { values, setField } = useCarFormState(car, distanceUnit);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <CarFormFields values={values} setField={setField} />
+        <CarFormFields values={values} setField={setField} distanceUnit={distanceUnit} />
       </ScrollView>
       <FormButtonRow
         insetBottom={insetBottom}
         onCancel={onCancel}
         onSubmit={() => onSubmit(values)}
         submitLabel={submitLabel}
-        submitDisabled={values.nickname.trim().length === 0}
+        submitDisabled={values.nickname.trim().length === 0 || values.vin.trim().length === 0}
       />
     </KeyboardAvoidingView>
   );

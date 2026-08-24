@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 
@@ -11,6 +12,16 @@ export default function SettingsResetScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const styles = getStyles(colors);
+  const { settings, cars, resetAllData } = useStorage();
+
+  // Approximate byte size from the serialized JSON blob (good enough for display).
+  const databaseSizeKb = JSON.stringify({ settings, data: { cars } }).length / 1024;
+  const databaseSizeLabel = `${databaseSizeKb < 1 ? '<1' : databaseSizeKb.toFixed(1)} KB`;
+
+  const handleReset = () => {
+    resetAllData();
+    router.replace('/');
+  };
 
   return (
     <Screen>
@@ -28,13 +39,16 @@ export default function SettingsResetScreen() {
             <Text style={styles.noText}>{t('common.no')}</Text>
           </Pressable>
           <Pressable
+            onPress={handleReset}
             style={({ pressed }) => [styles.button, styles.yesButton, pressed && styles.pressed]}
           >
             <Text style={styles.yesText}>{t('common.yes')}</Text>
           </Pressable>
         </View>
 
-        <Text style={styles.databaseSize}>{t('settingsReset.databaseSize', { size: '3 MB' })}</Text>
+        <Text style={styles.databaseSize}>
+          {t('settingsReset.databaseSize', { size: databaseSizeLabel })}
+        </Text>
       </View>
     </Screen>
   );

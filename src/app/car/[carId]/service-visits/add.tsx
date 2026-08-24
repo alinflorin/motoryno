@@ -8,33 +8,55 @@ import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
-import { getCarById, getTrackedItemsForCar } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { parseDateDMYOrNow } from '@/utils/date';
+import { computeCarItemStatuses } from '@/utils/serviceStatus';
+import { displayToKm, distanceUnitFor, formatDistance } from '@/utils/units';
 
 export default function AddServiceVisitScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const car = getCarById(carId);
-  const items = getTrackedItemsForCar(carId);
+  const { settings, getCar, addServiceVisit, setCarOdometer } = useStorage();
+  const car = getCar(carId);
+  const distanceUnit = distanceUnitFor(settings.useImperialUnits);
+  const items = car ? computeCarItemStatuses(car) : [];
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   const [shop, setShop] = useState('');
   const [date, setDate] = useState('');
-  const [odometer, setOdometer] = useState(car ? String(car.odometer) : '');
+  const [odometer, setOdometer] = useState(car ? formatDistance(car.odometerKm, distanceUnit) : '');
   const [price, setPrice] = useState('');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 
-  const toggleItem = (id: string) => {
-    setSelectedIds((prev) => {
+  const toggleItem = (name: string) => {
+    setSelectedNames((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
       return next;
     });
+  };
+
+  const handleSubmit = () => {
+    if (!car || shop.trim().length === 0) return;
+
+    const odometerKm = Math.round(displayToKm(Number(odometer) || 0, distanceUnit));
+    addServiceVisit(car.vin, {
+      timestamp: parseDateDMYOrNow(date),
+      odometerKm,
+      shopName: shop.trim(),
+      spend: Number(price) || 0,
+      itemsDone: [...selectedNames],
+    });
+    if (odometerKm > car.odometerKm) {
+      setCarOdometer(car.vin, odometerKm);
+    }
+    router.back();
   };
 
   return (
@@ -73,7 +95,7 @@ export default function AddServiceVisitScreen() {
                     value={odometer}
                     onChangeText={setOdometer}
                   />
-                  <Text style={styles.inputSuffix}>{car ? t(`common.${car.unit}`) : t('common.km')}</Text>
+                  <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
                 </View>
               </FormField>
             </View>
@@ -89,25 +111,25 @@ export default function AddServiceVisitScreen() {
                 value={price}
                 onChangeText={setPrice}
               />
-              <Text style={styles.inputSuffix}>RON</Text>
+              <Text style={styles.inputSuffix}>{settings.currency}</Text>
             </View>
           </FormField>
 
           <FormField label={t('addServiceVisit.itemsPerformed')}>
             <View style={styles.itemList}>
-              {items.map((item) => {
-                const selected = selectedIds.has(item.id);
+              {items.map((entry) => {
+                const selected = selectedNames.has(entry.item.name);
                 return (
                   <Pressable
-                    key={item.id}
-                    onPress={() => toggleItem(item.id)}
+                    key={entry.item.name}
+                    onPress={() => toggleItem(entry.item.name)}
                     style={[styles.itemRow, selected && styles.itemRowSelected]}
                   >
                     <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                       {selected && <Text style={styles.checkmark}>✓</Text>}
                     </View>
-                    <Text style={styles.itemRowText}>{item.name}</Text>
-                    <StatusDot status={item.status} />
+                    <Text style={styles.itemRowText}>{entry.item.name}</Text>
+                    <StatusDot status={entry.status} />
                   </Pressable>
                 );
               })}
@@ -117,7 +139,7 @@ export default function AddServiceVisitScreen() {
         <FormButtonRow
           insetBottom={insets.bottom}
           onCancel={() => router.back()}
-          onSubmit={() => router.back()}
+          onSubmit={handleSubmit}
           submitLabel={t('addServiceVisit.saveVisit')}
           submitDisabled={shop.trim().length === 0}
         />

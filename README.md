@@ -91,7 +91,13 @@ Data Model (JSON object with arrays):
       "model": "C250 CDI",
       "year": 2011,
       "odometerKm": 350000,
-      "trackedServiceItems": ["item1", "item2"],
+      "trackedServiceItems": [
+        {
+          "name": "item1",
+          "timeIntervalDays": 365, // or null
+          "kmInterval": 10000 // or null
+        }
+      ],
       "serviceVisits": [
         {
           "uuid": "sdsffs",

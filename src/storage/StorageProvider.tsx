@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { createDefaultAppData, DEFAULT_TRACKED_SERVICE_ITEMS } from '@/storage/defaultData';
 import { readAppData, writeAppData } from '@/storage/persistence';
-import type { AppData, Car, NotificationSettings, ObdConfig, ServiceVisit, Settings } from '@/storage/types';
+import type { AppData, Car, NotificationSettings, ObdConfig, ServiceVisit, Settings, TrackedServiceItem } from '@/storage/types';
 import { generateId } from '@/storage/uuid';
 
 export type NewCarInput = Pick<Car, 'vin' | 'displayName' | 'make' | 'model' | 'year' | 'odometerKm'> &
@@ -19,14 +19,16 @@ export interface StorageApi {
   getCar: (vin: string) => Car | undefined;
 
   addCar: (input: NewCarInput) => void;
-  updateCar: (vin: string, patch: Partial<Omit<Car, 'vin' | 'serviceVisits'>>) => void;
+  /** `vin` may be included in `patch` to rename the car (its serviceVisits/trackedServiceItems move with it). */
+  updateCar: (vin: string, patch: Partial<Omit<Car, 'serviceVisits' | 'trackedServiceItems'>>) => void;
   removeCar: (vin: string) => void;
   setCarOdometer: (vin: string, odometerKm: number) => void;
   setCarObd: (vin: string, obd: ObdConfig | null) => void;
 
-  setTrackedServiceItems: (vin: string, items: string[]) => void;
-  addTrackedServiceItem: (vin: string, item: string) => void;
-  removeTrackedServiceItem: (vin: string, item: string) => void;
+  setTrackedServiceItems: (vin: string, items: TrackedServiceItem[]) => void;
+  addTrackedServiceItem: (vin: string, item: TrackedServiceItem) => void;
+  updateTrackedServiceItem: (vin: string, name: string, patch: Partial<Omit<TrackedServiceItem, 'name'>>) => void;
+  removeTrackedServiceItem: (vin: string, name: string) => void;
 
   addServiceVisit: (vin: string, visit: NewServiceVisitInput) => string;
   updateServiceVisit: (vin: string, uuid: string, patch: Partial<Omit<ServiceVisit, 'uuid'>>) => void;
@@ -138,15 +140,17 @@ export function StorageProvider({ children }: { children: ReactNode }) {
   const setCarObd = useCallback<StorageApi['setCarObd']>((vin, obd) => updateCar(vin, { obd }), [updateCar]);
 
   const setTrackedServiceItems = useCallback<StorageApi['setTrackedServiceItems']>(
-    (vin, items) => updateCar(vin, { trackedServiceItems: items }),
-    [updateCar]
+    (vin, items) => {
+      commit((prev) => mapCar(prev, vin, (car) => ({ ...car, trackedServiceItems: items })));
+    },
+    [commit]
   );
 
   const addTrackedServiceItem = useCallback<StorageApi['addTrackedServiceItem']>(
     (vin, item) => {
       commit((prev) =>
         mapCar(prev, vin, (car) =>
-          car.trackedServiceItems.includes(item)
+          car.trackedServiceItems.some((existing) => existing.name === item.name)
             ? car
             : { ...car, trackedServiceItems: [...car.trackedServiceItems, item] }
         )
@@ -155,12 +159,26 @@ export function StorageProvider({ children }: { children: ReactNode }) {
     [commit]
   );
 
-  const removeTrackedServiceItem = useCallback<StorageApi['removeTrackedServiceItem']>(
-    (vin, item) => {
+  const updateTrackedServiceItem = useCallback<StorageApi['updateTrackedServiceItem']>(
+    (vin, name, patch) => {
       commit((prev) =>
         mapCar(prev, vin, (car) => ({
           ...car,
-          trackedServiceItems: car.trackedServiceItems.filter((existing) => existing !== item),
+          trackedServiceItems: car.trackedServiceItems.map((item) =>
+            item.name === name ? { ...item, ...patch } : item
+          ),
+        }))
+      );
+    },
+    [commit]
+  );
+
+  const removeTrackedServiceItem = useCallback<StorageApi['removeTrackedServiceItem']>(
+    (vin, name) => {
+      commit((prev) =>
+        mapCar(prev, vin, (car) => ({
+          ...car,
+          trackedServiceItems: car.trackedServiceItems.filter((existing) => existing.name !== name),
         }))
       );
     },
@@ -239,6 +257,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       setCarObd,
       setTrackedServiceItems,
       addTrackedServiceItem,
+      updateTrackedServiceItem,
       removeTrackedServiceItem,
       addServiceVisit,
       updateServiceVisit,
@@ -258,6 +277,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       setCarObd,
       setTrackedServiceItems,
       addTrackedServiceItem,
+      updateTrackedServiceItem,
       removeTrackedServiceItem,
       addServiceVisit,
       updateServiceVisit,

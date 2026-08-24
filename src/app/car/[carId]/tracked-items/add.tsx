@@ -5,9 +5,10 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/Screen';
-import { getCarById } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { displayToKm, distanceUnitFor } from '@/utils/units';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 
@@ -16,13 +17,31 @@ export default function AddTrackedItemScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const car = getCarById(carId);
+  const { settings, addTrackedServiceItem } = useStorage();
+  const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   const [name, setName] = useState('');
   const [months, setMonths] = useState('');
   const [distance, setDistance] = useState('');
+
+  const handleSubmit = () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+
+    const monthsValue = Number(months);
+    const distanceValue = Number(distance);
+    addTrackedServiceItem(carId, {
+      name: trimmedName,
+      timeIntervalDays: Number.isFinite(monthsValue) && monthsValue > 0 ? Math.round(monthsValue * 30.44) : null,
+      kmInterval:
+        Number.isFinite(distanceValue) && distanceValue > 0
+          ? Math.round(displayToKm(distanceValue, distanceUnit))
+          : null,
+    });
+    router.back();
+  };
 
   return (
     <Screen>
@@ -65,7 +84,7 @@ export default function AddTrackedItemScreen() {
                   value={distance}
                   onChangeText={setDistance}
                 />
-                <Text style={styles.inputSuffix}>{car ? t(`common.${car.unit}`) : t('common.km')}</Text>
+                <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
               </View>
             </View>
           </FormField>
@@ -73,7 +92,7 @@ export default function AddTrackedItemScreen() {
         <FormButtonRow
           insetBottom={insets.bottom}
           onCancel={() => router.back()}
-          onSubmit={() => router.back()}
+          onSubmit={handleSubmit}
           submitLabel={t('addTrackedItem.addItem')}
           submitDisabled={name.trim().length === 0}
         />

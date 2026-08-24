@@ -1,32 +1,37 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { ProgressBar } from '@/components/ProgressBar';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
-import { getTrackedItemsForCar } from '@/data/seed';
+import { DEFAULT_TRACKED_SERVICE_ITEMS, useStorage, type TrackedServiceItem } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
-import type { ServiceItemStatus, TrackedItem } from '@/types/models';
+import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type ServiceItemStatus, type TrackedItemStatus } from '@/utils/serviceStatus';
 
 export default function TrackedItemsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const items = getTrackedItemsForCar(carId);
+  const { getCar, addTrackedServiceItem, removeTrackedServiceItem } = useStorage();
+  const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
-  // Local-only UI state for the active toggle — not persisted yet.
-  const [activeById, setActiveById] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(items.map((item) => [item.id, item.active])),
+  if (!car) return null;
+
+  const itemStatuses = computeCarItemStatuses(car);
+  const trackedNames = new Set(car.trackedServiceItems.map((item) => item.name));
+  // The default catalog is the whole "known items" list a car can toggle
+  // back on — a custom item added via "+" only reappears here once tracked.
+  const availableItems: TrackedServiceItem[] = DEFAULT_TRACKED_SERVICE_ITEMS.filter(
+    (item) => !trackedNames.has(item.name)
   );
 
-  const groups: { key: ServiceItemStatus; title: string; data: TrackedItem[] }[] = [
-    { key: 'overdue', title: t('trackedItems.overdueGroup'), data: items.filter((i) => i.status === 'overdue') },
-    { key: 'due-soon', title: t('trackedItems.dueSoonGroup'), data: items.filter((i) => i.status === 'due-soon') },
-    { key: 'ok', title: t('trackedItems.okGroup'), data: items.filter((i) => i.status === 'ok') },
+  const groups: { key: ServiceItemStatus; title: string; data: TrackedItemStatus[] }[] = [
+    { key: 'overdue', title: t('trackedItems.overdueGroup'), data: itemStatuses.filter((i) => i.status === 'overdue') },
+    { key: 'due-soon', title: t('trackedItems.dueSoonGroup'), data: itemStatuses.filter((i) => i.status === 'due-soon') },
+    { key: 'ok', title: t('trackedItems.okGroup'), data: itemStatuses.filter((i) => i.status === 'ok') },
   ];
 
   return (
@@ -49,34 +54,66 @@ export default function TrackedItemsScreen() {
             <View key={group.key} style={styles.group}>
               <Text style={[styles.groupTitle, { color: groupTitleColor(group.key, colors) }]}>{group.title}</Text>
               <View style={styles.groupList}>
-                {group.data.map((item) => (
-                  <View key={item.id} style={styles.card}>
+                {group.data.map((entry) => (
+                  <View key={entry.item.name} style={styles.card}>
                     <View style={styles.cardTop}>
                       <View style={styles.cardTopLeft}>
-                        <StatusDot status={item.status} />
-                        <Text style={styles.itemName}>{item.name}</Text>
+                        <StatusDot status={entry.status} />
+                        <Text style={styles.itemName}>{entry.item.name}</Text>
                       </View>
                       <Switch
-                        value={activeById[item.id] ?? item.active}
-                        onValueChange={(value) =>
-                          setActiveById((prev) => ({ ...prev, [item.id]: value }))
-                        }
+                        value
+                        onValueChange={(value) => {
+                          // The stored tracking list only holds active items — turning
+                          // this off means "stop tracking", not a persisted flag.
+                          if (!value) removeTrackedServiceItem(car.vin, entry.item.name);
+                        }}
                         trackColor={{ true: colors.amber, false: colors.borderStrong }}
                         thumbColor={colors.textPrimary}
                       />
                     </View>
-                    <ProgressBar progress={item.progress} status={item.status} />
+                    <ProgressBar progress={entry.progress} status={entry.status} />
                     <View style={styles.cardBottom}>
                       <Text style={styles.intervalText}>
-                        {t('trackedItems.every', { interval: item.intervalLabel })}
+                        {t('trackedItems.every', { interval: formatIntervalLabel(entry.item) })}
                       </Text>
-                      <Text style={styles.sinceText}>{item.sinceLabel}</Text>
+                      <Text style={styles.sinceText}>{formatSinceLabel(entry, car)}</Text>
                     </View>
                   </View>
                 ))}
               </View>
             </View>
           ),
+        )}
+
+        {availableItems.length > 0 && (
+          <View style={styles.group}>
+            <Text style={[styles.groupTitle, { color: colors.textFaint }]}>
+              {t('trackedItems.availableGroup')}
+            </Text>
+            <View style={styles.groupList}>
+              {availableItems.map((item) => (
+                <View key={item.name} style={styles.card}>
+                  <View style={styles.cardTop}>
+                    <View style={styles.cardTopLeft}>
+                      <Text style={styles.itemName}>{item.name}</Text>
+                    </View>
+                    <Switch
+                      value={false}
+                      onValueChange={(value) => {
+                        if (value) addTrackedServiceItem(car.vin, item);
+                      }}
+                      trackColor={{ true: colors.amber, false: colors.borderStrong }}
+                      thumbColor={colors.textPrimary}
+                    />
+                  </View>
+                  <Text style={styles.intervalText}>
+                    {t('trackedItems.every', { interval: formatIntervalLabel(item) })}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
         )}
       </ScrollView>
     </Screen>

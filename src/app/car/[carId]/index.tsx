@@ -5,40 +5,43 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Chevron } from '@/components/Chevron';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
-import { getCarById, getServiceVisitsForCar, getTrackedItemsForCar } from '@/data/seed';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
-import type { ServiceItemStatus } from '@/types/models';
+import { formatDateDMY } from '@/utils/date';
+import { computeCarItemStatuses, type ServiceItemStatus } from '@/utils/serviceStatus';
+import { distanceUnitFor, formatDistance } from '@/utils/units';
 
 export default function CarScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const car = getCarById(carId);
+  const { settings, getCar } = useStorage();
+  const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   if (!car) return null;
 
-  const items = getTrackedItemsForCar(car.id);
-  const visits = getServiceVisitsForCar(car.id);
+  const distanceUnit = distanceUnitFor(settings.useImperialUnits);
+  const itemStatuses = computeCarItemStatuses(car);
+  const overdueItems = itemStatuses.filter((entry) => entry.status === 'overdue');
+  const dueSoonItems = itemStatuses.filter((entry) => entry.status === 'due-soon');
+  const okCount = itemStatuses.length - overdueItems.length - dueSoonItems.length;
 
-  const overdueItems = items.filter((item) => item.status === 'overdue');
-  const dueSoonItems = items.filter((item) => item.status === 'due-soon');
-  const okCount = items.length - overdueItems.length - dueSoonItems.length;
-
-  const totalSpent = visits.reduce((sum, visit) => sum + visit.price, 0);
+  const visits = [...car.serviceVisits].sort((a, b) => b.timestamp - a.timestamp);
+  const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const lastVisit = visits[0];
   const needsAttention = [...overdueItems, ...dueSoonItems].slice(0, 2);
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: `${car.nickname} · ${car.model}` }} />
+      <Stack.Screen options={{ title: `${car.displayName} · ${car.model}` }} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <Text style={styles.heroLabel}>{t('car.odometer')}</Text>
           <View style={styles.heroValueRow}>
-            <Text style={styles.heroValue}>{car.odometer.toLocaleString()}</Text>
-            <Text style={styles.heroUnit}>{t(`common.${car.unit}`)}</Text>
+            <Text style={styles.heroValue}>{formatDistance(car.odometerKm, distanceUnit)}</Text>
+            <Text style={styles.heroUnit}>{t(`common.${distanceUnit}`)}</Text>
           </View>
           <Text style={styles.heroSubtitle}>
             {car.make} · {car.year}
@@ -64,12 +67,12 @@ export default function CarScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('car.needsAttention')}</Text>
             <View style={styles.attentionList}>
-              {needsAttention.map((item) => (
-                <View key={item.id} style={styles.attentionRow}>
-                  <StatusDot status={item.status} />
-                  <Text style={styles.attentionName}>{item.name}</Text>
-                  <Text style={[styles.attentionStatus, { color: statusTextColor(item.status, colors) }]}>
-                    {item.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
+              {needsAttention.map((entry) => (
+                <View key={entry.item.name} style={styles.attentionRow}>
+                  <StatusDot status={entry.status} />
+                  <Text style={styles.attentionName}>{entry.item.name}</Text>
+                  <Text style={[styles.attentionStatus, { color: statusTextColor(entry.status, colors) }]}>
+                    {entry.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
                   </Text>
                 </View>
               ))}
@@ -81,11 +84,11 @@ export default function CarScreen() {
           <View style={styles.sectionHeadRow}>
             <Text style={styles.sectionTitle}>{t('car.trackedItems')}</Text>
             <Text style={styles.sectionCount}>
-              {t('car.trackedItemsCount', { count: items.length })}
+              {t('car.trackedItemsCount', { count: itemStatuses.length })}
             </Text>
           </View>
           <Link
-            href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.id } }}
+            href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.vin } }}
             asChild
           >
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
@@ -110,18 +113,18 @@ export default function CarScreen() {
             <Text style={styles.sectionCount}>{t('car.visitsCount', { count: visits.length })}</Text>
           </View>
           <Link
-            href={{ pathname: '/car/[carId]/service-visits', params: { carId: car.id } }}
+            href={{ pathname: '/car/[carId]/service-visits', params: { carId: car.vin } }}
             asChild
           >
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
               <View style={styles.navRowTextGroup}>
                 <Text style={styles.navRowText}>
                   {lastVisit
-                    ? t('car.lastVisit', { date: lastVisit.dateLabel, shop: lastVisit.shopName })
+                    ? t('car.lastVisit', { date: formatDateDMY(lastVisit.timestamp), shop: lastVisit.shopName })
                     : t('car.noVisitsLogged')}
                 </Text>
                 <Text style={styles.navRowSubtext}>
-                  {t('car.totalSpent')}: {totalSpent.toLocaleString()} RON
+                  {t('car.totalSpent')}: {totalSpent.toLocaleString()} {settings.currency}
                 </Text>
               </View>
               <Chevron />
@@ -130,7 +133,7 @@ export default function CarScreen() {
         </View>
 
         <View style={styles.section}>
-          <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.id } }} asChild>
+          <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.vin } }} asChild>
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
               <View style={styles.navRowLeft}>
                 <Text style={styles.statsIcon}>📊</Text>

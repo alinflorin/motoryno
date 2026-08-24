@@ -1,5 +1,7 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
+
+import { useStorage } from '@/storage';
 
 import { darkColors, lightColors, type ColorTokens } from './colors';
 
@@ -19,15 +21,19 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
-  // Not persisted yet — mirrors the rest of the app's settings, which are local-only for now.
-  const [preference, setPreference] = useState<ThemePreference>('system');
+  const { settings, updateSettings } = useStorage();
+  const preference = settings.theme;
+  const setPreference = useCallback(
+    (next: ThemePreference) => updateSettings({ theme: next }),
+    [updateSettings],
+  );
 
   const scheme: ColorScheme = preference === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : preference;
   const colors = scheme === 'dark' ? darkColors : lightColors;
 
   const value = useMemo<ThemeContextValue>(
     () => ({ preference, setPreference, scheme, colors }),
-    [preference, scheme, colors],
+    [preference, setPreference, scheme, colors],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
