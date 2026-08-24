@@ -13,6 +13,24 @@
     "km": "km",
     "mi": "mi"
   },
+  "validation": {
+    "required": "This field is required",
+    "tooShort_one": "Must be at least {{count}} character",
+    "tooShort_other": "Must be at least {{count}} characters",
+    "tooLong_one": "Must be at most {{count}} character",
+    "tooLong_other": "Must be at most {{count}} characters",
+    "invalidNumber": "Enter a valid number",
+    "negativeNumber": "Must be zero or greater",
+    "tooLarge": "That value is too large",
+    "invalidVin": "VIN must be 17 characters (no I, O or Q)",
+    "vinTaken": "A car with this VIN already exists",
+    "nameTaken": "This car already tracks an item with this name",
+    "invalidYear": "Enter a valid year",
+    "invalidDate": "Enter a valid date as DD.MM.YYYY",
+    "futureDate": "Date can't be in the future",
+    "odometerTooLow": "Can't be lower than the car's current odometer ({{odometer}})",
+    "intervalRequired": "Enter a time or distance interval"
+  },
   "home": {
     "title": "Motoryno",
     "alerts": "Alerts",
@@ -82,8 +100,7 @@
     "months": "Months",
     "distance": "Distance",
     "or": "or",
-    "addItem": "Add Item",
-    "intervalRequired": "Enter a time or distance interval"
+    "addItem": "Add Item"
   },
   "serviceVisits": {
     "title": "Service Visits",
@@ -97,11 +114,8 @@
     "shop": "Service Shop",
     "shopPlaceholder": "e.g. Lex Auto Service",
     "date": "Date",
-    "dateInvalid": "Enter a valid date as DD.MM.YYYY",
     "odometer": "Odometer",
-    "odometerTooLow": "Can't be lower than the car's current odometer ({{odometer}})",
     "amountSpent": "Amount Spent",
-    "amountInvalid": "Enter a valid amount",
     "itemsPerformed": "Items Performed",
     "saveVisit": "Save Visit"
   },
@@ -115,11 +129,9 @@
     "model": "Model",
     "modelPlaceholder": "e.g. C250 W204",
     "year": "Year",
-    "yearInvalid": "Enter a valid year",
     "odometer": "Odometer",
     "vin": "VIN",
     "vinPlaceholder": "17-character VIN",
-    "vinInvalid": "VIN must be 17 characters (no I, O or Q)",
     "obdTitle": "OBD2 Adapter",
     "obdSubtitle": "Read odometer via Bluetooth",
     "scan": "Scan",

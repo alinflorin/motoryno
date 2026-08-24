@@ -13,6 +13,26 @@
     "km": "km",
     "mi": "mi"
   },
+  "validation": {
+    "required": "Acest câmp este obligatoriu",
+    "tooShort_one": "Trebuie să aibă cel puțin {{count}} caracter",
+    "tooShort_few": "Trebuie să aibă cel puțin {{count}} caractere",
+    "tooShort_other": "Trebuie să aibă cel puțin {{count}} de caractere",
+    "tooLong_one": "Poate avea cel mult {{count}} caracter",
+    "tooLong_few": "Poate avea cel mult {{count}} caractere",
+    "tooLong_other": "Poate avea cel mult {{count}} de caractere",
+    "invalidNumber": "Introdu un număr valid",
+    "negativeNumber": "Trebuie să fie zero sau mai mare",
+    "tooLarge": "Această valoare este prea mare",
+    "invalidVin": "VIN trebuie să aibă 17 caractere (fără I, O sau Q)",
+    "vinTaken": "Există deja o mașină cu acest VIN",
+    "nameTaken": "Această mașină are deja un element urmărit cu acest nume",
+    "invalidYear": "Introdu un an valid",
+    "invalidDate": "Introdu o dată validă în formatul ZZ.LL.AAAA",
+    "futureDate": "Data nu poate fi în viitor",
+    "odometerTooLow": "Nu poate fi mai mic decât kilometrajul curent al mașinii ({{odometer}})",
+    "intervalRequired": "Introdu un interval de timp sau distanță"
+  },
   "home": {
     "title": "Motoryno",
     "alerts": "Alerte",
@@ -86,8 +106,7 @@
     "months": "Luni",
     "distance": "Distanță",
     "or": "sau",
-    "addItem": "Adaugă Element",
-    "intervalRequired": "Introdu un interval de timp sau distanță"
+    "addItem": "Adaugă Element"
   },
   "serviceVisits": {
     "title": "Vizite Service",
@@ -101,11 +120,8 @@
     "shop": "Service Auto",
     "shopPlaceholder": "ex. Lex Auto Service",
     "date": "Data",
-    "dateInvalid": "Introdu o dată validă în formatul ZZ.LL.AAAA",
     "odometer": "Kilometraj",
-    "odometerTooLow": "Nu poate fi mai mic decât kilometrajul curent al mașinii ({{odometer}})",
     "amountSpent": "Sumă Cheltuită",
-    "amountInvalid": "Introdu o sumă validă",
     "itemsPerformed": "Elemente Efectuate",
     "saveVisit": "Salvează Vizita"
   },
@@ -119,11 +135,9 @@
     "model": "Model",
     "modelPlaceholder": "ex. C250 W204",
     "year": "An",
-    "yearInvalid": "Introdu un an valid",
     "odometer": "Kilometraj",
     "vin": "Serie șasiu (VIN)",
     "vinPlaceholder": "VIN cu 17 caractere",
-    "vinInvalid": "VIN trebuie să aibă 17 caractere (fără I, O sau Q)",
     "obdTitle": "Adaptor OBD2",
     "obdSubtitle": "Citește kilometrajul prin Bluetooth",
     "scan": "Scanează",

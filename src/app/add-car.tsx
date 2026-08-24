@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CarForm, parseCarFormValues } from '@/components/CarForm';
+import { CarForm } from '@/components/CarForm';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import { distanceUnitFor } from '@/utils/units';
@@ -19,16 +19,10 @@ export default function AddCarScreen() {
       <Stack.Screen options={{ title: t('carForm.addTitle') }} />
       <CarForm
         distanceUnit={distanceUnit}
+        existingVins={cars.map((car) => car.vin)}
         insetBottom={insets.bottom}
         onCancel={() => router.back()}
-        onSubmit={(values) => {
-          const parsed = parseCarFormValues(values, distanceUnit);
-          if (!parsed) return;
-          if (cars.some((car) => car.vin === parsed.vin)) {
-            // TODO: surface a proper inline error once form validation UX is designed.
-            console.warn(`[add-car] A car with VIN ${parsed.vin} already exists.`);
-            return;
-          }
+        onSubmit={(parsed) => {
           addCar(parsed);
           router.back();
         }}

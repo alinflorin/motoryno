@@ -8,11 +8,13 @@ export function OnboardingFooter({
   onSkip,
   onNext,
   nextLabel,
+  nextDisabled,
   insetBottom,
 }: {
   onSkip?: () => void;
   onNext: () => void;
   nextLabel?: string;
+  nextDisabled?: boolean;
   insetBottom: number;
 }) {
   const { t } = useTranslation();
@@ -29,8 +31,14 @@ export function OnboardingFooter({
         <Text style={[styles.skipText, !onSkip && styles.hidden]}>{t('onboarding.skip')}</Text>
       </Pressable>
       <View style={styles.divider} />
-      <Pressable onPress={onNext} style={({ pressed }) => [styles.half, pressed && styles.pressed]}>
-        <Text style={styles.nextText}>{nextLabel ?? t('onboarding.next')}</Text>
+      <Pressable
+        onPress={onNext}
+        disabled={nextDisabled}
+        style={({ pressed }) => [styles.half, pressed && !nextDisabled && styles.pressed]}
+      >
+        <Text style={[styles.nextText, nextDisabled && styles.nextTextDisabled]}>
+          {nextLabel ?? t('onboarding.next')}
+        </Text>
       </Pressable>
     </View>
   );
@@ -71,6 +79,9 @@ function getStyles(colors: ColorTokens) {
       color: colors.amber,
       fontSize: 14,
       fontWeight: '700',
+    },
+    nextTextDisabled: {
+      opacity: 0.4,
     },
   });
 }

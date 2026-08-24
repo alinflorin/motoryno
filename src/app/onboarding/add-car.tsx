@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CarFormFields, parseCarFormValues, useCarFormState } from '@/components/CarForm';
+import { CarFormFields, toParsedCarFormValues, useCarForm } from '@/components/CarForm';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
@@ -16,14 +16,11 @@ export default function OnboardingAddCarScreen() {
   const insets = useSafeAreaInsets();
   const { settings, cars, addCar, updateSettings } = useStorage();
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
-  const { values, setField } = useCarFormState(undefined, distanceUnit);
-
-  const addCarIfValid = () => {
-    const parsed = parseCarFormValues(values, distanceUnit);
-    if (parsed && !cars.some((car) => car.vin === parsed.vin)) {
-      addCar(parsed);
-    }
-  };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid, touchedFields, isSubmitted },
+  } = useCarForm(undefined, distanceUnit, cars.map((car) => car.vin));
 
   return (
     <Screen>
@@ -31,7 +28,13 @@ export default function OnboardingAddCarScreen() {
       <OnboardingHeader title={t('onboarding.addCarTitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <CarFormFields values={values} setField={setField} distanceUnit={distanceUnit} />
+          <CarFormFields
+            control={control}
+            errors={errors}
+            touchedFields={touchedFields}
+            isSubmitted={isSubmitted}
+            distanceUnit={distanceUnit}
+          />
         </ScrollView>
         <OnboardingFooter
           insetBottom={insets.bottom}
@@ -39,12 +42,13 @@ export default function OnboardingAddCarScreen() {
             updateSettings({ onboardingDone: true });
             router.replace('/');
           }}
-          onNext={() => {
-            addCarIfValid();
+          onNext={handleSubmit((values) => {
+            addCar(toParsedCarFormValues(values, distanceUnit));
             updateSettings({ onboardingDone: true });
             router.replace('/');
-          }}
+          })}
           nextLabel={t('onboarding.getStarted')}
+          nextDisabled={!isValid}
         />
       </KeyboardAvoidingView>
     </Screen>

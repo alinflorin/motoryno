@@ -1,8 +1,11 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { z } from 'zod';
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
@@ -14,8 +17,59 @@ import { useThemeColors } from '@/theme/ThemeContext';
 import { parseDateDMY, parseDateDMYOrNow } from '@/utils/date';
 import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
 import { computeCarItemStatuses } from '@/utils/serviceStatus';
-import { displayToKm, distanceUnitFor, formatDistance } from '@/utils/units';
-import { sanitizeDateInput } from '@/utils/validation';
+import { displayToKm, distanceUnitFor, formatDistance, type DistanceUnit } from '@/utils/units';
+import { MAX_ODOMETER, sanitizeDateInput } from '@/utils/validation';
+import type { TFunction } from 'i18next';
+
+interface VisitFormValues {
+  shop: string;
+  date: string;
+  odometer: string;
+  price: string;
+}
+
+const MAX_SPEND = 1_000_000;
+
+function buildVisitSchema(t: TFunction, currentOdometerKm: number | undefined, distanceUnit: DistanceUnit) {
+  return z
+    .object({
+      shop: z
+        .string()
+        .refine((v) => v.trim().length > 0, { message: t('validation.required') })
+        .refine((v) => v.trim().length >= 2, { message: t('validation.tooShort', { count: 2 }) })
+        .refine((v) => v.trim().length <= 80, { message: t('validation.tooLong', { count: 80 }) }),
+      date: z
+        .string()
+        .refine((v) => v.trim().length === 0 || parseDateDMY(v) !== null, { message: t('validation.invalidDate') })
+        .refine((v) => v.trim().length === 0 || (parseDateDMY(v) as number) <= Date.now(), {
+          message: t('validation.futureDate'),
+        }),
+      odometer: z
+        .string()
+        .refine((v) => v.trim().length > 0, { message: t('validation.required') })
+        .refine((v) => /^\d+$/.test(v.trim()), { message: t('validation.invalidNumber') })
+        .refine((v) => Number(v.trim()) <= MAX_ODOMETER, { message: t('validation.tooLarge') }),
+      price: z
+        .string()
+        .refine((v) => v.trim().length === 0 || /^\d+(\.\d{1,2})?$/.test(v.trim()), {
+          message: t('validation.invalidNumber'),
+        })
+        .refine((v) => v.trim().length === 0 || Number(v.trim()) <= MAX_SPEND, { message: t('validation.tooLarge') }),
+    })
+    .superRefine((data, ctx) => {
+      if (currentOdometerKm === undefined || !/^\d+$/.test(data.odometer.trim())) return;
+      const odometerKm = Math.round(displayToKm(Number(data.odometer.trim()), distanceUnit));
+      if (odometerKm < currentOdometerKm) {
+        ctx.addIssue({
+          path: ['odometer'],
+          code: z.ZodIssueCode.custom,
+          message: t('validation.odometerTooLow', {
+            odometer: `${formatDistance(currentOdometerKm, distanceUnit)} ${t(`common.${distanceUnit}`)}`,
+          }),
+        });
+      }
+    });
+}
 
 export default function AddServiceVisitScreen() {
   const { t } = useTranslation();
@@ -29,10 +83,6 @@ export default function AddServiceVisitScreen() {
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
-  const [shop, setShop] = useState('');
-  const [date, setDate] = useState('');
-  const [odometer, setOdometer] = useState(car ? formatDistance(car.odometerKm, distanceUnit) : '');
-  const [price, setPrice] = useState('');
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 
   const toggleItem = (name: string) => {
@@ -44,76 +94,109 @@ export default function AddServiceVisitScreen() {
     });
   };
 
-  const dateError = date.trim().length > 0 && parseDateDMY(date) === null ? t('addServiceVisit.dateInvalid') : undefined;
-  const odometerKm = Math.round(displayToKm(Number(odometer) || 0, distanceUnit));
-  const odometerError =
-    car && odometer.trim().length > 0 && odometerKm < car.odometerKm
-      ? t('addServiceVisit.odometerTooLow', {
-          odometer: `${formatDistance(car.odometerKm, distanceUnit)} ${t(`common.${distanceUnit}`)}`,
-        })
-      : undefined;
-  const priceValue = Number(price);
-  const priceError = price.trim().length > 0 && !Number.isFinite(priceValue) ? t('addServiceVisit.amountInvalid') : undefined;
-  const isValid =
-    !!car &&
-    shop.trim().length > 0 &&
-    odometer.trim().length > 0 &&
-    !dateError &&
-    !odometerError &&
-    !priceError;
+  // `car` comes from a ref-backed lookup (not render state), so it isn't a safe useMemo
+  // dependency — the schema (cheap to build) is simply recomputed on every render instead.
+  const schema = buildVisitSchema(t, car?.odometerKm, distanceUnit);
+  const {
+    control,
+    handleSubmit,
+    trigger,
+    formState: { errors, isValid, touchedFields, isSubmitted },
+  } = useForm<VisitFormValues>({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+    defaultValues: {
+      shop: '',
+      date: '',
+      odometer: car ? formatDistance(car.odometerKm, distanceUnit) : '',
+      price: '',
+    },
+  });
 
-  const handleSubmit = () => {
-    if (!isValid || !car) return;
+  useEffect(() => {
+    trigger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Don't show a field's error until the user has actually left it (or tried to
+  // submit) — otherwise every required field complains the instant the form mounts.
+  const fieldError = (name: keyof VisitFormValues) =>
+    touchedFields[name] || isSubmitted ? errors[name]?.message : undefined;
+
+  const onValid = handleSubmit((values) => {
+    if (!car) return;
+    const odometerKm = Math.round(displayToKm(Number(values.odometer.trim()), distanceUnit));
+    const spend = values.price.trim().length > 0 ? Number(values.price.trim()) : 0;
     addServiceVisit(car.vin, {
-      timestamp: parseDateDMYOrNow(date),
+      timestamp: parseDateDMYOrNow(values.date),
       odometerKm,
-      shopName: shop.trim(),
-      spend: Number.isFinite(priceValue) ? priceValue : 0,
+      shopName: values.shop.trim(),
+      spend,
       itemsDone: [...selectedNames],
     });
     if (odometerKm > car.odometerKm) {
       setCarOdometer(car.vin, odometerKm);
     }
     router.back();
-  };
+  });
 
   return (
     <Screen>
       <Stack.Screen options={{ title: t('addServiceVisit.title') }} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <FormField label={t('addServiceVisit.shop')}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('addServiceVisit.shopPlaceholder')}
-              placeholderTextColor={colors.textFainter}
-              value={shop}
-              onChangeText={setShop}
+          <FormField label={t('addServiceVisit.shop')} error={fieldError('shop')}>
+            <Controller
+              control={control}
+              name="shop"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('addServiceVisit.shopPlaceholder')}
+                  placeholderTextColor={colors.textFainter}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                />
+              )}
             />
           </FormField>
 
           <View style={styles.twoCol}>
             <View style={styles.twoColItem}>
-              <FormField label={t('addServiceVisit.date')} error={dateError}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="DD.MM.YYYY"
-                  placeholderTextColor={colors.textFainter}
-                  keyboardType="number-pad"
-                  value={date}
-                  onChangeText={(text) => setDate(sanitizeDateInput(text))}
+              <FormField label={t('addServiceVisit.date')} error={fieldError('date')}>
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field: { value, onChange, onBlur } }) => (
+                    <TextInput
+                      style={styles.input}
+                      placeholder="DD.MM.YYYY"
+                      placeholderTextColor={colors.textFainter}
+                      keyboardType="number-pad"
+                      value={value}
+                      onChangeText={(text) => onChange(sanitizeDateInput(text))}
+                      onBlur={onBlur}
+                    />
+                  )}
                 />
               </FormField>
             </View>
             <View style={styles.twoColItem}>
-              <FormField label={t('addServiceVisit.odometer')} error={odometerError}>
+              <FormField label={t('addServiceVisit.odometer')} error={fieldError('odometer')}>
                 <View style={styles.suffixField}>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="number-pad"
-                    value={odometer}
-                    onChangeText={(text) => setOdometer(sanitizeIntegerInput(text))}
+                  <Controller
+                    control={control}
+                    name="odometer"
+                    render={({ field: { value, onChange, onBlur } }) => (
+                      <TextInput
+                        style={styles.input}
+                        keyboardType="number-pad"
+                        value={value}
+                        onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
+                        onBlur={onBlur}
+                      />
+                    )}
                   />
                   <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
                 </View>
@@ -121,15 +204,22 @@ export default function AddServiceVisitScreen() {
             </View>
           </View>
 
-          <FormField label={t('addServiceVisit.amountSpent')} error={priceError}>
+          <FormField label={t('addServiceVisit.amountSpent')} error={fieldError('price')}>
             <View style={styles.suffixField}>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor={colors.textFainter}
-                keyboardType="decimal-pad"
-                value={price}
-                onChangeText={(text) => setPrice(sanitizeDecimalInput(text))}
+              <Controller
+                control={control}
+                name="price"
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0"
+                    placeholderTextColor={colors.textFainter}
+                    keyboardType="decimal-pad"
+                    value={value}
+                    onChangeText={(text) => onChange(sanitizeDecimalInput(text))}
+                    onBlur={onBlur}
+                  />
+                )}
               />
               <Text style={styles.inputSuffix}>{settings.currency}</Text>
             </View>
@@ -159,9 +249,9 @@ export default function AddServiceVisitScreen() {
         <FormButtonRow
           insetBottom={insets.bottom}
           onCancel={() => router.back()}
-          onSubmit={handleSubmit}
+          onSubmit={onValid}
           submitLabel={t('addServiceVisit.saveVisit')}
-          submitDisabled={!isValid}
+          submitDisabled={!isValid || !car}
         />
       </KeyboardAvoidingView>
     </Screen>
