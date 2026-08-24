@@ -27,19 +27,22 @@ export default function AddTrackedItemScreen() {
   const [months, setMonths] = useState('');
   const [distance, setDistance] = useState('');
 
+  const monthsValue = Number(months);
+  const distanceValue = Number(distance);
+  const hasMonths = Number.isFinite(monthsValue) && monthsValue > 0;
+  const hasDistance = Number.isFinite(distanceValue) && distanceValue > 0;
+  const intervalError = months.trim().length === 0 && distance.trim().length === 0
+    ? t('addTrackedItem.intervalRequired')
+    : undefined;
+
   const handleSubmit = () => {
     const trimmedName = name.trim();
-    if (!trimmedName) return;
+    if (!trimmedName || (!hasMonths && !hasDistance)) return;
 
-    const monthsValue = Number(months);
-    const distanceValue = Number(distance);
     addTrackedServiceItem(carId, {
       name: trimmedName,
-      timeIntervalDays: Number.isFinite(monthsValue) && monthsValue > 0 ? Math.round(monthsValue * 30.44) : null,
-      kmInterval:
-        Number.isFinite(distanceValue) && distanceValue > 0
-          ? Math.round(displayToKm(distanceValue, distanceUnit))
-          : null,
+      timeIntervalDays: hasMonths ? Math.round(monthsValue * 30.44) : null,
+      kmInterval: hasDistance ? Math.round(displayToKm(distanceValue, distanceUnit)) : null,
       isActive: true,
     });
     router.back();
@@ -63,7 +66,7 @@ export default function AddTrackedItemScreen() {
             />
           </FormField>
 
-          <FormField label={t('addTrackedItem.interval')}>
+          <FormField label={t('addTrackedItem.interval')} error={intervalError}>
             <View style={styles.intervalRow}>
               <View style={styles.intervalField}>
                 <TextInput
@@ -96,7 +99,7 @@ export default function AddTrackedItemScreen() {
           onCancel={() => router.back()}
           onSubmit={handleSubmit}
           submitLabel={t('addTrackedItem.addItem')}
-          submitDisabled={name.trim().length === 0}
+          submitDisabled={name.trim().length === 0 || (!hasMonths && !hasDistance)}
         />
       </KeyboardAvoidingView>
     </Screen>

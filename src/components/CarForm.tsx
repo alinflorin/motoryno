@@ -9,6 +9,7 @@ import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, formatDistance, type DistanceUnit } from '@/utils/units';
+import { isValidVin, isValidYear, sanitizeVinInput } from '@/utils/validation';
 
 export interface CarFormValues {
   nickname: string;
@@ -43,18 +44,27 @@ export interface ParsedCarFormValues {
 export function parseCarFormValues(values: CarFormValues, distanceUnit: DistanceUnit): ParsedCarFormValues | null {
   const vin = values.vin.trim();
   const displayName = values.nickname.trim();
-  if (!vin || !displayName) return null;
+  if (!displayName || !isValidVin(vin)) return null;
 
   const year = Number(values.year);
+  if (!isValidYear(year)) return null;
+
   const odometer = Number(values.odometer);
+  if (values.odometer.trim().length === 0 || !Number.isFinite(odometer) || odometer < 0) return null;
+
   return {
     vin,
     displayName,
     make: values.make.trim(),
     model: values.model.trim(),
-    year: Number.isFinite(year) ? year : new Date().getFullYear(),
-    odometerKm: Math.round(displayToKm(Number.isFinite(odometer) ? odometer : 0, distanceUnit)),
+    year,
+    odometerKm: Math.round(displayToKm(odometer, distanceUnit)),
   };
+}
+
+/** Whether the form currently holds a submittable value — drives the submit button and inline errors. */
+export function isCarFormValid(values: CarFormValues, distanceUnit: DistanceUnit): boolean {
+  return parseCarFormValues(values, distanceUnit) !== null;
 }
 
 export function useCarFormState(car: Car | undefined, distanceUnit: DistanceUnit) {
@@ -79,6 +89,11 @@ export function CarFormFields({
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = getStyles(colors);
+
+  const trimmedYear = values.year.trim();
+  const yearError = trimmedYear.length > 0 && !isValidYear(Number(trimmedYear)) ? t('carForm.yearInvalid') : undefined;
+  const trimmedVin = values.vin.trim();
+  const vinError = trimmedVin.length > 0 && !isValidVin(trimmedVin) ? t('carForm.vinInvalid') : undefined;
 
   return (
     <>
@@ -126,7 +141,7 @@ export function CarFormFields({
 
       <View style={styles.twoCol}>
         <View style={styles.twoColItem}>
-          <FormField label={t('carForm.year')}>
+          <FormField label={t('carForm.year')} error={yearError}>
             <TextInput
               style={styles.input}
               placeholder="2019"
@@ -155,14 +170,15 @@ export function CarFormFields({
         </View>
       </View>
 
-      <FormField label={t('carForm.vin')}>
+      <FormField label={t('carForm.vin')} error={vinError}>
         <TextInput
           style={styles.input}
           placeholder={t('carForm.vinPlaceholder')}
           placeholderTextColor={colors.textFainter}
           autoCapitalize="characters"
+          maxLength={17}
           value={values.vin}
-          onChangeText={(text) => setField('vin', text)}
+          onChangeText={(text) => setField('vin', sanitizeVinInput(text))}
         />
       </FormField>
     </>
@@ -198,7 +214,7 @@ export function CarForm({
         onCancel={onCancel}
         onSubmit={() => onSubmit(values)}
         submitLabel={submitLabel}
-        submitDisabled={values.nickname.trim().length === 0 || values.vin.trim().length === 0}
+        submitDisabled={!isCarFormValid(values, distanceUnit)}
       />
     </KeyboardAvoidingView>
   );

@@ -82,7 +82,8 @@
     "months": "Months",
     "distance": "Distance",
     "or": "or",
-    "addItem": "Add Item"
+    "addItem": "Add Item",
+    "intervalRequired": "Enter a time or distance interval"
   },
   "serviceVisits": {
     "title": "Service Visits",
@@ -96,8 +97,11 @@
     "shop": "Service Shop",
     "shopPlaceholder": "e.g. Lex Auto Service",
     "date": "Date",
+    "dateInvalid": "Enter a valid date as DD.MM.YYYY",
     "odometer": "Odometer",
+    "odometerTooLow": "Can't be lower than the car's current odometer ({{odometer}})",
     "amountSpent": "Amount Spent",
+    "amountInvalid": "Enter a valid amount",
     "itemsPerformed": "Items Performed",
     "saveVisit": "Save Visit"
   },
@@ -111,9 +115,11 @@
     "model": "Model",
     "modelPlaceholder": "e.g. C250 W204",
     "year": "Year",
+    "yearInvalid": "Enter a valid year",
     "odometer": "Odometer",
     "vin": "VIN",
     "vinPlaceholder": "17-character VIN",
+    "vinInvalid": "VIN must be 17 characters (no I, O or Q)",
     "obdTitle": "OBD2 Adapter",
     "obdSubtitle": "Read odometer via Bluetooth",
     "scan": "Scan",

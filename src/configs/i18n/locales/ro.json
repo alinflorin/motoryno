@@ -86,7 +86,8 @@
     "months": "Luni",
     "distance": "Distanță",
     "or": "sau",
-    "addItem": "Adaugă Element"
+    "addItem": "Adaugă Element",
+    "intervalRequired": "Introdu un interval de timp sau distanță"
   },
   "serviceVisits": {
     "title": "Vizite Service",
@@ -100,8 +101,11 @@
     "shop": "Service Auto",
     "shopPlaceholder": "ex. Lex Auto Service",
     "date": "Data",
+    "dateInvalid": "Introdu o dată validă în formatul ZZ.LL.AAAA",
     "odometer": "Kilometraj",
+    "odometerTooLow": "Nu poate fi mai mic decât kilometrajul curent al mașinii ({{odometer}})",
     "amountSpent": "Sumă Cheltuită",
+    "amountInvalid": "Introdu o sumă validă",
     "itemsPerformed": "Elemente Efectuate",
     "saveVisit": "Salvează Vizita"
   },
@@ -115,9 +119,11 @@
     "model": "Model",
     "modelPlaceholder": "ex. C250 W204",
     "year": "An",
+    "yearInvalid": "Introdu un an valid",
     "odometer": "Kilometraj",
     "vin": "Serie șasiu (VIN)",
     "vinPlaceholder": "VIN cu 17 caractere",
+    "vinInvalid": "VIN trebuie să aibă 17 caractere (fără I, O sau Q)",
     "obdTitle": "Adaptor OBD2",
     "obdSubtitle": "Citește kilometrajul prin Bluetooth",
     "scan": "Scanează",

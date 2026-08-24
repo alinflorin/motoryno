@@ -11,10 +11,11 @@ import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
-import { parseDateDMYOrNow } from '@/utils/date';
+import { parseDateDMY, parseDateDMYOrNow } from '@/utils/date';
 import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
 import { computeCarItemStatuses } from '@/utils/serviceStatus';
 import { displayToKm, distanceUnitFor, formatDistance } from '@/utils/units';
+import { sanitizeDateInput } from '@/utils/validation';
 
 export default function AddServiceVisitScreen() {
   const { t } = useTranslation();
@@ -43,15 +44,32 @@ export default function AddServiceVisitScreen() {
     });
   };
 
-  const handleSubmit = () => {
-    if (!car || shop.trim().length === 0) return;
+  const dateError = date.trim().length > 0 && parseDateDMY(date) === null ? t('addServiceVisit.dateInvalid') : undefined;
+  const odometerKm = Math.round(displayToKm(Number(odometer) || 0, distanceUnit));
+  const odometerError =
+    car && odometer.trim().length > 0 && odometerKm < car.odometerKm
+      ? t('addServiceVisit.odometerTooLow', {
+          odometer: `${formatDistance(car.odometerKm, distanceUnit)} ${t(`common.${distanceUnit}`)}`,
+        })
+      : undefined;
+  const priceValue = Number(price);
+  const priceError = price.trim().length > 0 && !Number.isFinite(priceValue) ? t('addServiceVisit.amountInvalid') : undefined;
+  const isValid =
+    !!car &&
+    shop.trim().length > 0 &&
+    odometer.trim().length > 0 &&
+    !dateError &&
+    !odometerError &&
+    !priceError;
 
-    const odometerKm = Math.round(displayToKm(Number(odometer) || 0, distanceUnit));
+  const handleSubmit = () => {
+    if (!isValid || !car) return;
+
     addServiceVisit(car.vin, {
       timestamp: parseDateDMYOrNow(date),
       odometerKm,
       shopName: shop.trim(),
-      spend: Number(price) || 0,
+      spend: Number.isFinite(priceValue) ? priceValue : 0,
       itemsDone: [...selectedNames],
     });
     if (odometerKm > car.odometerKm) {
@@ -77,18 +95,19 @@ export default function AddServiceVisitScreen() {
 
           <View style={styles.twoCol}>
             <View style={styles.twoColItem}>
-              <FormField label={t('addServiceVisit.date')}>
+              <FormField label={t('addServiceVisit.date')} error={dateError}>
                 <TextInput
                   style={styles.input}
                   placeholder="DD.MM.YYYY"
                   placeholderTextColor={colors.textFainter}
+                  keyboardType="number-pad"
                   value={date}
-                  onChangeText={setDate}
+                  onChangeText={(text) => setDate(sanitizeDateInput(text))}
                 />
               </FormField>
             </View>
             <View style={styles.twoColItem}>
-              <FormField label={t('addServiceVisit.odometer')}>
+              <FormField label={t('addServiceVisit.odometer')} error={odometerError}>
                 <View style={styles.suffixField}>
                   <TextInput
                     style={styles.input}
@@ -102,7 +121,7 @@ export default function AddServiceVisitScreen() {
             </View>
           </View>
 
-          <FormField label={t('addServiceVisit.amountSpent')}>
+          <FormField label={t('addServiceVisit.amountSpent')} error={priceError}>
             <View style={styles.suffixField}>
               <TextInput
                 style={styles.input}
@@ -142,7 +161,7 @@ export default function AddServiceVisitScreen() {
           onCancel={() => router.back()}
           onSubmit={handleSubmit}
           submitLabel={t('addServiceVisit.saveVisit')}
-          submitDisabled={shop.trim().length === 0}
+          submitDisabled={!isValid}
         />
       </KeyboardAvoidingView>
     </Screen>
