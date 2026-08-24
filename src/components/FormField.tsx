@@ -1,12 +1,24 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useThemeColors } from '@/theme/ThemeContext';
 
-export function FormField({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
+export function FormField({
+  label,
+  error,
+  children,
+  style,
+}: {
+  label: string;
+  error?: string;
+  children: ReactNode;
+  /** Escape hatch for a field that needs to affect its own layout/stacking — e.g. a
+   *  combobox that must paint its dropdown over the fields declared after it. */
+  style?: StyleProp<ViewStyle>;
+}) {
   const colors = useThemeColors();
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, style]}>
       <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
       {children}
       {error ? <Text style={[styles.error, { color: colors.red }]}>{error}</Text> : null}

@@ -96,7 +96,8 @@
     "dueSoonGroup": "Aproape Scadente",
     "okGroup": "OK",
     "availableGroup": "Neurmărite",
-    "every": "La fiecare {{interval}}"
+    "every": "La fiecare {{interval}}",
+    "hint": "Atinge un element pentru a-l edita sau șterge"
   },
   "addTrackedItem": {
     "title": "Element Urmărit Nou",
@@ -108,12 +109,19 @@
     "or": "sau",
     "addItem": "Adaugă Element"
   },
+  "editTrackedItem": {
+    "title": "Editează Elementul Urmărit",
+    "saveItem": "Salvează Elementul",
+    "deleteItem": "Șterge Elementul",
+    "deleteItemConfirm": "Sigur vrei să ștergi „{{item}}”? Această acțiune nu poate fi anulată."
+  },
   "serviceVisits": {
     "title": "Vizite Service",
     "totalSpent": "Total cheltuit ({{currency}})",
     "visits": "Vizite service",
     "emptyTitle": "Nicio vizită de service încă",
-    "emptySubtitle": "Apasă + pentru a înregistra prima vizită"
+    "emptySubtitle": "Apasă + pentru a înregistra prima vizită",
+    "hint": "Atinge o vizită pentru a o edita sau șterge"
   },
   "addServiceVisit": {
     "title": "Adaugă Vizită Service",
@@ -124,6 +132,12 @@
     "amountSpent": "Sumă Cheltuită",
     "itemsPerformed": "Elemente Efectuate",
     "saveVisit": "Salvează Vizita"
+  },
+  "editServiceVisit": {
+    "title": "Editează Vizita de Service",
+    "saveVisit": "Salvează Vizita",
+    "deleteVisit": "Șterge Vizita",
+    "deleteVisitConfirm": "Sigur vrei să ștergi această vizită la „{{shop}}”? Această acțiune nu poate fi anulată."
   },
   "carForm": {
     "addTitle": "Adaugă Mașină",

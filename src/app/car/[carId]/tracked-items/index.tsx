@@ -38,10 +38,7 @@ export default function TrackedItemsScreen() {
           headerRight: () => (
             <View style={styles.headerRightContainer}>
               <Link href={{ pathname: '/car/[carId]/tracked-items/add', params: { carId } }} asChild>
-                <Pressable
-                  hitSlop={8}
-                  style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}
-                >
+                <Pressable hitSlop={8} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
                   <Text style={styles.addButtonGlyph}>+</Text>
                 </Pressable>
               </Link>
@@ -50,33 +47,42 @@ export default function TrackedItemsScreen() {
         }}
       />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {(itemStatuses.length > 0 || inactiveItems.length > 0) && (
+          <Text style={styles.hint}>{t('trackedItems.hint')}</Text>
+        )}
         {groups.map((group) =>
           group.data.length === 0 ? null : (
             <View key={group.key} style={styles.group}>
               <Text style={[styles.groupTitle, { color: groupTitleColor(group.key, colors) }]}>{group.title}</Text>
               <View style={styles.groupList}>
                 {group.data.map((entry) => (
-                  <View key={entry.item.name} style={styles.card}>
-                    <View style={styles.cardTop}>
-                      <View style={styles.cardTopLeft}>
-                        <StatusDot status={entry.status} />
-                        <Text style={styles.itemName}>{entry.item.name}</Text>
+                  <Link
+                    key={entry.item.name}
+                    href={{ pathname: '/car/[carId]/tracked-items/[itemName]/edit', params: { carId, itemName: entry.item.name } }}
+                    asChild
+                  >
+                    <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+                      <View style={styles.cardTop}>
+                        <View style={styles.cardTopLeft}>
+                          <StatusDot status={entry.status} />
+                          <Text style={styles.itemName}>{entry.item.name}</Text>
+                        </View>
+                        <Switch
+                          value={entry.item.isActive}
+                          onValueChange={(value) => updateTrackedServiceItem(car.vin, entry.item.name, { isActive: value })}
+                          trackColor={{ true: colors.amber, false: colors.borderStrong }}
+                          thumbColor={colors.textPrimary}
+                        />
                       </View>
-                      <Switch
-                        value={entry.item.isActive}
-                        onValueChange={(value) => updateTrackedServiceItem(car.vin, entry.item.name, { isActive: value })}
-                        trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                        thumbColor={colors.textPrimary}
-                      />
-                    </View>
-                    <ProgressBar progress={entry.progress} status={entry.status} />
-                    <View style={styles.cardBottom}>
-                      <Text style={styles.intervalText}>
-                        {t('trackedItems.every', { interval: formatIntervalLabel(entry.item) })}
-                      </Text>
-                      <Text style={styles.sinceText}>{formatSinceLabel(entry, car)}</Text>
-                    </View>
-                  </View>
+                      <ProgressBar progress={entry.progress} status={entry.status} />
+                      <View style={styles.cardBottom}>
+                        <Text style={styles.intervalText}>
+                          {t('trackedItems.every', { interval: formatIntervalLabel(entry.item) })}
+                        </Text>
+                        <Text style={styles.sinceText}>{formatSinceLabel(entry, car)}</Text>
+                      </View>
+                    </Pressable>
+                  </Link>
                 ))}
               </View>
             </View>
@@ -90,22 +96,28 @@ export default function TrackedItemsScreen() {
             </Text>
             <View style={styles.groupList}>
               {inactiveItems.map((item) => (
-                <View key={item.name} style={styles.card}>
-                  <View style={styles.cardTop}>
-                    <View style={styles.cardTopLeft}>
-                      <Text style={styles.itemName}>{item.name}</Text>
+                <Link
+                  key={item.name}
+                  href={{ pathname: '/car/[carId]/tracked-items/[itemName]/edit', params: { carId, itemName: item.name } }}
+                  asChild
+                >
+                  <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+                    <View style={styles.cardTop}>
+                      <View style={styles.cardTopLeft}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                      </View>
+                      <Switch
+                        value={false}
+                        onValueChange={(value) => updateTrackedServiceItem(car.vin, item.name, { isActive: value })}
+                        trackColor={{ true: colors.amber, false: colors.borderStrong }}
+                        thumbColor={colors.textPrimary}
+                      />
                     </View>
-                    <Switch
-                      value={false}
-                      onValueChange={(value) => updateTrackedServiceItem(car.vin, item.name, { isActive: value })}
-                      trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                      thumbColor={colors.textPrimary}
-                    />
-                  </View>
-                  <Text style={styles.intervalText}>
-                    {t('trackedItems.every', { interval: formatIntervalLabel(item) })}
-                  </Text>
-                </View>
+                    <Text style={styles.intervalText}>
+                      {t('trackedItems.every', { interval: formatIntervalLabel(item) })}
+                    </Text>
+                  </Pressable>
+                </Link>
               ))}
             </View>
           </View>
@@ -128,6 +140,11 @@ function getStyles(colors: ColorTokens) {
       gap: 20,
       paddingBottom: 32,
     },
+    hint: {
+      color: colors.textFainter,
+      fontSize: 12,
+      marginTop: -8,
+    },
     group: {
       gap: 8,
     },
@@ -148,6 +165,9 @@ function getStyles(colors: ColorTokens) {
       paddingHorizontal: 14,
       paddingVertical: 12,
       gap: 8,
+    },
+    cardPressed: {
+      opacity: 0.85,
     },
     cardTop: {
       flexDirection: 'row',
@@ -181,21 +201,19 @@ function getStyles(colors: ColorTokens) {
       paddingRight: 16,
     },
     addButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: colors.amber,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
       alignItems: 'center',
       justifyContent: 'center',
     },
     addButtonPressed: {
-      opacity: 0.85,
+      opacity: 0.5,
     },
     addButtonGlyph: {
-      color: colors.onAmber,
-      fontSize: 20,
-      fontWeight: '700',
-      marginTop: -1,
+      color: colors.amber,
+      fontSize: 26,
+      fontWeight: '600',
+      lineHeight: 28,
     },
   });
 }

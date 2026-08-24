@@ -12,7 +12,7 @@ import type { Car } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
-import { displayToKm, formatDistance, type DistanceUnit } from '@/utils/units';
+import { displayToKm, kmToDisplay, type DistanceUnit } from '@/utils/units';
 import { MAX_ODOMETER, isValidVin, isValidYear, sanitizeVinInput } from '@/utils/validation';
 
 export interface CarFormValues {
@@ -30,7 +30,9 @@ function carToFormValues(car: Car | undefined, distanceUnit: DistanceUnit): CarF
     make: car?.make ?? '',
     model: car?.model ?? '',
     year: car ? String(car.year) : '',
-    odometer: car ? formatDistance(car.odometerKm, distanceUnit) : '',
+    // Plain digits, no thousands separators — `formatDistance` is for display, but this
+    // seeds an editable input, and its comma (e.g. "12,345") would fail the digits-only schema.
+    odometer: car ? String(Math.round(kmToDisplay(car.odometerKm, distanceUnit))) : '',
     vin: car?.vin ?? '',
   };
 }

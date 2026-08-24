@@ -29,10 +29,7 @@ export default function ServiceVisitsScreen() {
           headerRight: () => (
             <View style={styles.headerRightContainer}>
               <Link href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }} asChild>
-                <Pressable
-                  hitSlop={8}
-                  style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}
-                >
+                <Pressable hitSlop={8} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
                   <Text style={styles.addButtonGlyph}>+</Text>
                 </Pressable>
               </Link>
@@ -62,31 +59,40 @@ export default function ServiceVisitsScreen() {
             <Text style={styles.emptySubtitle}>{t('serviceVisits.emptySubtitle')}</Text>
           </View>
         ) : (
-          visits.map((visit) => (
-            <View key={visit.uuid} style={styles.card}>
-              <View style={styles.cardTop}>
-                <View style={styles.cardTopLeft}>
-                  <Text style={styles.shopName}>{visit.shopName}</Text>
-                  <Text style={styles.visitMeta}>
-                    {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} ·{' '}
-                    {formatDateDMY(visit.timestamp)}
-                  </Text>
-                </View>
-                <Text style={styles.price}>
-                  {visit.spend} {currency}
-                </Text>
-              </View>
-              {visit.itemsDone.length > 0 && (
-                <View style={styles.chipRow}>
-                  {visit.itemsDone.map((name) => (
-                    <View key={name} style={styles.chip}>
-                      <Text style={styles.chipText}>{name}</Text>
+          <>
+            <Text style={styles.hint}>{t('serviceVisits.hint')}</Text>
+            {visits.map((visit) => (
+              <Link
+                key={visit.uuid}
+                href={{ pathname: '/car/[carId]/service-visits/[visitId]/edit', params: { carId, visitId: visit.uuid } }}
+                asChild
+              >
+                <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+                  <View style={styles.cardTop}>
+                    <View style={styles.cardTopLeft}>
+                      <Text style={styles.shopName}>{visit.shopName}</Text>
+                      <Text style={styles.visitMeta}>
+                        {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} ·{' '}
+                        {formatDateDMY(visit.timestamp)}
+                      </Text>
                     </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          ))
+                    <Text style={styles.price}>
+                      {visit.spend} {currency}
+                    </Text>
+                  </View>
+                  {visit.itemsDone.length > 0 && (
+                    <View style={styles.chipRow}>
+                      {visit.itemsDone.map((name) => (
+                        <View key={name} style={styles.chip}>
+                          <Text style={styles.chipText}>{name}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </Pressable>
+              </Link>
+            ))}
+          </>
         )}
       </ScrollView>
     </Screen>
@@ -148,6 +154,11 @@ function getStyles(colors: ColorTokens) {
       color: colors.textFainter,
       fontSize: 13,
     },
+    hint: {
+      color: colors.textFainter,
+      fontSize: 12,
+      marginBottom: -2,
+    },
     card: {
       backgroundColor: colors.surface,
       borderWidth: 1,
@@ -155,6 +166,9 @@ function getStyles(colors: ColorTokens) {
       borderRadius: 16,
       padding: 14,
       gap: 10,
+    },
+    cardPressed: {
+      opacity: 0.85,
     },
     cardTop: {
       flexDirection: 'row',
@@ -197,21 +211,19 @@ function getStyles(colors: ColorTokens) {
       paddingRight: 16,
     },
     addButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: colors.amber,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
       alignItems: 'center',
       justifyContent: 'center',
     },
     addButtonPressed: {
-      opacity: 0.85,
+      opacity: 0.5,
     },
     addButtonGlyph: {
-      color: colors.onAmber,
-      fontSize: 20,
-      fontWeight: '700',
-      marginTop: -1,
+      color: colors.amber,
+      fontSize: 26,
+      fontWeight: '600',
+      lineHeight: 28,
     },
   });
 }

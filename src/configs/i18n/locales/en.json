@@ -90,7 +90,8 @@
     "dueSoonGroup": "Due Soon",
     "okGroup": "OK",
     "availableGroup": "Not tracked",
-    "every": "Every {{interval}}"
+    "every": "Every {{interval}}",
+    "hint": "Tap an item to edit or delete it"
   },
   "addTrackedItem": {
     "title": "New Tracked Item",
@@ -102,12 +103,19 @@
     "or": "or",
     "addItem": "Add Item"
   },
+  "editTrackedItem": {
+    "title": "Edit Tracked Item",
+    "saveItem": "Save Item",
+    "deleteItem": "Delete Item",
+    "deleteItemConfirm": "Are you sure you want to delete \"{{item}}\"? This can't be undone."
+  },
   "serviceVisits": {
     "title": "Service Visits",
     "totalSpent": "Total spent ({{currency}})",
     "visits": "Service visits",
     "emptyTitle": "No service visits yet",
-    "emptySubtitle": "Tap + to log your first visit"
+    "emptySubtitle": "Tap + to log your first visit",
+    "hint": "Tap a visit to edit or delete it"
   },
   "addServiceVisit": {
     "title": "Add Service Visit",
@@ -118,6 +126,12 @@
     "amountSpent": "Amount Spent",
     "itemsPerformed": "Items Performed",
     "saveVisit": "Save Visit"
+  },
+  "editServiceVisit": {
+    "title": "Edit Service Visit",
+    "saveVisit": "Save Visit",
+    "deleteVisit": "Delete Visit",
+    "deleteVisitConfirm": "Are you sure you want to delete this visit to \"{{shop}}\"? This can't be undone."
   },
   "carForm": {
     "addTitle": "Add Car",
