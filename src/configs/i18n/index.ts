@@ -1,11 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
-import i18n, { type LanguageDetectorAsyncModule } from 'i18next';
+import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import { defaultLanguage, resources, supportedLanguages, type SupportedLanguage } from './resources';
-
-const LANGUAGE_STORAGE_KEY = 'motoryno.language';
 
 function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {
   return !!value && (supportedLanguages as readonly string[]).includes(value);
@@ -16,38 +13,17 @@ function detectDeviceLanguage(): SupportedLanguage {
   return isSupportedLanguage(deviceLanguageCode) ? deviceLanguageCode : defaultLanguage;
 }
 
-// Resolves the app language on startup: a language the user explicitly
-// picked in Settings (persisted below) wins, otherwise fall back to
-// whatever the device is set to.
-const languageDetector: LanguageDetectorAsyncModule = {
-  type: 'languageDetector',
-  async: true,
-  init: () => {},
-  detect: async (callback) => {
-    try {
-      const storedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-      callback(isSupportedLanguage(storedLanguage) ? storedLanguage : detectDeviceLanguage());
-    } catch {
-      callback(detectDeviceLanguage());
-    }
-  },
-  cacheUserLanguage: async (language) => {
-    try {
-      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-    } catch {
-      // Non-fatal: the language just won't be remembered across restarts.
-    }
-  },
-};
+// TODO: once the SQLite Settings table is wired up, resolve/persist the
+// user's chosen language there instead of always falling back to the device.
 
 // i18next's default export doubles as its own named exports for CJS/ESM
 // interop, which trips this rule as a false positive on `.use`/`.changeLanguage`.
 /* eslint-disable import/no-named-as-default-member */
 void i18n
-  .use(languageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: detectDeviceLanguage(),
     fallbackLng: defaultLanguage,
     supportedLngs: supportedLanguages,
     interpolation: {
