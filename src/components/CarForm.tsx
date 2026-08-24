@@ -13,7 +13,7 @@ import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, formatDistance, type DistanceUnit } from '@/utils/units';
-import { MAX_ODOMETER, MIN_YEAR, VIN_PATTERN, maxYear, sanitizeVinInput } from '@/utils/validation';
+import { MAX_ODOMETER, isValidVin, isValidYear, sanitizeVinInput } from '@/utils/validation';
 
 export interface CarFormValues {
   nickname: string;
@@ -84,7 +84,7 @@ function buildCarFormSchema(t: TFunction, existingVins: string[]) {
       .string()
       .refine((v) => trimmedLength(v) > 0, { message: t('validation.required') })
       .refine((v) => /^\d{4}$/.test(v.trim()), { message: t('validation.invalidYear') })
-      .refine((v) => Number(v.trim()) >= MIN_YEAR && Number(v.trim()) <= maxYear(), {
+      .refine((v) => isValidYear(Number(v.trim())), {
         message: t('validation.invalidYear'),
       }),
     odometer: z
@@ -95,7 +95,7 @@ function buildCarFormSchema(t: TFunction, existingVins: string[]) {
     vin: z
       .string()
       .refine((v) => trimmedLength(v) > 0, { message: t('validation.required') })
-      .refine((v) => VIN_PATTERN.test(v.trim()), { message: t('validation.invalidVin') })
+      .refine((v) => isValidVin(v.trim()), { message: t('validation.invalidVin') })
       .refine((v) => !normalizedExistingVins.includes(v.trim().toUpperCase()), { message: t('validation.vinTaken') }),
   });
 }

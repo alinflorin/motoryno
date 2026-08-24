@@ -1,6 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 
+import { downloadJson } from '@/storage/downloadJson';
 import type { AppData } from '@/storage/types';
 
 /**
@@ -13,15 +14,7 @@ export async function downloadAppData(data: AppData): Promise<void> {
   const text = JSON.stringify(data, null, 2);
 
   if (Platform.OS === 'web') {
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    downloadJson(text, fileName);
     return;
   }
 

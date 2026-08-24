@@ -1,19 +1,8 @@
 import { Directory, File as CacheFile, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 
+import { downloadJson } from '@/storage/downloadJson';
 import type { Car } from '@/storage/types';
-
-function downloadJson(text: string, fileName: string): void {
-  const blob = new Blob([text], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
 
 /**
  * Shares just the `cars` data (README > "Agent integration") as a JSON file
