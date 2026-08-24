@@ -15,7 +15,7 @@ export function OnboardingHeader({ title, right }: { title: string; right?: Reac
           <View style={styles.logoMark}>
             <Text style={styles.logoGlyph}>M</Text>
           </View>
-          <Text style={styles.brandText}>motoryno</Text>
+          <Text style={styles.brandText}>Motoryno</Text>
         </View>
         {right}
       </View>

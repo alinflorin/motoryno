@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "motoryno",
+    "name": "Motoryno",
     "slug": "motoryno",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,12 +8,11 @@
     "scheme": "motoryno",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.alinflorinciu.motoryno"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#f59e0b",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -30,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#f59e0b",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
