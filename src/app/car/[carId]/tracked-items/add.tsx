@@ -74,7 +74,9 @@ export default function AddTrackedItemScreen() {
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useForm<TrackedItemFormValues>({
     resolver: zodResolver(schema),
-    mode: 'onChange',
+    // Validate a field the moment it's first left (even untouched-by-typing),
+    // then keep validating live on every change after that.
+    mode: 'onTouched',
     defaultValues: { name: '', months: '', distance: '' },
   });
 

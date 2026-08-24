@@ -104,7 +104,9 @@ export default function AddServiceVisitScreen() {
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useForm<VisitFormValues>({
     resolver: zodResolver(schema),
-    mode: 'onChange',
+    // Validate a field the moment it's first left (even untouched-by-typing),
+    // then keep validating live on every change after that.
+    mode: 'onTouched',
     defaultValues: {
       shop: '',
       date: '',

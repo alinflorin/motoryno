@@ -110,7 +110,9 @@ export function useCarForm(car: Car | undefined, distanceUnit: DistanceUnit, exi
   const schema = useMemo(() => buildCarFormSchema(t, existingVins), [t, existingVins]);
   const form = useForm<CarFormValues>({
     resolver: zodResolver(schema),
-    mode: 'onChange',
+    // Validate a field the moment it's first left (even untouched-by-typing),
+    // then keep validating live on every change after that.
+    mode: 'onTouched',
     defaultValues: carToFormValues(car, distanceUnit),
   });
 
