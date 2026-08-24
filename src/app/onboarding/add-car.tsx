@@ -1,4 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +8,7 @@ import { CarFormFields, toParsedCarFormValues, useCarForm } from '@/components/C
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
+import type { ObdConfig } from '@/storage';
 import { useStorage } from '@/storage';
 import { distanceUnitFor } from '@/utils/units';
 
@@ -16,6 +18,7 @@ export default function OnboardingAddCarScreen() {
   const insets = useSafeAreaInsets();
   const { settings, cars, addCar, updateSettings } = useStorage();
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
+  const [obd, setObd] = useState<ObdConfig | null>(null);
   const {
     control,
     handleSubmit,
@@ -34,7 +37,8 @@ export default function OnboardingAddCarScreen() {
             touchedFields={touchedFields}
             isSubmitted={isSubmitted}
             distanceUnit={distanceUnit}
-            obd={null}
+            obd={obd}
+            onObdChange={setObd}
           />
         </ScrollView>
         <OnboardingFooter
@@ -44,7 +48,7 @@ export default function OnboardingAddCarScreen() {
             router.replace('/');
           }}
           onNext={handleSubmit((values) => {
-            addCar(toParsedCarFormValues(values, distanceUnit));
+            addCar(toParsedCarFormValues(values, distanceUnit, obd));
             updateSettings({ onboardingDone: true });
             router.replace('/');
           })}

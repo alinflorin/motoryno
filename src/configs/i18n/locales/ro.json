@@ -191,6 +191,9 @@
     "obdSubtitle": "Citește kilometrajul prin Bluetooth",
     "obdLastSynced": "Ultima sincronizare {{date}}",
     "obdNeverSynced": "Niciodată sincronizat",
+    "obdScanning": "Se caută dispozitive din apropiere…",
+    "obdPermissionDenied": "Este necesară permisiunea Bluetooth pentru a căuta un adaptor OBD2.",
+    "obdScanFailed": "Scanarea Bluetooth a eșuat. Asigură-te că Bluetooth este pornit și încearcă din nou.",
     "scan": "Scanează",
     "change": "Schimbă",
     "saveCar": "Salvează Mașina"

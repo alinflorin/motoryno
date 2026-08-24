@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, type Control, type FieldErrors } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -45,13 +45,18 @@ export interface ParsedCarFormValues {
   model: string;
   year: number;
   odometerKm: number;
+  obd: ObdConfig | null;
 }
 
 /**
  * Converts already-validated form text into storage-ready values. Only call
  * this with values that passed `carFormSchema` — it assumes well-formed input.
  */
-export function toParsedCarFormValues(values: CarFormValues, distanceUnit: DistanceUnit): ParsedCarFormValues {
+export function toParsedCarFormValues(
+  values: CarFormValues,
+  distanceUnit: DistanceUnit,
+  obd: ObdConfig | null
+): ParsedCarFormValues {
   return {
     vin: values.vin.trim(),
     displayName: values.nickname.trim(),
@@ -59,6 +64,7 @@ export function toParsedCarFormValues(values: CarFormValues, distanceUnit: Dista
     model: values.model.trim(),
     year: Number(values.year.trim()),
     odometerKm: Math.round(displayToKm(Number(values.odometer.trim()), distanceUnit)),
+    obd,
   };
 }
 
@@ -137,6 +143,7 @@ export function CarFormFields({
   isSubmitted,
   distanceUnit,
   obd,
+  onObdChange,
 }: {
   control: Control<CarFormValues>;
   errors: FieldErrors<CarFormValues>;
@@ -145,6 +152,8 @@ export function CarFormFields({
   distanceUnit: DistanceUnit;
   /** The car's persisted OBD adapter, if any — null for a car that's never been paired (or a new car). */
   obd: ObdConfig | null;
+  /** Called when the user pairs a (different) adapter from the scan list. */
+  onObdChange: (obd: ObdConfig) => void;
 }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -156,7 +165,7 @@ export function CarFormFields({
 
   return (
     <>
-      <ObdConfigCard obd={obd} />
+      <ObdConfigCard obd={obd} onObdChange={onObdChange} />
 
       <FormField label={t('carForm.nickname')} error={fieldError('nickname')}>
         <Controller
@@ -299,11 +308,12 @@ export function CarForm({
     handleSubmit,
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useCarForm(car, distanceUnit, existingVins);
+  const [obd, setObd] = useState<ObdConfig | null>(car?.obd ?? null);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   const submit = handleSubmit((values) => {
-    onSubmit(toParsedCarFormValues(values, distanceUnit));
+    onSubmit(toParsedCarFormValues(values, distanceUnit, obd));
   });
 
   return (
@@ -315,7 +325,8 @@ export function CarForm({
           touchedFields={touchedFields}
           isSubmitted={isSubmitted}
           distanceUnit={distanceUnit}
-          obd={car?.obd ?? null}
+          obd={obd}
+          onObdChange={setObd}
         />
       </ScrollView>
       <FormButtonRow

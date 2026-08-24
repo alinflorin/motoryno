@@ -43,6 +43,14 @@
         {
           "color": "#f59e0b"
         }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Motoryno uses Bluetooth to connect to your car's OBD2 adapter and read the odometer."
+        }
       ]
     ],
     "experiments": {

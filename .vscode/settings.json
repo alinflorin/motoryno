@@ -4,5 +4,6 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "i18n-ally.localesPaths": ["src/configs/i18n/locales"]
+  "i18n-ally.localesPaths": ["src/configs/i18n/locales"],
+  "i18n-ally.enabledFrameworks": ["react-i18next"]
 }
