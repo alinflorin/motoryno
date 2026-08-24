@@ -60,6 +60,22 @@ export function getOverdueCountForCar(car: Car, now = Date.now()): number {
   return getOverdueItemsForCar(car, now).length;
 }
 
+export interface CarOverdueSummary {
+  car: Car;
+  overdueItems: TrackedItemStatus[];
+}
+
+/**
+ * Overdue items across every car, skipping cars with none. Shared by the UI (badges, alert
+ * lists) and the daily notification job, so "what counts as overdue" only lives here — see
+ * `getOverdueItemsForCar` for the per-car definition.
+ */
+export function getOverdueSummaryForAllCars(cars: Car[], now = Date.now()): CarOverdueSummary[] {
+  return cars
+    .map((car) => ({ car, overdueItems: getOverdueItemsForCar(car, now) }))
+    .filter((summary) => summary.overdueItems.length > 0);
+}
+
 function pluralMonths(months: number): string {
   return `${months}mo`;
 }
