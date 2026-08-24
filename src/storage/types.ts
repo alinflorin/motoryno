@@ -43,6 +43,8 @@ export interface ServiceVisit {
   spend: number;
   /** Names of the tracked service items performed during this visit. */
   itemsDone: string[];
+  /** Freeform notes about the visit, or null if none were entered. */
+  comments: string | null;
 }
 
 export interface ObdConfig {

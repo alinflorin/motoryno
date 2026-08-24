@@ -118,6 +118,8 @@
     "odometer": "Odometer",
     "amountSpent": "Amount Spent",
     "itemsPerformed": "Items Performed",
+    "comments": "Comments",
+    "commentsPlaceholder": "Optional notes about this visit",
     "saveVisit": "Save Visit"
   },
   "editServiceVisit": {

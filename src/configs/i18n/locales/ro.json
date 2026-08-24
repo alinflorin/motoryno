@@ -124,6 +124,8 @@
     "odometer": "Kilometraj",
     "amountSpent": "Sumă Cheltuită",
     "itemsPerformed": "Elemente Efectuate",
+    "comments": "Comentarii",
+    "commentsPlaceholder": "Note opționale despre această vizită",
     "saveVisit": "Salvează Vizita"
   },
   "editServiceVisit": {

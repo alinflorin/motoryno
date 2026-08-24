@@ -11,6 +11,9 @@ export const DEFAULT_TRACKED_SERVICE_ITEMS: TrackedServiceItem[] = [
   { name: 'Spark plugs', timeIntervalDays: 1460, kmInterval: 60_000, isActive: true },
   { name: 'Battery', timeIntervalDays: 1825, kmInterval: null, isActive: true },
   { name: 'Coolant flush', timeIntervalDays: 1095, kmInterval: null, isActive: true },
+  // Catch-all bucket for work that doesn't fit a specific tracked item — no interval of its
+  // own, so it never shows as due/overdue; it exists to be selectable from a service visit.
+  { name: 'Other', timeIntervalDays: null, kmInterval: null, isActive: true },
 ];
 
 export function createDefaultAppData(): AppData {

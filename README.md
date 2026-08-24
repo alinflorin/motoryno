@@ -97,6 +97,12 @@ Data Model (JSON object with arrays):
           "isActive": true,
           "timeIntervalDays": 365, // or null
           "kmInterval": 10000 // or null
+        },
+        {
+          "name": "Other", // catch-all default item, for work that doesn't fit a specific tracked item; no interval, so never due/overdue
+          "isActive": true,
+          "timeIntervalDays": null,
+          "kmInterval": null
         }
       ],
       "serviceVisits": [
@@ -106,7 +112,8 @@ Data Model (JSON object with arrays):
           "odometerKm": 349000,
           "shopName": "some shop",
           "spend": 234,
-          "itemsDone": ["item1"]
+          "itemsDone": ["item1"],
+          "comments": null // optional freeform notes about the visit, or null
         }
       ],
       "obd": {

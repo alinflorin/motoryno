@@ -26,9 +26,11 @@ export interface ServiceVisitFormValues {
   date: number;
   odometer: string;
   price: string;
+  comments: string;
 }
 
 const MAX_SPEND = 1_000_000;
+const MAX_COMMENTS = 500;
 
 /** Plain digits, no thousands separators — `formatDistance` is for display, but this seeds an
  *  editable input, and its comma (e.g. "12,345") would fail the odometer field's digits-only schema. */
@@ -42,6 +44,7 @@ function visitToFormValues(visit: ServiceVisit | undefined, car: Car | undefined
     date: visit?.timestamp ?? Date.now(),
     odometer: visit ? odometerToFormValue(visit.odometerKm, distanceUnit) : car ? odometerToFormValue(car.odometerKm, distanceUnit) : '',
     price: visit && visit.spend > 0 ? String(visit.spend) : '',
+    comments: visit?.comments ?? '',
   };
 }
 
@@ -51,6 +54,7 @@ export interface ParsedServiceVisitFormValues {
   shopName: string;
   spend: number;
   itemsDone: string[];
+  comments: string | null;
 }
 
 function buildVisitSchema(t: TFunction) {
@@ -74,6 +78,7 @@ function buildVisitSchema(t: TFunction) {
         message: t('validation.invalidNumber'),
       })
       .refine((v) => v.trim().length === 0 || Number(v.trim()) <= MAX_SPEND, { message: t('validation.tooLarge') }),
+    comments: z.string().refine((v) => v.trim().length <= MAX_COMMENTS, { message: t('validation.tooLong', { count: MAX_COMMENTS }) }),
   });
 }
 
@@ -155,6 +160,7 @@ export function ServiceVisitForm({
       shopName: values.shop.trim(),
       spend,
       itemsDone: [...selectedNames],
+      comments: values.comments.trim().length > 0 ? values.comments.trim() : null,
     });
   });
 
@@ -254,6 +260,26 @@ export function ServiceVisitForm({
             })}
           </View>
         </FormField>
+
+        <FormField label={t('addServiceVisit.comments')} error={fieldError('comments')}>
+          <Controller
+            control={control}
+            name="comments"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <TextInput
+                style={[styles.input, styles.commentsInput]}
+                placeholder={t('addServiceVisit.commentsPlaceholder')}
+                placeholderTextColor={colors.textFainter}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            )}
+          />
+        </FormField>
       </ScrollView>
       <FormButtonRow
         insetBottom={insetBottom}
@@ -289,6 +315,10 @@ function getStyles(colors: ColorTokens) {
       paddingVertical: 12,
       color: colors.textPrimary,
       fontSize: 14,
+    },
+    commentsInput: {
+      minHeight: 72,
+      paddingTop: 12,
     },
     twoCol: {
       flexDirection: 'row',

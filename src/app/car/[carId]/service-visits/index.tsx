@@ -90,6 +90,11 @@ export default function ServiceVisitsScreen() {
                       ))}
                     </View>
                   )}
+                  {visit.comments && (
+                    <Text style={styles.comments} numberOfLines={2}>
+                      {visit.comments}
+                    </Text>
+                  )}
                 </Pressable>
               </Link>
             ))}
@@ -203,6 +208,10 @@ function getStyles(colors: ColorTokens) {
     chipText: {
       color: colors.textSecondary,
       fontSize: 11,
+    },
+    comments: {
+      color: colors.textFaint,
+      fontSize: 12,
     },
     headerRightContainer: {
       paddingRight: 16,
