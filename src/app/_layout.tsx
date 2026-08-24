@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 
 import '@/configs/i18n';
+import { StorageProvider } from '@/storage';
 import { ThemeProvider, useThemeColors, useThemePreference } from '@/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
@@ -37,8 +38,10 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <RootLayoutNav />
-    </ThemeProvider>
+    <StorageProvider>
+      <ThemeProvider>
+        <RootLayoutNav />
+      </ThemeProvider>
+    </StorageProvider>
   );
 }
