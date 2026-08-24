@@ -4,30 +4,184 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
-    "add": "Add"
+    "add": "Add",
+    "back": "Back",
+    "view": "View",
+    "yes": "Yes",
+    "no": "No",
+    "km": "km",
+    "mi": "mi"
   },
   "home": {
-    "title": "Motoryno"
+    "title": "Motoryno",
+    "alerts": "Alerts",
+    "myCars": "My Cars",
+    "addCar": "Add Car",
+    "menu": "Menu",
+    "settings": "Settings",
+    "about": "About",
+    "viewCar": "View",
+    "editCar": "Edit",
+    "deleteCar": "Delete"
+  },
+  "about": {
+    "title": "About",
+    "tagline": "Track service intervals for every car you own, automatically or semi-automatically.",
+    "help": "Help & FAQ",
+    "rate": "Rate the App",
+    "feedback": "Send Feedback",
+    "website": "Website",
+    "version": "v{{version}}",
+    "tos": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
   },
   "car": {
+    "odometer": "Odometer",
+    "overdue": "Overdue",
+    "dueSoon": "Due soon",
+    "ok": "OK",
+    "needsAttention": "Needs attention",
+    "trackedItems": "Tracked Items",
+    "trackedItemsCount_one": "{{count}} item",
+    "trackedItemsCount_other": "{{count}} items",
+    "allItemsOk": "All items OK",
+    "itemsOverdue_one": "{{count}} item overdue",
+    "itemsOverdue_other": "{{count}} items overdue",
+    "itemsDueSoon_one": "{{count}} due soon",
+    "itemsDueSoon_other": "{{count}} due soon",
+    "serviceVisits": "Service Visits",
+    "visitsCount_one": "{{count}} visit",
+    "visitsCount_other": "{{count}} visits",
+    "lastVisit": "Last: {{date}} · {{shop}}",
+    "noVisitsLogged": "No visits logged",
+    "totalSpent": "Total spent",
+    "stats": "Stats",
+    "noVisitsYet": "No service visits yet"
+  },
+  "carStats": {
+    "title": "Stats",
+    "downloadReport": "Download Report",
+    "spendHistory": "Spend History",
+    "overdueHistory": "Overdue Items"
+  },
+  "trackedItems": {
+    "title": "Tracked Items",
+    "overdueGroup": "Overdue",
+    "dueSoonGroup": "Due Soon",
+    "okGroup": "OK",
+    "every": "Every {{interval}}"
+  },
+  "addTrackedItem": {
+    "title": "New Tracked Item",
+    "itemName": "Item Name",
+    "itemNamePlaceholder": "e.g. Engine oil",
+    "interval": "Interval",
+    "months": "Months",
+    "distance": "Distance",
+    "or": "or",
+    "addItem": "Add Item"
+  },
+  "serviceVisits": {
+    "title": "Service Visits",
+    "totalSpent": "Total spent ({{currency}})",
+    "visits": "Service visits",
+    "emptyTitle": "No service visits yet",
+    "emptySubtitle": "Tap + to log your first visit"
+  },
+  "addServiceVisit": {
+    "title": "Add Service Visit",
+    "shop": "Service Shop",
+    "shopPlaceholder": "e.g. Lex Auto Service",
+    "date": "Date",
+    "odometer": "Odometer",
+    "amountSpent": "Amount Spent",
+    "itemsPerformed": "Items Performed",
+    "saveVisit": "Save Visit"
+  },
+  "carForm": {
+    "addTitle": "Add Car",
+    "editTitle": "Edit Car",
     "nickname": "Nickname",
+    "nicknamePlaceholder": "e.g. C250",
     "make": "Make",
+    "makePlaceholder": "e.g. Mercedes-Benz",
     "model": "Model",
+    "modelPlaceholder": "e.g. C250 W204",
     "year": "Year",
     "odometer": "Odometer",
-    "vin": "VIN"
-  },
-  "service": {
-    "engineOil": "Engine oil",
-    "oilFilter": "Oil filter",
-    "battery": "Battery",
-    "overdue_one": "{{count}} item overdue",
-    "overdue_other": "{{count}} items overdue"
+    "vin": "VIN",
+    "vinPlaceholder": "17-character VIN",
+    "obdTitle": "OBD2 Adapter",
+    "obdSubtitle": "Read odometer via Bluetooth",
+    "scan": "Scan",
+    "saveCar": "Save Car"
   },
   "settings": {
     "title": "Settings",
+    "preferences": "Preferences",
     "units": "Units",
+    "unitsMetric": "Metric (km)",
+    "unitsImperial": "Imperial (mi)",
     "theme": "Theme",
-    "language": "Language"
+    "themeSystem": "System",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "language": "Language",
+    "currency": "Currency",
+    "notifications": "Notifications",
+    "account": "Account & Sync",
+    "reset": "Reset",
+    "viewOnboarding": "View Onboarding"
+  },
+  "settingsNotifications": {
+    "title": "Notifications",
+    "enabled": "Daily reminder",
+    "enabledSubtitle": "Notify me about overdue service items every morning",
+    "time": "Reminder time",
+    "sound": "Ring",
+    "vibrate": "Vibrate"
+  },
+  "settingsLanguage": {
+    "language": "Language",
+    "systemDefault": "System default",
+    "english": "English",
+    "romanian": "Română",
+    "currency": "Currency"
+  },
+  "settingsAccount": {
+    "title": "Account & Sync",
+    "loginWithGoogle": "Login with Google",
+    "loginWithApple": "Login with Apple",
+    "loggedInAs": "Logged in with {{email}} ({{provider}}).",
+    "lastSync": "Last sync: {{date}}",
+    "syncNow": "Sync now!",
+    "logOut": "Log out",
+    "syncSubtitle": "Your data syncs automatically so your cars and service history follow you to a new device.",
+    "notConnected": "Not connected"
+  },
+  "settingsReset": {
+    "title": "Reset",
+    "confirm": "Are you sure you want to reset the app?",
+    "warning": "This will erase all cars, tracked items and service history stored on this device.",
+    "databaseSize": "Database size: {{size}}"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "welcomeTitle": "Welcome",
+    "welcomeGreeting": "Welcome to Motoryno 👋",
+    "welcomeBody": "Let's get your garage set up. It only takes a minute — you can always change these later in Settings.",
+    "stepsTitle": "What's next",
+    "stepIntro": "Quick intro",
+    "stepLanguage": "Language & Currency",
+    "stepAccount": "Account & Sync",
+    "stepAddCar": "Add your first car",
+    "introTitle": "Intro",
+    "introBody1": "Motoryno keeps track of every service interval for every car you own — oil, filters, brakes, and more.",
+    "introBody2": "Connect an OBD2 Bluetooth adapter and we'll read the odometer for you automatically, or enter it by hand any time.",
+    "languageTitle": "Language & Currency",
+    "accountTitle": "Account & Sync",
+    "addCarTitle": "Add Your Car"
   }
 }

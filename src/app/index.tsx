@@ -1,16 +1,366 @@
-import { Column, Host, Spacer, Text } from '@expo/ui';
+import { Link, useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { CountBadge } from '@/components/CountBadge';
+import { OverflowMenu } from '@/components/OverflowMenu';
+import { Screen } from '@/components/Screen';
+import { SectionLabel } from '@/components/SectionLabel';
+import { cars, getOverdueCountForCar, overdueAlerts } from '@/data/seed';
+import { colors } from '@/theme/colors';
+
+const CARD_MENU_WIDTH = 176;
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
+  const kebabRefs = useRef<Record<string, View | null>>({});
+  const topBarTop = insets.top + 8;
+
+  const openCardMenu = (carId: string) => {
+    kebabRefs.current[carId]?.measureInWindow((x, y, width, height) => {
+      setCardMenu({
+        carId,
+        top: y + height + 4,
+        left: Math.max(8, x + width - CARD_MENU_WIDTH),
+      });
+    });
+  };
 
   return (
-    <Host style={{ flex: 1 }} matchContents={{ vertical: false, horizontal: false }}>
-      <Column alignment="center" style={{ width: '100%', height: '100%' }}>
-        <Spacer flexible />
-        <Text textStyle={{ fontSize: 32, fontWeight: '700' }}>{t('home.title')}</Text>
-        <Spacer flexible />
-      </Column>
-    </Host>
+    <Screen>
+      <View style={[styles.topBar, { paddingTop: topBarTop }]}>
+        <View style={styles.brand}>
+          <View style={styles.logoMark}>
+            <Text style={styles.logoGlyph}>M</Text>
+          </View>
+          <Text style={styles.brandText}>{t('home.title')}</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('home.menu')}
+          onPress={() => setMenuOpen((open) => !open)}
+          style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+        >
+          <Text style={styles.iconGlyph}>⋮</Text>
+        </Pressable>
+      </View>
+
+      <OverflowMenu
+        visible={menuOpen}
+        onDismiss={() => setMenuOpen(false)}
+        top={topBarTop + 42}
+        items={[
+          { key: 'settings', label: t('home.settings'), glyph: '⚙︎', onPress: () => router.push('/settings') },
+          { key: 'about', label: t('home.about'), glyph: 'ⓘ', onPress: () => router.push('/about') },
+        ]}
+      />
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {overdueAlerts.length > 0 && (
+          <View style={styles.section}>
+            <SectionLabel right={<CountBadge count={overdueAlerts.length} />}>
+              {t('home.alerts')}
+            </SectionLabel>
+            <View style={styles.alertList}>
+              {overdueAlerts.map((alert) => (
+                <View key={alert.id} style={styles.alertRow}>
+                  <View style={styles.alertDot} />
+                  <Text style={styles.alertText}>
+                    <Text style={styles.alertCar}>{alert.carNickname}</Text>
+                    {' · ' + alert.itemName}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <SectionLabel>{t('home.myCars')}</SectionLabel>
+          <View style={styles.carGrid}>
+            {cars.map((car) => {
+              const overdueCount = getOverdueCountForCar(car.id);
+              return (
+                <Link
+                  key={car.id}
+                  href={{ pathname: '/car/[carId]', params: { carId: car.id } }}
+                  asChild
+                >
+                  <Pressable style={({ pressed }) => [styles.carCard, pressed && styles.cardPressed]}>
+                    <View style={styles.carCardTop}>
+                      <Text style={styles.carNickname}>{car.nickname}</Text>
+                      <View style={styles.carCardTopRight}>
+                        {overdueCount > 0 && <CountBadge count={overdueCount} />}
+                        <Pressable
+                          ref={(node) => {
+                            kebabRefs.current[car.id] = node;
+                          }}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('home.menu')}
+                          onPress={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            openCardMenu(car.id);
+                          }}
+                          style={styles.cardKebab}
+                        >
+                          <Text style={styles.cardKebabGlyph}>⋮</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                    <Text style={styles.carMake}>{car.make}</Text>
+                    <Text style={styles.carModel}>
+                      {car.model} · {car.year}
+                    </Text>
+                    <Text style={styles.carOdometer}>
+                      {car.odometer.toLocaleString()} {t(`common.${car.unit}`)}
+                    </Text>
+                  </Pressable>
+                </Link>
+              );
+            })}
+
+            <Link href="/add-car" asChild>
+              <Pressable style={({ pressed }) => [styles.addCarCard, pressed && styles.cardPressed]}>
+                <View style={styles.addCarPlus}>
+                  <Text style={styles.addCarPlusGlyph}>+</Text>
+                </View>
+                <Text style={styles.addCarLabel}>{t('home.addCar')}</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+
+      {cardMenu && (
+        <OverflowMenu
+          visible
+          onDismiss={() => setCardMenu(null)}
+          top={cardMenu.top}
+          left={cardMenu.left}
+          items={[
+            {
+              key: 'view',
+              label: t('home.viewCar'),
+              glyph: '⌕',
+              onPress: () => router.push({ pathname: '/car/[carId]', params: { carId: cardMenu.carId } }),
+            },
+            {
+              key: 'edit',
+              label: t('home.editCar'),
+              glyph: '✎',
+              onPress: () => router.push({ pathname: '/car/[carId]/edit', params: { carId: cardMenu.carId } }),
+            },
+            {
+              key: 'delete',
+              label: t('home.deleteCar'),
+              glyph: '⌫',
+              // Not wired up yet — UI only.
+              onPress: () => {},
+            },
+          ]}
+        />
+      )}
+    </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  logoMark: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    backgroundColor: colors.amber,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoGlyph: {
+    color: colors.onAmber,
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  brandText: {
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconButtonPressed: {
+    backgroundColor: colors.surface,
+  },
+  iconGlyph: {
+    color: colors.textMuted,
+    fontSize: 18,
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 20,
+  },
+  section: {
+    gap: 0,
+  },
+  alertList: {
+    gap: 6,
+  },
+  alertRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.redBg,
+    borderWidth: 1,
+    borderColor: colors.redBorder,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  alertDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.red,
+  },
+  alertText: {
+    color: colors.redSoft,
+    fontSize: 13,
+    flex: 1,
+  },
+  alertCar: {
+    color: colors.redSofter,
+    fontWeight: '700',
+  },
+  carGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  carCard: {
+    width: '48%',
+    minHeight: 132,
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    borderRadius: 16,
+    padding: 14,
+    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.6)',
+    shadowColor: '#000',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  cardPressed: {
+    borderColor: colors.amberBorder,
+  },
+  carCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  carCardTopRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  cardKebab: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -6,
+    marginTop: -4,
+  },
+  cardKebabGlyph: {
+    color: colors.textFaint,
+    fontSize: 16,
+  },
+  carNickname: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  carMake: {
+    color: colors.textFaint,
+    fontSize: 11,
+    marginBottom: 10,
+  },
+  carModel: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  carOdometer: {
+    color: colors.amber,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  addCarCard: {
+    width: '48%',
+    minHeight: 132,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.borderStrong,
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
+    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.6)',
+    shadowColor: '#000',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  addCarPlus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addCarPlusGlyph: {
+    color: colors.textFaint,
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  addCarLabel: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});

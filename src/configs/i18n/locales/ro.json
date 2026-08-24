@@ -4,31 +4,188 @@
     "cancel": "Anulează",
     "delete": "Șterge",
     "edit": "Editează",
-    "add": "Adaugă"
+    "add": "Adaugă",
+    "back": "Înapoi",
+    "view": "Vizualizează",
+    "yes": "Da",
+    "no": "Nu",
+    "km": "km",
+    "mi": "mi"
   },
   "home": {
-    "title": "Motoryno"
+    "title": "Motoryno",
+    "alerts": "Alerte",
+    "myCars": "Mașinile Mele",
+    "addCar": "Adaugă Mașină",
+    "menu": "Meniu",
+    "settings": "Setări",
+    "about": "Despre",
+    "viewCar": "Vizualizează",
+    "editCar": "Editează",
+    "deleteCar": "Șterge"
+  },
+  "about": {
+    "title": "Despre",
+    "tagline": "Urmărește intervalele de service pentru fiecare mașină, automat sau semi-automat.",
+    "help": "Ajutor și Întrebări Frecvente",
+    "rate": "Evaluează Aplicația",
+    "feedback": "Trimite Feedback",
+    "website": "Website",
+    "version": "v{{version}}",
+    "tos": "Termeni și Condiții",
+    "privacyPolicy": "Politica de Confidențialitate"
   },
   "car": {
+    "odometer": "Kilometraj",
+    "overdue": "Restante",
+    "dueSoon": "Aproape scadente",
+    "ok": "OK",
+    "needsAttention": "Necesită atenție",
+    "trackedItems": "Elemente Urmărite",
+    "trackedItemsCount_one": "{{count}} element",
+    "trackedItemsCount_few": "{{count}} elemente",
+    "trackedItemsCount_other": "{{count}} de elemente",
+    "allItemsOk": "Toate elementele sunt OK",
+    "itemsOverdue_one": "{{count}} element restant",
+    "itemsOverdue_few": "{{count}} elemente restante",
+    "itemsOverdue_other": "{{count}} de elemente restante",
+    "itemsDueSoon_one": "{{count}} aproape scadent",
+    "itemsDueSoon_few": "{{count}} aproape scadente",
+    "itemsDueSoon_other": "{{count}} aproape scadente",
+    "serviceVisits": "Vizite Service",
+    "visitsCount_one": "{{count}} vizită",
+    "visitsCount_few": "{{count}} vizite",
+    "visitsCount_other": "{{count}} de vizite",
+    "lastVisit": "Ultima: {{date}} · {{shop}}",
+    "noVisitsLogged": "Nicio vizită înregistrată",
+    "totalSpent": "Total cheltuit",
+    "stats": "Statistici",
+    "noVisitsYet": "Nicio vizită de service încă"
+  },
+  "carStats": {
+    "title": "Statistici",
+    "downloadReport": "Descarcă Raportul",
+    "spendHistory": "Istoric Cheltuieli",
+    "overdueHistory": "Elemente Restante"
+  },
+  "trackedItems": {
+    "title": "Elemente Urmărite",
+    "overdueGroup": "Restante",
+    "dueSoonGroup": "Aproape Scadente",
+    "okGroup": "OK",
+    "every": "La fiecare {{interval}}"
+  },
+  "addTrackedItem": {
+    "title": "Element Urmărit Nou",
+    "itemName": "Denumire Element",
+    "itemNamePlaceholder": "ex. Ulei motor",
+    "interval": "Interval",
+    "months": "Luni",
+    "distance": "Distanță",
+    "or": "sau",
+    "addItem": "Adaugă Element"
+  },
+  "serviceVisits": {
+    "title": "Vizite Service",
+    "totalSpent": "Total cheltuit ({{currency}})",
+    "visits": "Vizite service",
+    "emptyTitle": "Nicio vizită de service încă",
+    "emptySubtitle": "Apasă + pentru a înregistra prima vizită"
+  },
+  "addServiceVisit": {
+    "title": "Adaugă Vizită Service",
+    "shop": "Service Auto",
+    "shopPlaceholder": "ex. Lex Auto Service",
+    "date": "Data",
+    "odometer": "Kilometraj",
+    "amountSpent": "Sumă Cheltuită",
+    "itemsPerformed": "Elemente Efectuate",
+    "saveVisit": "Salvează Vizita"
+  },
+  "carForm": {
+    "addTitle": "Adaugă Mașină",
+    "editTitle": "Editează Mașina",
     "nickname": "Nume",
+    "nicknamePlaceholder": "ex. C250",
     "make": "Marcă",
+    "makePlaceholder": "ex. Mercedes-Benz",
     "model": "Model",
+    "modelPlaceholder": "ex. C250 W204",
     "year": "An",
     "odometer": "Kilometraj",
-    "vin": "Serie șasiu"
-  },
-  "service": {
-    "engineOil": "Ulei motor",
-    "oilFilter": "Filtru de ulei",
-    "battery": "Baterie",
-    "overdue_one": "{{count}} element restant",
-    "overdue_few": "{{count}} elemente restante",
-    "overdue_other": "{{count}} de elemente restante"
+    "vin": "Serie șasiu (VIN)",
+    "vinPlaceholder": "VIN cu 17 caractere",
+    "obdTitle": "Adaptor OBD2",
+    "obdSubtitle": "Citește kilometrajul prin Bluetooth",
+    "scan": "Scanează",
+    "saveCar": "Salvează Mașina"
   },
   "settings": {
     "title": "Setări",
+    "preferences": "Preferințe",
     "units": "Unități",
+    "unitsMetric": "Metric (km)",
+    "unitsImperial": "Imperial (mi)",
     "theme": "Temă",
-    "language": "Limbă"
+    "themeSystem": "Sistem",
+    "themeDark": "Întunecată",
+    "themeLight": "Deschisă",
+    "language": "Limbă",
+    "currency": "Monedă",
+    "notifications": "Notificări",
+    "account": "Cont și Sincronizare",
+    "reset": "Resetare",
+    "viewOnboarding": "Vezi Introducerea"
+  },
+  "settingsNotifications": {
+    "title": "Notificări",
+    "enabled": "Memento zilnic",
+    "enabledSubtitle": "Anunță-mă despre elementele de service restante în fiecare dimineață",
+    "time": "Ora mementoului",
+    "sound": "Sonerie",
+    "vibrate": "Vibrații"
+  },
+  "settingsLanguage": {
+    "language": "Limbă",
+    "systemDefault": "Implicit sistem",
+    "english": "Engleză",
+    "romanian": "Română",
+    "currency": "Monedă"
+  },
+  "settingsAccount": {
+    "title": "Cont și Sincronizare",
+    "loginWithGoogle": "Autentificare cu Google",
+    "loginWithApple": "Autentificare cu Apple",
+    "loggedInAs": "Autentificat cu {{email}} ({{provider}}).",
+    "lastSync": "Ultima sincronizare: {{date}}",
+    "syncNow": "Sincronizează acum!",
+    "logOut": "Deconectare",
+    "syncSubtitle": "Datele tale se sincronizează automat, astfel încât mașinile și istoricul de service te urmează pe orice dispozitiv nou.",
+    "notConnected": "Neconectat"
+  },
+  "settingsReset": {
+    "title": "Resetare",
+    "confirm": "Sigur vrei să resetezi aplicația?",
+    "warning": "Această acțiune va șterge toate mașinile, elementele urmărite și istoricul de service stocate pe acest dispozitiv.",
+    "databaseSize": "Dimensiune bază de date: {{size}}"
+  },
+  "onboarding": {
+    "skip": "Sari peste",
+    "next": "Continuă",
+    "getStarted": "Începe",
+    "welcomeTitle": "Bine ai venit",
+    "welcomeGreeting": "Bine ai venit în Motoryno 👋",
+    "welcomeBody": "Hai să-ți configurăm garajul. Durează doar un minut — poți schimba oricând mai târziu din Setări.",
+    "stepsTitle": "Ce urmează",
+    "stepIntro": "Prezentare rapidă",
+    "stepLanguage": "Limbă și Monedă",
+    "stepAccount": "Cont și Sincronizare",
+    "stepAddCar": "Adaugă prima mașină",
+    "introTitle": "Prezentare",
+    "introBody1": "Motoryno urmărește fiecare interval de service pentru fiecare mașină pe care o deții — ulei, filtre, frâne și altele.",
+    "introBody2": "Conectează un adaptor OBD2 Bluetooth și îți citim automat kilometrajul, sau introdu-l manual oricând.",
+    "languageTitle": "Limbă și Monedă",
+    "accountTitle": "Cont și Sincronizare",
+    "addCarTitle": "Adaugă Mașina Ta"
   }
 }
