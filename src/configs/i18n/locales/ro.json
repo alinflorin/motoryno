@@ -81,14 +81,7 @@
     "lastVisit": "Ultima: {{date}} · {{shop}}",
     "noVisitsLogged": "Nicio vizită înregistrată",
     "totalSpent": "Total cheltuit",
-    "stats": "Statistici",
     "noVisitsYet": "Nicio vizită de service încă"
-  },
-  "carStats": {
-    "title": "Statistici",
-    "downloadReport": "Descarcă Raportul",
-    "spendHistory": "Istoric Cheltuieli",
-    "overdueHistory": "Elemente Restante"
   },
   "trackedItems": {
     "title": "Elemente Urmărite",

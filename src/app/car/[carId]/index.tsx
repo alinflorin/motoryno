@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
-import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
@@ -130,21 +129,6 @@ export default function CarScreen() {
                 <Text style={styles.navRowSubtext}>
                   {t('car.totalSpent')}: {totalSpent.toLocaleString()} {settings.currency}
                 </Text>
-              </View>
-              <View style={styles.navRowButton}>
-                <Text style={styles.navRowButtonText}>{t('common.view')}</Text>
-                <Chevron color={colors.onAmber} size={14} />
-              </View>
-            </Pressable>
-          </Link>
-        </View>
-
-        <View style={styles.section}>
-          <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.vin } }} asChild>
-            <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
-              <View style={styles.navRowLeft}>
-                <Icon name="stats-chart-outline" size={18} color={colors.textMuted} />
-                <Text style={styles.navRowText}>{t('car.stats')}</Text>
               </View>
               <View style={styles.navRowButton}>
                 <Text style={styles.navRowButtonText}>{t('common.view')}</Text>

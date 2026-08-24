@@ -75,14 +75,7 @@
     "lastVisit": "Last: {{date}} · {{shop}}",
     "noVisitsLogged": "No visits logged",
     "totalSpent": "Total spent",
-    "stats": "Stats",
     "noVisitsYet": "No service visits yet"
-  },
-  "carStats": {
-    "title": "Stats",
-    "downloadReport": "Download Report",
-    "spendHistory": "Spend History",
-    "overdueHistory": "Overdue Items"
   },
   "trackedItems": {
     "title": "Tracked Items",
