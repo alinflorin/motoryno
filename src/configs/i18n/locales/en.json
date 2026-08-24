@@ -183,7 +183,10 @@
     "vinPlaceholder": "17-character VIN",
     "obdTitle": "OBD2 Adapter",
     "obdSubtitle": "Read odometer via Bluetooth",
+    "obdLastSynced": "Last synced {{date}}",
+    "obdNeverSynced": "Never synced",
     "scan": "Scan",
+    "change": "Change",
     "saveCar": "Save Car"
   },
   "settings": {

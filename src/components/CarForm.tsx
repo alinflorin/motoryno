@@ -3,12 +3,13 @@ import { useEffect, useMemo } from 'react';
 import { Controller, useForm, type Control, type FieldErrors } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { z } from 'zod';
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
-import type { Car } from '@/storage';
+import { ObdConfigCard } from '@/components/ObdConfigCard';
+import type { Car, ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
@@ -135,12 +136,15 @@ export function CarFormFields({
   touchedFields,
   isSubmitted,
   distanceUnit,
+  obd,
 }: {
   control: Control<CarFormValues>;
   errors: FieldErrors<CarFormValues>;
   touchedFields: Partial<Readonly<Record<keyof CarFormValues, boolean>>>;
   isSubmitted: boolean;
   distanceUnit: DistanceUnit;
+  /** The car's persisted OBD adapter, if any — null for a car that's never been paired (or a new car). */
+  obd: ObdConfig | null;
 }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -152,17 +156,7 @@ export function CarFormFields({
 
   return (
     <>
-      <View style={styles.obdCard}>
-        <View style={styles.obdHeader}>
-          <Text style={styles.obdTitle}>{t('carForm.obdTitle')}</Text>
-        </View>
-        <View style={styles.obdBody}>
-          <Text style={styles.obdSubtitle}>{t('carForm.obdSubtitle')}</Text>
-          <Pressable style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}>
-            <Text style={styles.scanButtonText}>{t('carForm.scan')}</Text>
-          </Pressable>
-        </View>
-      </View>
+      <ObdConfigCard obd={obd} />
 
       <FormField label={t('carForm.nickname')} error={fieldError('nickname')}>
         <Controller
@@ -321,6 +315,7 @@ export function CarForm({
           touchedFields={touchedFields}
           isSubmitted={isSubmitted}
           distanceUnit={distanceUnit}
+          obd={car?.obd ?? null}
         />
       </ScrollView>
       <FormButtonRow
@@ -369,51 +364,6 @@ function getStyles(colors: ColorTokens) {
       right: 14,
       color: colors.textFaint,
       fontSize: 12,
-    },
-    obdCard: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-      borderRadius: 16,
-      overflow: 'hidden',
-    },
-    obdHeader: {
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
-    },
-    obdTitle: {
-      color: colors.textSecondary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    obdBody: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-    },
-    obdSubtitle: {
-      color: colors.textFaint,
-      fontSize: 12,
-      flex: 1,
-      paddingRight: 12,
-    },
-    scanButton: {
-      backgroundColor: colors.amber,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 10,
-    },
-    scanButtonPressed: {
-      opacity: 0.85,
-    },
-    scanButtonText: {
-      color: colors.onAmber,
-      fontSize: 12,
-      fontWeight: '700',
     },
   });
 }

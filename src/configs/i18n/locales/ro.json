@@ -189,7 +189,10 @@
     "vinPlaceholder": "VIN cu 17 caractere",
     "obdTitle": "Adaptor OBD2",
     "obdSubtitle": "Citește kilometrajul prin Bluetooth",
+    "obdLastSynced": "Ultima sincronizare {{date}}",
+    "obdNeverSynced": "Niciodată sincronizat",
     "scan": "Scanează",
+    "change": "Schimbă",
     "saveCar": "Salvează Mașina"
   },
   "settings": {

@@ -34,6 +34,7 @@ export default function OnboardingAddCarScreen() {
             touchedFields={touchedFields}
             isSubmitted={isSubmitted}
             distanceUnit={distanceUnit}
+            obd={null}
           />
         </ScrollView>
         <OnboardingFooter
