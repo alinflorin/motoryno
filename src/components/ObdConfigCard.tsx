@@ -16,9 +16,9 @@ export function ObdConfigCard({ obd }: { obd: ObdConfig | null }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = getStyles(colors);
-  console.log(obd);
+
   if (Platform.OS === "web") {
-    // return null;
+    return null;
   }
 
   return (
