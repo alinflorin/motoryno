@@ -77,13 +77,23 @@ export default function HomeScreen() {
             </SectionLabel>
             <View style={styles.alertList}>
               {overdueAlerts.map((alert) => (
-                <View key={alert.id} style={styles.alertRow}>
-                  <View style={styles.alertDot} />
-                  <Text style={styles.alertText}>
-                    <Text style={styles.alertCar}>{alert.carNickname}</Text>
-                    {' · ' + alert.itemName}
-                  </Text>
-                </View>
+                <Link
+                  key={alert.id}
+                  href={{ pathname: '/car/[carId]', params: { carId: alert.carId } }}
+                  asChild
+                >
+                  <Pressable>
+                    {({ pressed }) => (
+                      <View style={[styles.alertRow, pressed && styles.cardPressed]}>
+                        <View style={styles.alertDot} />
+                        <Text style={styles.alertText}>
+                          <Text style={styles.alertCar}>{alert.carNickname}</Text>
+                          {' · ' + alert.itemName}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                </Link>
               ))}
             </View>
           </View>
