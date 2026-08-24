@@ -57,10 +57,10 @@ export default function SettingsAccountScreen() {
     <Screen>
       <Stack.Screen options={{ title: t('settingsAccount.title') }} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.intro}>{t('settingsAccount.syncSubtitle')}</Text>
-
         {Platform.OS !== 'web' && (
           <>
+            <Text style={styles.intro}>{t('settingsAccount.syncSubtitle')}</Text>
+
             <View style={styles.statusBlock}>
               <Text style={styles.statusText}>
                 {t('settingsAccount.loggedInAs', { email: 'alin@example.com', provider: 'Google' })}
@@ -76,7 +76,7 @@ export default function SettingsAccountScreen() {
           </>
         )}
 
-        <View style={styles.divider} />
+        {Platform.OS !== 'web' && <View style={styles.divider} />}
 
         <View style={styles.downloadBlock}>
           <Text style={styles.downloadSubtitle}>{t('settingsAccount.downloadSubtitle')}</Text>
