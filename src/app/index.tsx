@@ -1,13 +1,14 @@
 import { Link, Redirect, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CountBadge } from '@/components/CountBadge';
 import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
@@ -35,6 +36,7 @@ export default function HomeScreen() {
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
   const kebabRefs = useRef<Record<string, View | null>>({});
   const topBarTop = insets.top + 8;
+  const { confirm, dialog } = useConfirmDialog();
 
   const overdueAlerts = useMemo<OverdueAlert[]>(
     () =>
@@ -49,11 +51,13 @@ export default function HomeScreen() {
     [cars]
   );
 
-  const confirmDeleteCar = (carId: string, carNickname: string) => {
-    Alert.alert(t('home.deleteCar'), t('home.deleteCarConfirm', { car: carNickname }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => removeCar(carId) },
-    ]);
+  const confirmDeleteCar = async (carId: string, carNickname: string) => {
+    const confirmed = await confirm({
+      title: t('home.deleteCar'),
+      message: t('home.deleteCarConfirm', { car: carNickname }),
+      destructive: true,
+    });
+    if (confirmed) removeCar(carId);
   };
 
   const openCardMenu = (carId: string) => {
@@ -230,6 +234,8 @@ export default function HomeScreen() {
           ]}
         />
       )}
+
+      {dialog}
     </Screen>
   );
 }
