@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 import '@/configs/i18n';
@@ -8,6 +9,23 @@ import { StorageProvider } from '@/storage';
 import { ThemeProvider, useThemeColors, useThemePreference } from '@/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
+
+// On web, expo-router's <Link> renders an <a>. When it's pressed, React
+// Navigation marks the outgoing screen's container aria-hidden before the
+// clicked link has given up focus, which trips an a11y warning ("Blocked
+// aria-hidden on an element because its descendant retained focus"). Blur
+// the link the moment it's pressed so focus is already gone by then.
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest?.('a');
+      anchor?.blur();
+    },
+    true,
+  );
+}
 
 function RootLayoutNav() {
   const { scheme } = useThemePreference();

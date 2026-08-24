@@ -343,10 +343,6 @@ function getStyles(colors: ColorTokens) {
     borderRadius: 16,
     padding: 14,
     boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   cardPressed: {
@@ -407,10 +403,6 @@ function getStyles(colors: ColorTokens) {
     padding: 14,
     gap: 10,
     boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   addCarPlus: {

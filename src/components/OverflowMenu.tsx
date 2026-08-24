@@ -76,10 +76,7 @@ function getStyles(colors: ColorTokens) {
       overflow: 'hidden',
       zIndex: 50,
       elevation: 8,
-      shadowColor: '#000',
-      shadowOpacity: 0.4,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
+      boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.4)',
     },
     row: {
       flexDirection: 'row',
