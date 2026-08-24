@@ -9,6 +9,7 @@ import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type ServiceItemStatus, type TrackedItemStatus } from '@/utils/serviceStatus';
 
 export default function TrackedItemsScreen() {
@@ -66,7 +67,7 @@ export default function TrackedItemsScreen() {
                       <View style={styles.cardTop}>
                         <View style={styles.cardTopLeft}>
                           <StatusDot status={entry.status} />
-                          <Text style={styles.itemName}>{entry.item.name}</Text>
+                          <Text style={styles.itemName}>{translateItemName(t, entry.item.name)}</Text>
                         </View>
                         <Switch
                           value={entry.item.isActive}
@@ -105,7 +106,7 @@ export default function TrackedItemsScreen() {
                   <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
                     <View style={styles.cardTop}>
                       <View style={styles.cardTopLeft}>
-                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemName}>{translateItemName(t, item.name)}</Text>
                       </View>
                       <Switch
                         value={false}

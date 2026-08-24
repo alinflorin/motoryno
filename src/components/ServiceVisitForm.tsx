@@ -16,6 +16,7 @@ import type { Car, ServiceVisit } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses } from '@/utils/serviceStatus';
 import { displayToKm, kmToDisplay, type DistanceUnit } from '@/utils/units';
 import { MAX_ODOMETER } from '@/utils/validation';
@@ -119,6 +120,38 @@ export function ServiceVisitForm({
   // `car` comes from a ref-backed lookup (not render state), so it isn't a safe useMemo
   // dependency — the list (cheap to build) is simply recomputed on every render instead.
   const items = car ? computeCarItemStatuses(car) : [];
+  const trackedItemNames = new Set(items.map((entry) => entry.item.name));
+
+  // One-off items typed in for this visit that aren't part of the car's tracked list — e.g. a
+  // repair that doesn't warrant its own recurring interval. Seeded from the visit being edited
+  // so its own past one-offs still show up (and stay editable) here.
+  const [extraItems, setExtraItems] = useState<string[]>(
+    (visit?.itemsDone ?? []).filter((name) => !trackedItemNames.has(name))
+  );
+  const [extraItemInput, setExtraItemInput] = useState('');
+
+  const addExtraItem = () => {
+    const trimmed = extraItemInput.trim();
+    if (!trimmed) return;
+    const alreadyListed = [...trackedItemNames, ...extraItems].some(
+      (name) => name.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (!alreadyListed) {
+      setExtraItems((prev) => [...prev, trimmed]);
+      setSelectedNames((prev) => new Set(prev).add(trimmed));
+    }
+    setExtraItemInput('');
+  };
+
+  const removeExtraItem = (name: string) => {
+    setExtraItems((prev) => prev.filter((existing) => existing !== name));
+    setSelectedNames((prev) => {
+      const next = new Set(prev);
+      next.delete(name);
+      return next;
+    });
+  };
+
   // Most-recent-first, deduplicated, excluding this visit's own (already-current) value.
   const shopOptions = [
     ...new Set(
@@ -253,11 +286,48 @@ export function ServiceVisitForm({
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                     {selected && <Icon name="checkmark" size={12} color={colors.onAmber} />}
                   </View>
-                  <Text style={styles.itemRowText}>{entry.item.name}</Text>
+                  <Text style={styles.itemRowText}>{translateItemName(t, entry.item.name)}</Text>
                   <StatusDot status={entry.status} />
                 </Pressable>
               );
             })}
+            {extraItems.map((name) => {
+              const selected = selectedNames.has(name);
+              return (
+                <Pressable
+                  key={name}
+                  onPress={() => toggleItem(name)}
+                  style={[styles.itemRow, selected && styles.itemRowSelected]}
+                >
+                  <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                    {selected && <Icon name="checkmark" size={12} color={colors.onAmber} />}
+                  </View>
+                  <Text style={styles.itemRowText}>{name}</Text>
+                  <Pressable hitSlop={8} onPress={() => removeExtraItem(name)}>
+                    <Icon name="close" size={14} color={colors.textFaint} />
+                  </Pressable>
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={styles.addItemRow}>
+            <TextInput
+              style={[styles.input, styles.addItemInput]}
+              placeholder={t('addServiceVisit.addItemPlaceholder')}
+              placeholderTextColor={colors.textFainter}
+              value={extraItemInput}
+              onChangeText={setExtraItemInput}
+              onSubmitEditing={addExtraItem}
+              returnKeyType="done"
+            />
+            <Pressable
+              hitSlop={8}
+              onPress={addExtraItem}
+              disabled={extraItemInput.trim().length === 0}
+              style={({ pressed }) => [styles.addItemButton, pressed && styles.addItemButtonPressed]}
+            >
+              <Icon name="add" size={20} color={colors.amber} />
+            </Pressable>
           </View>
         </FormField>
 
@@ -371,6 +441,28 @@ function getStyles(colors: ColorTokens) {
     checkboxSelected: {
       backgroundColor: colors.amber,
       borderColor: colors.amber,
+    },
+    addItemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginTop: 8,
+    },
+    addItemInput: {
+      flex: 1,
+      paddingVertical: 10,
+    },
+    addItemButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addItemButtonPressed: {
+      opacity: 0.6,
     },
   });
 }

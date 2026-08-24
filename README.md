@@ -97,12 +97,6 @@ Data Model (JSON object with arrays):
           "isActive": true,
           "timeIntervalDays": 365, // or null
           "kmInterval": 10000 // or null
-        },
-        {
-          "name": "Other", // catch-all default item, for work that doesn't fit a specific tracked item; no interval, so never due/overdue
-          "isActive": true,
-          "timeIntervalDays": null,
-          "kmInterval": null
         }
       ],
       "serviceVisits": [

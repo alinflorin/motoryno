@@ -8,6 +8,7 @@ import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { formatDateDMY } from '@/utils/date';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 
 export default function ServiceVisitsScreen() {
@@ -85,7 +86,7 @@ export default function ServiceVisitsScreen() {
                     <View style={styles.chipRow}>
                       {visit.itemsDone.map((name) => (
                         <View key={name} style={styles.chip}>
-                          <Text style={styles.chipText}>{name}</Text>
+                          <Text style={styles.chipText}>{translateItemName(t, name)}</Text>
                         </View>
                       ))}
                     </View>

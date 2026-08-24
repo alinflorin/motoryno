@@ -13,8 +13,9 @@ import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync } from '@/utils/confirm';
-import { distanceUnitFor, formatDistance } from '@/utils/units';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
+import { distanceUnitFor, formatDistance } from '@/utils/units';
 
 const CARD_MENU_WIDTH = 176;
 
