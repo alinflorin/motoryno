@@ -29,18 +29,7 @@ export default function CarScreen() {
 
   return (
     <Screen>
-      <Stack.Screen
-        options={{
-          title: `${car.nickname} · ${car.model}`,
-          headerRight: () => (
-            <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.id } }} asChild>
-              <Pressable accessibilityRole="button" accessibilityLabel={t('car.stats')} hitSlop={8}>
-                <Text style={styles.statsIcon}>📊</Text>
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: `${car.nickname} · ${car.model}` }} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <Text style={styles.heroLabel}>{t('car.odometer')}</Text>
@@ -131,6 +120,18 @@ export default function CarScreen() {
                 <Text style={styles.navRowSubtext}>
                   {t('car.totalSpent')}: {totalSpent.toLocaleString()} RON
                 </Text>
+              </View>
+              <Chevron />
+            </Pressable>
+          </Link>
+        </View>
+
+        <View style={styles.section}>
+          <Link href={{ pathname: '/car/[carId]/stats', params: { carId: car.id } }} asChild>
+            <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
+              <View style={styles.navRowLeft}>
+                <Text style={styles.statsIcon}>📊</Text>
+                <Text style={styles.navRowText}>{t('car.stats')}</Text>
               </View>
               <Chevron />
             </Pressable>
@@ -280,6 +281,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   statsIcon: {
-    fontSize: 18,
+    fontSize: 20,
   },
 });

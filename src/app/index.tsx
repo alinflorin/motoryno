@@ -35,12 +35,17 @@ export default function HomeScreen() {
   return (
     <Screen>
       <View style={[styles.topBar, { paddingTop: topBarTop }]}>
-        <View style={styles.brand}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('home.title')}
+          onPress={() => router.push('/')}
+          style={styles.brand}
+        >
           <View style={styles.logoMark}>
             <Text style={styles.logoGlyph}>M</Text>
           </View>
           <Text style={styles.brandText}>{t('home.title')}</Text>
-        </View>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('home.menu')}
@@ -92,47 +97,55 @@ export default function HomeScreen() {
                   href={{ pathname: '/car/[carId]', params: { carId: car.id } }}
                   asChild
                 >
-                  <Pressable style={({ pressed }) => [styles.carCard, pressed && styles.cardPressed]}>
-                    <View style={styles.carCardTop}>
-                      <Text style={styles.carNickname}>{car.nickname}</Text>
-                      <View style={styles.carCardTopRight}>
-                        {overdueCount > 0 && <CountBadge count={overdueCount} />}
-                        <Pressable
-                          ref={(node) => {
-                            kebabRefs.current[car.id] = node;
-                          }}
-                          hitSlop={8}
-                          accessibilityRole="button"
-                          accessibilityLabel={t('home.menu')}
-                          onPress={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            openCardMenu(car.id);
-                          }}
-                          style={styles.cardKebab}
-                        >
-                          <Text style={styles.cardKebabGlyph}>⋮</Text>
-                        </Pressable>
+                  <Pressable style={styles.cardHit}>
+                    {({ pressed }) => (
+                      <View style={[styles.carCard, pressed && styles.cardPressed]}>
+                        <View style={styles.carCardTop}>
+                          <Text style={styles.carNickname}>{car.nickname}</Text>
+                          <View style={styles.carCardTopRight}>
+                            {overdueCount > 0 && <CountBadge count={overdueCount} />}
+                            <Pressable
+                              ref={(node) => {
+                                kebabRefs.current[car.id] = node;
+                              }}
+                              hitSlop={8}
+                              accessibilityRole="button"
+                              accessibilityLabel={t('home.menu')}
+                              onPress={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                openCardMenu(car.id);
+                              }}
+                              style={styles.cardKebab}
+                            >
+                              <Text style={styles.cardKebabGlyph}>⋮</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                        <Text style={styles.carMake}>{car.make}</Text>
+                        <Text style={styles.carModel}>
+                          {car.model} · {car.year}
+                        </Text>
+                        <Text style={styles.carOdometer}>
+                          {car.odometer.toLocaleString()} {t(`common.${car.unit}`)}
+                        </Text>
                       </View>
-                    </View>
-                    <Text style={styles.carMake}>{car.make}</Text>
-                    <Text style={styles.carModel}>
-                      {car.model} · {car.year}
-                    </Text>
-                    <Text style={styles.carOdometer}>
-                      {car.odometer.toLocaleString()} {t(`common.${car.unit}`)}
-                    </Text>
+                    )}
                   </Pressable>
                 </Link>
               );
             })}
 
             <Link href="/add-car" asChild>
-              <Pressable style={({ pressed }) => [styles.addCarCard, pressed && styles.cardPressed]}>
-                <View style={styles.addCarPlus}>
-                  <Text style={styles.addCarPlusGlyph}>+</Text>
-                </View>
-                <Text style={styles.addCarLabel}>{t('home.addCar')}</Text>
+              <Pressable style={styles.cardHit}>
+                {({ pressed }) => (
+                  <View style={[styles.addCarCard, pressed && styles.cardPressed]}>
+                    <View style={styles.addCarPlus}>
+                      <Text style={styles.addCarPlusGlyph}>+</Text>
+                    </View>
+                    <Text style={styles.addCarLabel}>{t('home.addCar')}</Text>
+                  </View>
+                )}
               </Pressable>
             </Link>
           </View>
@@ -262,8 +275,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
   },
-  carCard: {
+  cardHit: {
     width: '48%',
+  },
+  carCard: {
     minHeight: 132,
     justifyContent: 'center',
     backgroundColor: colors.surface,
@@ -325,7 +340,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addCarCard: {
-    width: '48%',
     minHeight: 132,
     alignItems: 'center',
     justifyContent: 'center',
