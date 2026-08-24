@@ -47,8 +47,9 @@ export function computeTrackedItemStatus(item: TrackedServiceItem, car: Car, now
   return { item, status, progress: Math.min(progress, 1), lastVisit };
 }
 
+/** Statuses for the car's currently-active tracked items — inactive items aren't due/overdue against anything. */
 export function computeCarItemStatuses(car: Car, now = Date.now()): TrackedItemStatus[] {
-  return car.trackedServiceItems.map((item) => computeTrackedItemStatus(item, car, now));
+  return car.trackedServiceItems.filter((item) => item.isActive).map((item) => computeTrackedItemStatus(item, car, now));
 }
 
 export function getOverdueItemsForCar(car: Car, now = Date.now()): TrackedItemStatus[] {

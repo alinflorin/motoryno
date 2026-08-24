@@ -94,6 +94,7 @@ Data Model (JSON object with arrays):
       "trackedServiceItems": [
         {
           "name": "item1",
+          "isActive": true,
           "timeIntervalDays": 365, // or null
           "kmInterval": 10000 // or null
         }

@@ -7,6 +7,7 @@ import { FormField } from '@/components/FormField';
 import type { Car } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, formatDistance, type DistanceUnit } from '@/utils/units';
 
 export interface CarFormValues {
@@ -131,8 +132,9 @@ export function CarFormFields({
               placeholder="2019"
               placeholderTextColor={colors.textFainter}
               keyboardType="number-pad"
+              maxLength={4}
               value={values.year}
-              onChangeText={(text) => setField('year', text)}
+              onChangeText={(text) => setField('year', sanitizeIntegerInput(text))}
             />
           </FormField>
         </View>
@@ -145,7 +147,7 @@ export function CarFormFields({
                 placeholderTextColor={colors.textFainter}
                 keyboardType="number-pad"
                 value={values.odometer}
-                onChangeText={(text) => setField('odometer', text)}
+                onChangeText={(text) => setField('odometer', sanitizeIntegerInput(text))}
               />
               <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
             </View>

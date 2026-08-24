@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { ProgressBar } from '@/components/ProgressBar';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
-import { DEFAULT_TRACKED_SERVICE_ITEMS, useStorage, type TrackedServiceItem } from '@/storage';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type ServiceItemStatus, type TrackedItemStatus } from '@/utils/serviceStatus';
@@ -13,20 +13,16 @@ import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type Ser
 export default function TrackedItemsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const { getCar, addTrackedServiceItem, removeTrackedServiceItem } = useStorage();
+  const { getCar, updateTrackedServiceItem } = useStorage();
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   if (!car) return null;
 
+  // computeCarItemStatuses already only considers isActive items.
   const itemStatuses = computeCarItemStatuses(car);
-  const trackedNames = new Set(car.trackedServiceItems.map((item) => item.name));
-  // The default catalog is the whole "known items" list a car can toggle
-  // back on — a custom item added via "+" only reappears here once tracked.
-  const availableItems: TrackedServiceItem[] = DEFAULT_TRACKED_SERVICE_ITEMS.filter(
-    (item) => !trackedNames.has(item.name)
-  );
+  const inactiveItems = car.trackedServiceItems.filter((item) => !item.isActive);
 
   const groups: { key: ServiceItemStatus; title: string; data: TrackedItemStatus[] }[] = [
     { key: 'overdue', title: t('trackedItems.overdueGroup'), data: itemStatuses.filter((i) => i.status === 'overdue') },
@@ -40,11 +36,16 @@ export default function TrackedItemsScreen() {
         options={{
           title: t('trackedItems.title'),
           headerRight: () => (
-            <Link href={{ pathname: '/car/[carId]/tracked-items/add', params: { carId } }} asChild>
-              <Pressable style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-                <Text style={styles.addButtonGlyph}>+</Text>
-              </Pressable>
-            </Link>
+            <View style={styles.headerRightContainer}>
+              <Link href={{ pathname: '/car/[carId]/tracked-items/add', params: { carId } }} asChild>
+                <Pressable
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}
+                >
+                  <Text style={styles.addButtonGlyph}>+</Text>
+                </Pressable>
+              </Link>
+            </View>
           ),
         }}
       />
@@ -62,12 +63,8 @@ export default function TrackedItemsScreen() {
                         <Text style={styles.itemName}>{entry.item.name}</Text>
                       </View>
                       <Switch
-                        value
-                        onValueChange={(value) => {
-                          // The stored tracking list only holds active items — turning
-                          // this off means "stop tracking", not a persisted flag.
-                          if (!value) removeTrackedServiceItem(car.vin, entry.item.name);
-                        }}
+                        value={entry.item.isActive}
+                        onValueChange={(value) => updateTrackedServiceItem(car.vin, entry.item.name, { isActive: value })}
                         trackColor={{ true: colors.amber, false: colors.borderStrong }}
                         thumbColor={colors.textPrimary}
                       />
@@ -86,13 +83,13 @@ export default function TrackedItemsScreen() {
           ),
         )}
 
-        {availableItems.length > 0 && (
+        {inactiveItems.length > 0 && (
           <View style={styles.group}>
             <Text style={[styles.groupTitle, { color: colors.textFaint }]}>
               {t('trackedItems.availableGroup')}
             </Text>
             <View style={styles.groupList}>
-              {availableItems.map((item) => (
+              {inactiveItems.map((item) => (
                 <View key={item.name} style={styles.card}>
                   <View style={styles.cardTop}>
                     <View style={styles.cardTopLeft}>
@@ -100,9 +97,7 @@ export default function TrackedItemsScreen() {
                     </View>
                     <Switch
                       value={false}
-                      onValueChange={(value) => {
-                        if (value) addTrackedServiceItem(car.vin, item);
-                      }}
+                      onValueChange={(value) => updateTrackedServiceItem(car.vin, item.name, { isActive: value })}
                       trackColor={{ true: colors.amber, false: colors.borderStrong }}
                       thumbColor={colors.textPrimary}
                     />
@@ -182,10 +177,13 @@ function getStyles(colors: ColorTokens) {
       color: colors.textFaint,
       fontSize: 11,
     },
+    headerRightContainer: {
+      paddingRight: 16,
+    },
     addButton: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       backgroundColor: colors.amber,
       alignItems: 'center',
       justifyContent: 'center',
@@ -195,7 +193,7 @@ function getStyles(colors: ColorTokens) {
     },
     addButtonGlyph: {
       color: colors.onAmber,
-      fontSize: 16,
+      fontSize: 20,
       fontWeight: '700',
       marginTop: -1,
     },

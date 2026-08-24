@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { Link, Redirect, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const styles = getStyles(colors);
-  const { settings, cars, removeCar } = useStorage();
+  const { loading, settings, cars, removeCar } = useStorage();
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
@@ -65,6 +65,9 @@ export default function HomeScreen() {
       });
     });
   };
+
+  if (loading) return null;
+  if (!settings.onboardingDone) return <Redirect href="/onboarding/welcome" />;
 
   return (
     <Screen>

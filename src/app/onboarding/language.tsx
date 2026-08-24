@@ -1,5 +1,4 @@
 import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +9,7 @@ import { Screen } from '@/components/Screen';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 import { setLanguage, type SupportedLanguage } from '@/configs/i18n';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 
@@ -24,9 +24,15 @@ export default function OnboardingLanguageScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>('EUR');
+  const { settings, updateSettings } = useStorage();
+  const currency = settings.currency;
   const colors = useThemeColors();
   const styles = getStyles(colors);
+
+  const setLanguageAndPersist = (code: SupportedLanguage) => {
+    void setLanguage(code);
+    updateSettings({ language: code });
+  };
 
   return (
     <Screen>
@@ -38,7 +44,7 @@ export default function OnboardingLanguageScreen() {
             <SettingsRow
               key={language.code}
               label={t(language.labelKey)}
-              onPress={() => setLanguage(language.code)}
+              onPress={() => setLanguageAndPersist(language.code)}
               right={i18n.language === language.code ? <Text style={styles.checkmark}>✓</Text> : undefined}
             />
           ))}
@@ -49,7 +55,7 @@ export default function OnboardingLanguageScreen() {
             <SettingsRow
               key={code}
               label={code}
-              onPress={() => setCurrency(code)}
+              onPress={() => updateSettings({ currency: code })}
               right={currency === code ? <Text style={styles.checkmark}>✓</Text> : undefined}
             />
           ))}
@@ -57,7 +63,10 @@ export default function OnboardingLanguageScreen() {
       </ScrollView>
       <OnboardingFooter
         insetBottom={insets.bottom}
-        onSkip={() => router.replace('/')}
+        onSkip={() => {
+          updateSettings({ onboardingDone: true });
+          router.replace('/');
+        }}
         onNext={() => router.push('/onboarding/account')}
       />
     </Screen>

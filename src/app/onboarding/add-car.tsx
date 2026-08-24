@@ -14,7 +14,7 @@ export default function OnboardingAddCarScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { settings, cars, addCar } = useStorage();
+  const { settings, cars, addCar, updateSettings } = useStorage();
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const { values, setField } = useCarFormState(undefined, distanceUnit);
 
@@ -35,9 +35,13 @@ export default function OnboardingAddCarScreen() {
         </ScrollView>
         <OnboardingFooter
           insetBottom={insets.bottom}
-          onSkip={() => router.replace('/')}
+          onSkip={() => {
+            updateSettings({ onboardingDone: true });
+            router.replace('/');
+          }}
           onNext={() => {
             addCarIfValid();
+            updateSettings({ onboardingDone: true });
             router.replace('/');
           }}
           nextLabel={t('onboarding.getStarted')}

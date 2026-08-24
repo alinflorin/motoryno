@@ -8,6 +8,7 @@ import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, distanceUnitFor } from '@/utils/units';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
@@ -39,6 +40,7 @@ export default function AddTrackedItemScreen() {
         Number.isFinite(distanceValue) && distanceValue > 0
           ? Math.round(displayToKm(distanceValue, distanceUnit))
           : null,
+      isActive: true,
     });
     router.back();
   };
@@ -70,7 +72,7 @@ export default function AddTrackedItemScreen() {
                   placeholderTextColor={colors.textFainter}
                   keyboardType="number-pad"
                   value={months}
-                  onChangeText={setMonths}
+                  onChangeText={(text) => setMonths(sanitizeIntegerInput(text))}
                 />
                 <Text style={styles.inputSuffix}>{t('addTrackedItem.months')}</Text>
               </View>
@@ -82,7 +84,7 @@ export default function AddTrackedItemScreen() {
                   placeholderTextColor={colors.textFainter}
                   keyboardType="number-pad"
                   value={distance}
-                  onChangeText={setDistance}
+                  onChangeText={(text) => setDistance(sanitizeIntegerInput(text))}
                 />
                 <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
               </View>

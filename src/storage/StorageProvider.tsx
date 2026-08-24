@@ -53,6 +53,23 @@ function mapCar(data: AppData, vin: string, fn: (car: Car) => Car): AppData {
   };
 }
 
+/** Fills in `isActive: true` on tracked items persisted before that field existed. */
+function normalizeAppData(data: AppData): AppData {
+  return {
+    ...data,
+    data: {
+      ...data.data,
+      cars: data.data.cars.map((car) => ({
+        ...car,
+        trackedServiceItems: car.trackedServiceItems.map((item) => ({
+          ...item,
+          isActive: item.isActive ?? true,
+        })),
+      })),
+    },
+  };
+}
+
 export function StorageProvider({ children }: { children: ReactNode }) {
   const [appData, setAppData] = useState<AppData>(createDefaultAppData);
   const [loading, setLoading] = useState(true);
@@ -65,7 +82,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
     (async () => {
       const loaded = await readAppData();
       if (cancelled) return;
-      const initial = loaded ?? createDefaultAppData();
+      const initial = loaded ? normalizeAppData(loaded) : createDefaultAppData();
       dataRef.current = initial;
       setAppData(initial);
       setLoading(false);

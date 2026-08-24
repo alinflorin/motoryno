@@ -30,6 +30,8 @@ export interface TrackedServiceItem {
   timeIntervalDays: number | null;
   /** Recommended interval in km, or null if this item isn't distance-based. */
   kmInterval: number | null;
+  /** Whether this item is currently tracked for due/overdue purposes. Toggling this off keeps the item (and its history) instead of removing it. */
+  isActive: boolean;
 }
 
 export interface ServiceVisit {
@@ -58,7 +60,7 @@ export interface Car {
   model: string;
   year: number;
   odometerKm: number;
-  /** The active tracking list — items not in here aren't tracked for due/overdue purposes. */
+  /** All items tracked or previously tracked for this car — see `TrackedServiceItem.isActive`. */
   trackedServiceItems: TrackedServiceItem[];
   serviceVisits: ServiceVisit[];
   obd: ObdConfig | null;

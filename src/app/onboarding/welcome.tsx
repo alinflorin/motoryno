@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingFooter } from '@/components/OnboardingFooter';
 import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
+import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 
@@ -13,6 +14,7 @@ export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { updateSettings } = useStorage();
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
@@ -43,7 +45,10 @@ export default function OnboardingWelcomeScreen() {
       </ScrollView>
       <OnboardingFooter
         insetBottom={insets.bottom}
-        onSkip={() => router.replace('/')}
+        onSkip={() => {
+          updateSettings({ onboardingDone: true });
+          router.replace('/');
+        }}
         onNext={() => router.push('/onboarding/intro')}
       />
     </Screen>

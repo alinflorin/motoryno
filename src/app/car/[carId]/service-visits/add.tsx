@@ -12,6 +12,7 @@ import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { parseDateDMYOrNow } from '@/utils/date';
+import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
 import { computeCarItemStatuses } from '@/utils/serviceStatus';
 import { displayToKm, distanceUnitFor, formatDistance } from '@/utils/units';
 
@@ -93,7 +94,7 @@ export default function AddServiceVisitScreen() {
                     style={styles.input}
                     keyboardType="number-pad"
                     value={odometer}
-                    onChangeText={setOdometer}
+                    onChangeText={(text) => setOdometer(sanitizeIntegerInput(text))}
                   />
                   <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
                 </View>
@@ -109,7 +110,7 @@ export default function AddServiceVisitScreen() {
                 placeholderTextColor={colors.textFainter}
                 keyboardType="decimal-pad"
                 value={price}
-                onChangeText={setPrice}
+                onChangeText={(text) => setPrice(sanitizeDecimalInput(text))}
               />
               <Text style={styles.inputSuffix}>{settings.currency}</Text>
             </View>

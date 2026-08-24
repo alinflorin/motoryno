@@ -27,11 +27,16 @@ export default function ServiceVisitsScreen() {
         options={{
           title: t('serviceVisits.title'),
           headerRight: () => (
-            <Link href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }} asChild>
-              <Pressable style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-                <Text style={styles.addButtonGlyph}>+</Text>
-              </Pressable>
-            </Link>
+            <View style={styles.headerRightContainer}>
+              <Link href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }} asChild>
+                <Pressable
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}
+                >
+                  <Text style={styles.addButtonGlyph}>+</Text>
+                </Pressable>
+              </Link>
+            </View>
           ),
         }}
       />
@@ -188,10 +193,13 @@ function getStyles(colors: ColorTokens) {
       color: colors.textSecondary,
       fontSize: 11,
     },
+    headerRightContainer: {
+      paddingRight: 16,
+    },
     addButton: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       backgroundColor: colors.amber,
       alignItems: 'center',
       justifyContent: 'center',
@@ -201,7 +209,7 @@ function getStyles(colors: ColorTokens) {
     },
     addButtonGlyph: {
       color: colors.onAmber,
-      fontSize: 16,
+      fontSize: 20,
       fontWeight: '700',
       marginTop: -1,
     },
