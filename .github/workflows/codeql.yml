@@ -1,0 +1,109 @@
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Weekly scan, Monday 03:17 UTC
+    - cron: '17 3 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Expo/React Native app code (TS/JS) — pure JS analysis, no build needed.
+          - language: javascript-typescript
+            build-mode: none
+            os: ubuntu-latest
+
+          # Android native project (Java/Kotlin under android/)
+          - language: java-kotlin
+            build-mode: manual
+            os: ubuntu-latest
+
+          # iOS native project (Swift/Obj-C under ios/) — requires macOS + Xcode.
+          - language: swift
+            build-mode: manual
+            os: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: matrix.language == 'javascript-typescript' || matrix.language == 'java-kotlin'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Set up JDK
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # android/ and ios/ are gitignored (Continuous Native Generation) —
+      # regenerate them from app.json/app.config before CodeQL can see or build them.
+      - name: Prebuild native Android project
+        if: matrix.language == 'java-kotlin'
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Prebuild native iOS project
+        if: matrix.language == 'swift'
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+
+      # --- Manual build: Android (Gradle) ---
+      - name: Build Android app
+        if: matrix.language == 'java-kotlin'
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleDebug --no-daemon -x lint -x test
+
+      # --- Manual build: iOS (Xcode) ---
+      - name: Install CocoaPods dependencies
+        if: matrix.language == 'swift'
+        working-directory: ios
+        run: pod install
+
+      - name: Build iOS app
+        if: matrix.language == 'swift'
+        working-directory: ios
+        run: |
+          xcodebuild build \
+            -workspace Motoryno.xcworkspace \
+            -scheme Motoryno \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=YES
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
