@@ -8,7 +8,8 @@
     "scheme": "motoryno",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.alinflorinciu.motoryno"
+      "bundleIdentifier": "com.alinflorinciu.motoryno",
+      "appleTeamId": "696KWJ7J76"
     },
     "android": {
       "adaptiveIcon": {

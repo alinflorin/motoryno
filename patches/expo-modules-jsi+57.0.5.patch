@@ -1,0 +1,9 @@
+diff --git a/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h b/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
+--- a/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
++++ b/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
+@@ -53 +53 @@ public:
+-  SWIFT_RETURNS_RETAINED RuntimeScheduler(void *scheduler, ScheduleFn fn) noexcept
++  RuntimeScheduler(void *scheduler, ScheduleFn fn) noexcept
+@@ -61 +61 @@ public:
+-  SWIFT_RETURNS_RETAINED RuntimeScheduler() {}
++  RuntimeScheduler() {}
