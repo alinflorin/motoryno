@@ -78,17 +78,12 @@ export default function HomeScreen() {
   return (
     <Screen>
       <View style={[styles.topBar, { paddingTop: topBarTop }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('home.title')}
-          onPress={() => router.push('/')}
-          style={styles.brand}
-        >
+        <View style={styles.brand}>
           <View style={styles.logoMark}>
             <Text style={styles.logoGlyph}>M</Text>
           </View>
           <Text style={styles.brandText}>{t('home.title')}</Text>
-        </Pressable>
+        </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('home.menu')}

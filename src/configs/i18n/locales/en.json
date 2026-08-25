@@ -269,15 +269,13 @@
     "welcomeGreeting": "Welcome to Motoryno 👋",
     "welcomeBody": "Let's get your garage set up. It only takes a minute — you can always change these later in Settings.",
     "stepsTitle": "What's next",
-    "stepIntro": "Quick intro",
-    "stepLanguage": "Language & Currency",
-    "stepAccount": "Account & Sync",
-    "stepAddCar": "Add your first car",
+    "stepIntro": "Intro",
+    "stepLanguage": "Preferences",
+    "stepAddCar": "New car",
     "introTitle": "Intro",
     "introBody1": "Motoryno keeps track of every service interval for every car you own — oil, filters, brakes, and more.",
     "introBody2": "Connect an OBD2 Bluetooth adapter and we'll read the odometer for you automatically, or enter it by hand any time.",
-    "languageTitle": "Language & Currency",
-    "accountTitle": "Account & Sync",
-    "addCarTitle": "Add Your Car"
+    "languageTitle": "Preferences",
+    "addCarTitle": "New Car"
   }
 }

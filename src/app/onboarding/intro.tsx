@@ -36,7 +36,7 @@ export default function OnboardingIntroScreen() {
           updateSettings({ onboardingDone: true });
           router.replace('/');
         }}
-        onNext={() => router.push('/onboarding/language')}
+        onNext={() => router.push('/onboarding/preferences')}
       />
     </Screen>
   );

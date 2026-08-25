@@ -276,15 +276,13 @@
     "welcomeGreeting": "Bine ai venit în Motoryno 👋",
     "welcomeBody": "Hai să-ți configurăm garajul. Durează doar un minut — poți schimba oricând mai târziu din Setări.",
     "stepsTitle": "Ce urmează",
-    "stepIntro": "Prezentare rapidă",
-    "stepLanguage": "Limbă și Monedă",
-    "stepAccount": "Cont și Sincronizare",
-    "stepAddCar": "Adaugă prima mașină",
+    "stepIntro": "Prezentare",
+    "stepLanguage": "Preferințe",
+    "stepAddCar": "Mașină nouă",
     "introTitle": "Prezentare",
     "introBody1": "Motoryno urmărește fiecare interval de service pentru fiecare mașină pe care o deții — ulei, filtre, frâne și altele.",
     "introBody2": "Conectează un adaptor OBD2 Bluetooth și îți citim automat kilometrajul, sau introdu-l manual oricând.",
-    "languageTitle": "Limbă și Monedă",
-    "accountTitle": "Cont și Sincronizare",
-    "addCarTitle": "Adaugă Mașina Ta"
+    "languageTitle": "Preferințe",
+    "addCarTitle": "Mașină Nouă"
   }
 }

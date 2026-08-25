@@ -23,7 +23,6 @@ export default function OnboardingWelcomeScreen() {
   const steps = [
     t('onboarding.stepIntro'),
     t('onboarding.stepLanguage'),
-    t('onboarding.stepAccount'),
     t('onboarding.stepAddCar'),
   ];
 
