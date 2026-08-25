@@ -52,6 +52,13 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      # javascript-typescript uses build-mode: none (pure static analysis), so
+      # CodeQL never actually compiles anything for this leg. Export the web
+      # bundle here as a sanity check that web-targeted code still builds.
+      - name: Build web app
+        if: matrix.language == 'javascript-typescript'
+        run: npm run build:web
+
       - name: Set up JDK
         if: matrix.language == 'java-kotlin'
         uses: actions/setup-java@v6
