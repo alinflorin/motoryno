@@ -1,17 +1,19 @@
 /**
  * Orchestrates the "self-detect" scan run right after a BLE OBD2 adapter is
- * paired on the car form: connect, read the VIN (standard OBD-II), decode
- * make/model/year from it, then try to read the odometer (make-specific PIDs
- * first, standard PID as fallback). Best-effort throughout - a car can be
- * saved with whatever subset of fields came back, and the rest filled in by
- * hand.
+ * paired on the car form: connect, read the VIN (standard OBD-II), then try
+ * to read the odometer (make-specific PIDs, matched off the VIN's WMI, first;
+ * standard PID as fallback). Best-effort throughout - a car can be saved with
+ * whatever subset of fields came back, and the rest filled in by hand.
+ *
+ * `make`/`model`/`year` are left for a VIN decoder to fill in - none is wired
+ * up right now (see git history for the previous corgi/vPIC-backed one), so
+ * they always come back null until one is.
  */
 
 import type { Device } from 'react-native-ble-plx';
 
 import { odometerCandidatesForVehicle } from '@/obd/catalogs/odometerDids';
 import { ElmConnection, openElmConnection, requestPid, requestVin } from '@/obd/elm327';
-import { decodeVin } from '@/obd/vin';
 
 export type ScanStep = 'connecting' | 'reading-vin' | 'reading-odometer';
 
@@ -73,13 +75,6 @@ export async function scanVehicleInfo(device: Device, onStep?: (step: ScanStep) 
       result.vin = await requestVin(connection);
     } catch {
       result.vin = null;
-    }
-
-    if (result.vin) {
-      const decoded = await decodeVin(result.vin);
-      result.make = decoded?.make ?? null;
-      result.model = decoded?.model ?? null;
-      result.year = decoded?.year ?? null;
     }
 
     onStep?.('reading-odometer');

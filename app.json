@@ -57,7 +57,6 @@
         }
       ],
       "./plugins/withoutPushEntitlement",
-      "expo-sqlite",
       "expo-asset"
     ],
     "experiments": {
