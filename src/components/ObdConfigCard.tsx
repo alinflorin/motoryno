@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Device } from 'react-native-ble-plx';
 
-import { getBleManager } from '@/ble/bleManager';
+import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { requestBlePermissions } from '@/ble/permissions';
 import type { ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
@@ -49,6 +49,16 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
     const granted = await requestBlePermissions();
     if (!granted) {
       notify(t('common.error'), t('carForm.obdPermissionDenied'));
+      return;
+    }
+
+    // On iOS the permission prompt (triggered by creating the manager) and
+    // the adapter powering on both happen asynchronously in native code -
+    // wait for that to settle before scanning, or the first-ever scan fails
+    // immediately even though the user is about to grant access.
+    const poweredOn = await waitForPoweredOn(manager);
+    if (!poweredOn) {
+      notify(t('common.error'), t('carForm.obdScanFailed'));
       return;
     }
 
