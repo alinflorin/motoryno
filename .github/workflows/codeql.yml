@@ -40,11 +40,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        if: matrix.language == 'javascript-typescript' || matrix.language == 'java-kotlin'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -54,7 +53,7 @@ jobs:
 
       - name: Set up JDK
         if: matrix.language == 'java-kotlin'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -69,8 +68,29 @@ jobs:
         if: matrix.language == 'swift'
         run: npx expo prebuild --platform ios --no-install
 
+      # --- Gradle cache (java-kotlin only) ---
+      # Placed after prebuild since android/ is generated; setup-gradle just needs
+      # to run before any ./gradlew invocation to wire up its cache.
+      - name: Set up Gradle
+        if: matrix.language == 'java-kotlin'
+        uses: gradle/actions/setup-gradle@v6
+
+      # --- CocoaPods cache (swift only) ---
+      # Keyed on the generated Podfile (Podfile.lock doesn't exist pre-`pod install`
+      # since ios/ isn't checked in); restore-keys fall back to the newest match.
+      - name: Cache CocoaPods
+        if: matrix.language == 'swift'
+        uses: actions/cache@v6
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -104,6 +124,6 @@ jobs:
             ONLY_ACTIVE_ARCH=YES
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
