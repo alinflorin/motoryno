@@ -24,7 +24,7 @@ export default function SettingsAccountScreen() {
       await downloadAppData({ settings, data: { cars } });
     } catch (error) {
       console.warn('[settings/account] Failed to download data.', error);
-      notify(t('settingsAccount.downloadError'));
+      notify(t('common.error'), t('settingsAccount.downloadError'));
     } finally {
       setDownloading(false);
     }
@@ -45,10 +45,10 @@ export default function SettingsAccountScreen() {
       if (!proceed) return;
 
       replaceAllData(imported);
-      notify(t('settingsAccount.importSuccess'));
+      notify(t('common.success'), t('settingsAccount.importSuccess'));
     } catch (error) {
       console.warn('[settings/account] Failed to import data.', error);
-      notify(t('settingsAccount.importError'));
+      notify(t('common.error'), t('settingsAccount.importError'));
     } finally {
       setImporting(false);
     }
@@ -58,10 +58,10 @@ export default function SettingsAccountScreen() {
     setSharing(true);
     try {
       const shared = await shareCarsData(cars);
-      if (!shared) notify(t('settingsAccount.shareUnavailable'));
+      if (!shared) notify(t('common.error'), t('settingsAccount.shareUnavailable'));
     } catch (error) {
       console.warn('[settings/account] Failed to share data.', error);
-      notify(t('settingsAccount.shareError'));
+      notify(t('common.error'), t('settingsAccount.shareError'));
     } finally {
       setSharing(false);
     }

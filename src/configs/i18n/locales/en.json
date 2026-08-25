@@ -11,7 +11,9 @@
     "no": "No",
     "done": "Done",
     "km": "km",
-    "mi": "mi"
+    "mi": "mi",
+    "error": "Error",
+    "success": "Success"
   },
   "defaultServiceItems": {
     "Engine oil": "Engine oil",

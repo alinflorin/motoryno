@@ -48,7 +48,7 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
 
     const granted = await requestBlePermissions();
     if (!granted) {
-      notify(t('carForm.obdPermissionDenied'));
+      notify(t('common.error'), t('carForm.obdPermissionDenied'));
       return;
     }
 
@@ -57,7 +57,7 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
     manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
       if (error) {
         stopScan();
-        notify(t('carForm.obdScanFailed'));
+        notify(t('common.error'), t('carForm.obdScanFailed'));
         return;
       }
       if (!device?.name) return;

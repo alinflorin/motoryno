@@ -11,7 +11,9 @@
     "no": "Nu",
     "done": "Gata",
     "km": "km",
-    "mi": "mi"
+    "mi": "mi",
+    "error": "Eroare",
+    "success": "Succes"
   },
   "defaultServiceItems": {
     "Engine oil": "Ulei motor",

@@ -19,10 +19,10 @@ export function confirmAsync(title: string, message: string, confirmLabel: strin
 }
 
 /** Cross-platform single-button info alert — see `confirmAsync` for why web needs its own path. */
-export function notify(message: string): void {
+export function notify(title: string, message: string): void {
   if (Platform.OS === 'web') {
-    window.alert(message);
+    window.alert(`${title}\n\n${message}`);
     return;
   }
-  Alert.alert(message);
+  Alert.alert(title, message);
 }
