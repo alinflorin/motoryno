@@ -9,8 +9,8 @@
 
 import type { Device } from 'react-native-ble-plx';
 
+import { odometerCandidatesForVehicle } from '@/obd/catalogs/odometerDids';
 import { ElmConnection, openElmConnection, requestPid, requestVin } from '@/obd/elm327';
-import { odometerCandidatesForMake } from '@/obd/pids';
 import { decodeVin } from '@/obd/vin';
 
 export type ScanStep = 'connecting' | 'reading-vin' | 'reading-odometer';
@@ -25,9 +25,23 @@ export interface VehicleScanResult {
   connectionFailed: boolean;
 }
 
-async function readOdometer(connection: ElmConnection, make: string | null): Promise<number | null> {
-  for (const candidate of odometerCandidatesForMake(make)) {
+async function readOdometer(connection: ElmConnection, vin: string | null, make: string | null): Promise<number | null> {
+  // Brand-specific candidates may target a non-default CAN header (a
+  // specific ECU); track whether one is currently set so it can be reset
+  // before falling through to a candidate (typically the standard PID) that
+  // expects default/auto addressing instead.
+  let headerOverridden = false;
+
+  for (const candidate of await odometerCandidatesForVehicle(vin, make)) {
     try {
+      if (candidate.ecuHeader) {
+        await connection.sendCommand(`ATSH${candidate.ecuHeader}`);
+        headerOverridden = true;
+      } else if (headerOverridden) {
+        await connection.sendCommand('ATSP0');
+        headerOverridden = false;
+      }
+
       const bytes = await requestPid(connection, candidate.mode, candidate.pid);
       if (!bytes) continue;
       const km = candidate.decode(bytes);
@@ -62,7 +76,7 @@ export async function scanVehicleInfo(device: Device, onStep?: (step: ScanStep) 
     }
 
     if (result.vin) {
-      const decoded = decodeVin(result.vin);
+      const decoded = await decodeVin(result.vin);
       result.make = decoded?.make ?? null;
       result.model = decoded?.model ?? null;
       result.year = decoded?.year ?? null;
@@ -70,7 +84,7 @@ export async function scanVehicleInfo(device: Device, onStep?: (step: ScanStep) 
 
     onStep?.('reading-odometer');
     try {
-      result.odometerKm = await readOdometer(connection, result.make);
+      result.odometerKm = await readOdometer(connection, result.vin, result.make);
     } catch {
       result.odometerKm = null;
     }
