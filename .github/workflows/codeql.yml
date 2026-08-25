@@ -105,10 +105,22 @@ jobs:
           ./gradlew :app:assembleDebug --no-daemon -x lint -x test
 
       # --- Manual build: iOS (Xcode) ---
+      # pod install hits CocoaPods' trunk CDN (raw.githubusercontent.com) to resolve
+      # podspecs; shared macOS runners occasionally get 429'd there. Retry with backoff
+      # before giving up.
       - name: Install CocoaPods dependencies
         if: matrix.language == 'swift'
         working-directory: ios
-        run: pod install
+        run: |
+          for attempt in 1 2 3; do
+            if pod install; then
+              exit 0
+            fi
+            echo "pod install failed (attempt $attempt/3), retrying after backoff..."
+            sleep $((attempt * 30))
+          done
+          echo "pod install failed after 3 attempts"
+          exit 1
 
       - name: Build iOS app
         if: matrix.language == 'swift'
