@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -9,7 +9,8 @@ import { z } from 'zod';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 import { ObdConfigCard } from '@/components/ObdConfigCard';
-import type { VehicleScanResult } from '@/obd';
+import type { DecodedVin, VehicleScanResult } from '@/obd';
+import { decodeVin } from '@/obd';
 import type { Car, ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
@@ -111,25 +112,33 @@ function buildCarFormSchema(t: TFunction, existingVins: string[]) {
 }
 
 /**
+ * Fills in whichever of make/model/year a decoded VIN actually resolved - fields that came
+ * back null are left as the user typed them. Shared by the OBD scan path and manual VIN entry.
+ */
+function applyDecodedVin(setValue: UseFormSetValue<CarFormValues>, decoded: DecodedVin | null): void {
+  if (!decoded) return;
+  if (decoded.make) {
+    setValue('make', decoded.make, { shouldValidate: true, shouldDirty: true });
+  }
+  if (decoded.model) {
+    setValue('model', decoded.model, { shouldValidate: true, shouldDirty: true });
+  }
+  if (decoded.year !== null && isValidYear(decoded.year)) {
+    setValue('year', String(decoded.year), { shouldValidate: true, shouldDirty: true });
+  }
+}
+
+/**
  * Fills in whichever form fields a BLE vehicle scan (see `ObdConfigCard`) actually found - fields
  * that came back null are left as the user typed them. VIN is only applied if it passed validation
- * (the adapter can hand back garbage), and odometer is converted from km to the form's unit.
- * `make`/`model`/`year` come back null until a VIN decoder is wired back in (see `scanVehicle.ts`).
+ * (the adapter/decoding can hand back garbage), and odometer is converted from km to the form's unit.
  */
 function applyScanResult(setValue: UseFormSetValue<CarFormValues>, result: VehicleScanResult, distanceUnit: DistanceUnit): void {
   const sanitizedVin = result.vin ? sanitizeVinInput(result.vin) : null;
   if (sanitizedVin && isValidVin(sanitizedVin)) {
     setValue('vin', sanitizedVin, { shouldValidate: true, shouldDirty: true });
   }
-  if (result.make) {
-    setValue('make', result.make, { shouldValidate: true, shouldDirty: true });
-  }
-  if (result.model) {
-    setValue('model', result.model, { shouldValidate: true, shouldDirty: true });
-  }
-  if (result.year !== null && isValidYear(result.year)) {
-    setValue('year', String(result.year), { shouldValidate: true, shouldDirty: true });
-  }
+  applyDecodedVin(setValue, result);
   if (result.odometerKm !== null) {
     setValue('odometer', String(Math.round(kmToDisplay(result.odometerKm, distanceUnit))), { shouldValidate: true, shouldDirty: true });
   }
@@ -191,6 +200,41 @@ export function CarFormFields({
   // submit) — otherwise every required field complains the instant the form mounts.
   const fieldError = (name: keyof CarFormValues) => (touchedFields[name] || isSubmitted ? errors[name]?.message : undefined);
 
+  // Guards against a stale decode landing after the user has already moved on to a
+  // different VIN (or the same one finishing twice) - only the most recently typed
+  // VIN's decode result is ever applied.
+  const lastDecodedVinRef = useRef<string | null>(null);
+  const [vinDecodeStatus, setVinDecodeStatus] = useState<'idle' | 'decoding' | 'decoded' | 'notFound'>('idle');
+
+  const handleVinChange = (rawText: string, onChange: (value: string) => void) => {
+    const sanitized = sanitizeVinInput(rawText);
+    onChange(sanitized);
+
+    if (sanitized.length !== 17 || !isValidVin(sanitized)) {
+      setVinDecodeStatus('idle');
+      return;
+    }
+    if (sanitized === lastDecodedVinRef.current) return;
+
+    lastDecodedVinRef.current = sanitized;
+    setVinDecodeStatus('decoding');
+    decodeVin(sanitized)
+      .then((decoded) => {
+        if (lastDecodedVinRef.current !== sanitized) return;
+        if (decoded && (decoded.make || decoded.model || decoded.year !== null)) {
+          applyDecodedVin(setValue, decoded);
+          setVinDecodeStatus('decoded');
+        } else {
+          setVinDecodeStatus('notFound');
+        }
+      })
+      .catch((error: unknown) => {
+        if (lastDecodedVinRef.current !== sanitized) return;
+        console.warn('[CarForm] VIN decode failed', error);
+        setVinDecodeStatus('notFound');
+      });
+  };
+
   return (
     <>
       <ObdConfigCard obd={obd} onObdChange={onObdChange} onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)} />
@@ -207,11 +251,14 @@ export function CarFormFields({
               autoCapitalize="characters"
               maxLength={17}
               value={value}
-              onChangeText={(text) => onChange(sanitizeVinInput(text))}
+              onChangeText={(text) => handleVinChange(text, onChange)}
               onBlur={onBlur}
             />
           )}
         />
+        {vinDecodeStatus === 'decoding' && <Text style={styles.vinStatus}>{t('carForm.vinDecoding')}</Text>}
+        {vinDecodeStatus === 'decoded' && <Text style={styles.vinStatus}>{t('carForm.vinDecoded')}</Text>}
+        {vinDecodeStatus === 'notFound' && <Text style={styles.vinStatus}>{t('carForm.vinNotDecoded')}</Text>}
       </FormField>
 
       <FormField label={t('carForm.nickname')} error={fieldError('nickname')}>
@@ -403,6 +450,10 @@ function getStyles(colors: ColorTokens) {
     inputSuffix: {
       position: 'absolute',
       right: 14,
+      color: colors.textFaint,
+      fontSize: 12,
+    },
+    vinStatus: {
       color: colors.textFaint,
       fontSize: 12,
     },

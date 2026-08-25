@@ -6,3 +6,5 @@ export { STANDARD_ODOMETER_PID } from '@/obd/pids';
 export type { OdometerPidDef } from '@/obd/pids';
 export { scanVehicleInfo } from '@/obd/scanVehicle';
 export type { ScanStep, VehicleScanResult } from '@/obd/scanVehicle';
+export { decodeVin, resetVinDecoder, setVinDecoder } from '@/obd/vin';
+export type { DecodedVin, VinDecoder } from '@/obd/vin';
