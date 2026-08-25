@@ -1,0 +1,24 @@
+{
+  "name": "obd-ble-sim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulates a BLE ELM327-compatible OBD2 adapter, for testing the Motoryno app's BLE flow without a real car/dongle.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -p .",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@abandonware/bleno": "^0.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "allowScripts": {
+    "@abandonware/bleno@0.6.2": true,
+    "esbuild@0.28.2": true
+  }
+}
