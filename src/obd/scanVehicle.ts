@@ -10,6 +10,7 @@
 import type { Device } from 'react-native-ble-plx';
 
 import { odometerCandidatesForVehicle } from '@/obd/catalogs/odometerDids';
+import { decodeVinDidBytes, vinDidCandidates } from '@/obd/catalogs/vinDids';
 import { ElmConnection, openElmConnection, requestPid, requestVin } from '@/obd/elm327';
 import { decodeVin } from '@/obd/vin';
 
@@ -23,6 +24,44 @@ export interface VehicleScanResult {
   odometerKm: number | null;
   /** True if the connection/handshake itself failed - nothing could be read. */
   connectionFailed: boolean;
+}
+
+/**
+ * Reads the VIN via the standard Mode 09 request, falling back to
+ * manufacturer UDS DIDs (Mode 22, F190) aimed at each known ECU header in
+ * turn - some makes don't answer the standard request at all. The make isn't
+ * known yet at this point (decoding the VIN is what tells us the make), so
+ * this can't narrow down to one manufacturer's catalog the way the odometer
+ * read does; it just works through every header the bundled catalogs use.
+ */
+async function readVin(connection: ElmConnection): Promise<string | null> {
+  try {
+    const vin = await requestVin(connection);
+    if (vin) return vin;
+  } catch {
+    // Fall through to the catalog-derived UDS fallback below.
+  }
+
+  let headerOverridden = false;
+  for (const candidate of vinDidCandidates()) {
+    try {
+      if (candidate.ecuHeader) {
+        await connection.sendCommand(`ATSH${candidate.ecuHeader}`);
+        headerOverridden = true;
+      } else if (headerOverridden) {
+        await connection.sendCommand('ATSP0');
+        headerOverridden = false;
+      }
+
+      const bytes = await requestPid(connection, candidate.mode, candidate.pid);
+      if (!bytes) continue;
+      const vin = decodeVinDidBytes(bytes);
+      if (vin) return vin;
+    } catch {
+      // Try the next header - most won't apply to this particular vehicle.
+    }
+  }
+  return null;
 }
 
 async function readOdometer(connection: ElmConnection, vin: string | null, make: string | null): Promise<number | null> {
@@ -70,9 +109,17 @@ export async function scanVehicleInfo(device: Device, onStep?: (step: ScanStep) 
 
     onStep?.('reading-vin');
     try {
-      result.vin = await requestVin(connection);
+      result.vin = await readVin(connection);
     } catch {
       result.vin = null;
+    }
+    try {
+      // readVin may leave a manufacturer ECU header set (if a catalog fallback
+      // candidate answered) - readOdometer tracks/resets headers from its own
+      // clean-slate assumption, so restore default addressing before it starts.
+      await connection.sendCommand('ATSP0');
+    } catch {
+      // Best-effort - the odometer read below still tracks/resets headers itself.
     }
 
     if (result.vin) {
