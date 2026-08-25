@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm, type Control, type FieldErrors } from 'react-hook-form';
+import { Controller, useForm, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 import { ObdConfigCard } from '@/components/ObdConfigCard';
+import type { VehicleScanResult } from '@/obd';
 import type { Car, ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
@@ -110,6 +111,30 @@ function buildCarFormSchema(t: TFunction, existingVins: string[]) {
 }
 
 /**
+ * Fills in whichever form fields a BLE vehicle scan (see `ObdConfigCard`) actually found - fields
+ * that came back null are left as the user typed them. VIN is only applied if it passed validation
+ * (the adapter/decoding can hand back garbage), and odometer is converted from km to the form's unit.
+ */
+function applyScanResult(setValue: UseFormSetValue<CarFormValues>, result: VehicleScanResult, distanceUnit: DistanceUnit): void {
+  const sanitizedVin = result.vin ? sanitizeVinInput(result.vin) : null;
+  if (sanitizedVin && isValidVin(sanitizedVin)) {
+    setValue('vin', sanitizedVin, { shouldValidate: true, shouldDirty: true });
+  }
+  if (result.make) {
+    setValue('make', result.make, { shouldValidate: true, shouldDirty: true });
+  }
+  if (result.model) {
+    setValue('model', result.model, { shouldValidate: true, shouldDirty: true });
+  }
+  if (result.year !== null && isValidYear(result.year)) {
+    setValue('year', String(result.year), { shouldValidate: true, shouldDirty: true });
+  }
+  if (result.odometerKm !== null) {
+    setValue('odometer', String(Math.round(kmToDisplay(result.odometerKm, distanceUnit))), { shouldValidate: true, shouldDirty: true });
+  }
+}
+
+/**
  * Drives one car form: validated with zod, revalidated on every change. Shared by every
  * screen that hosts CarFormFields. `existingVins` should list every *other* car's VIN
  * (i.e. excluding the car being edited, if any) so the duplicate check doesn't flag itself.
@@ -141,6 +166,7 @@ export function CarFormFields({
   errors,
   touchedFields,
   isSubmitted,
+  setValue,
   distanceUnit,
   obd,
   onObdChange,
@@ -149,6 +175,7 @@ export function CarFormFields({
   errors: FieldErrors<CarFormValues>;
   touchedFields: Partial<Readonly<Record<keyof CarFormValues, boolean>>>;
   isSubmitted: boolean;
+  setValue: UseFormSetValue<CarFormValues>;
   distanceUnit: DistanceUnit;
   /** The car's persisted OBD adapter, if any — null for a car that's never been paired (or a new car). */
   obd: ObdConfig | null;
@@ -165,7 +192,7 @@ export function CarFormFields({
 
   return (
     <>
-      <ObdConfigCard obd={obd} onObdChange={onObdChange} />
+      <ObdConfigCard obd={obd} onObdChange={onObdChange} onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)} />
 
       <FormField label={t('carForm.nickname')} error={fieldError('nickname')}>
         <Controller
@@ -306,6 +333,7 @@ export function CarForm({
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useCarForm(car, distanceUnit, existingVins);
   const [obd, setObd] = useState<ObdConfig | null>(car?.obd ?? null);
@@ -324,6 +352,7 @@ export function CarForm({
           errors={errors}
           touchedFields={touchedFields}
           isSubmitted={isSubmitted}
+          setValue={setValue}
           distanceUnit={distanceUnit}
           obd={obd}
           onObdChange={setObd}

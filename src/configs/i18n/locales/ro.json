@@ -184,6 +184,10 @@
     "obdScanning": "Se caută dispozitive din apropiere…",
     "obdPermissionDenied": "Este necesară permisiunea Bluetooth pentru a căuta un adaptor OBD2.",
     "obdScanFailed": "Scanarea Bluetooth a eșuat. Asigură-te că Bluetooth este pornit și încearcă din nou.",
+    "obdConnecting": "Se conectează la adaptor…",
+    "obdReadingVin": "Se citește seria de șasiu (VIN)…",
+    "obdReadingOdometer": "Se citește kilometrajul…",
+    "obdScanInfoFailed": "Nu s-au putut citi datele mașinii de la adaptor. Poți introduce datele manual.",
     "scan": "Scanează",
     "change": "Schimbă",
     "saveCar": "Salvează Mașina"

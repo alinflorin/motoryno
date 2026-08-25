@@ -5,6 +5,8 @@ import type { Device } from 'react-native-ble-plx';
 
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { requestBlePermissions } from '@/ble/permissions';
+import type { ScanStep, VehicleScanResult } from '@/obd';
+import { scanVehicleInfo } from '@/obd';
 import type { ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
@@ -14,20 +16,43 @@ import { formatDateDMY } from '@/utils/date';
 /** Stop scanning after this long even if nothing (more) was found. */
 const SCAN_TIMEOUT_MS = 15000;
 
+function scanStepLabelKey(step: ScanStep) {
+  switch (step) {
+    case 'connecting':
+      return 'carForm.obdConnecting' as const;
+    case 'reading-vin':
+      return 'carForm.obdReadingVin' as const;
+    case 'reading-odometer':
+      return 'carForm.obdReadingOdometer' as const;
+  }
+}
+
 /**
  * Card offering to scan for/pair a BLE OBD2 adapter, shown on the car form.
  * When `obd` is already persisted for the car, it's displayed instead of the
  * scan prompt, with a button to pair a different adapter. Tapping scan lists
- * nearby BLE devices right in the card — tapping one pairs it.
+ * nearby BLE devices right in the card — tapping one pairs it, then the
+ * adapter is briefly connected to read the VIN/make/model/year/odometer,
+ * reported back via `onScanResult` for the form to prefill.
  * BLE isn't available on web, so this renders nothing there.
  */
-export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onObdChange: (obd: ObdConfig) => void }) {
+export function ObdConfigCard({
+  obd,
+  onObdChange,
+  onScanResult,
+}: {
+  obd: ObdConfig | null;
+  onObdChange: (obd: ObdConfig) => void;
+  /** Called with whatever the post-pairing vehicle scan found (fields not read come back null). */
+  onScanResult: (result: VehicleScanResult) => void;
+}) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   const [scanning, setScanning] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [readingStep, setReadingStep] = useState<ScanStep | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopScan = useCallback(() => {
@@ -78,12 +103,22 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
   }, [stopScan, t]);
 
   const selectDevice = useCallback(
-    (device: Device) => {
+    async (device: Device) => {
       stopScan();
-      onObdChange({ deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null });
       setDevices([]);
+      onObdChange({ deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null });
+
+      try {
+        const result = await scanVehicleInfo(device, setReadingStep);
+        if (result.connectionFailed) {
+          notify(t('common.error'), t('carForm.obdScanInfoFailed'));
+        }
+        onScanResult(result);
+      } finally {
+        setReadingStep(null);
+      }
     },
-    [stopScan, onObdChange]
+    [stopScan, onObdChange, onScanResult, t]
   );
 
   if (Platform.OS === 'web') {
@@ -96,7 +131,11 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
         <Text style={styles.obdTitle}>{t('carForm.obdTitle')}</Text>
       </View>
       <View style={styles.obdBody}>
-        {obd ? (
+        {readingStep ? (
+          <View style={styles.obdDeviceInfo}>
+            <Text style={styles.obdSubtitle}>{t(scanStepLabelKey(readingStep))}</Text>
+          </View>
+        ) : obd ? (
           <View style={styles.obdDeviceInfo}>
             <Text style={styles.obdDeviceName}>{obd.deviceName}</Text>
             <Text style={styles.obdSubtitle}>
@@ -109,8 +148,9 @@ export function ObdConfigCard({ obd, onObdChange }: { obd: ObdConfig | null; onO
         <Pressable
           style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}
           onPress={scanning ? stopScan : startScan}
+          disabled={!!readingStep}
         >
-          {scanning ? (
+          {scanning || readingStep ? (
             <ActivityIndicator size="small" color={colors.onAmber} />
           ) : (
             <Text style={styles.scanButtonText}>{obd ? t('carForm.change') : t('carForm.scan')}</Text>

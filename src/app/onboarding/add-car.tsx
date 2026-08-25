@@ -22,6 +22,7 @@ export default function OnboardingAddCarScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useCarForm(undefined, distanceUnit, cars.map((car) => car.vin));
 
@@ -36,6 +37,7 @@ export default function OnboardingAddCarScreen() {
             errors={errors}
             touchedFields={touchedFields}
             isSubmitted={isSubmitted}
+            setValue={setValue}
             distanceUnit={distanceUnit}
             obd={obd}
             onObdChange={setObd}

@@ -178,6 +178,10 @@
     "obdScanning": "Scanning for nearby devices…",
     "obdPermissionDenied": "Bluetooth permission is required to scan for an OBD2 adapter.",
     "obdScanFailed": "Bluetooth scan failed. Make sure Bluetooth is turned on and try again.",
+    "obdConnecting": "Connecting to adapter…",
+    "obdReadingVin": "Reading VIN…",
+    "obdReadingOdometer": "Reading odometer…",
+    "obdScanInfoFailed": "Couldn't read vehicle info from the adapter. You can still enter the details manually.",
     "scan": "Scan",
     "change": "Change",
     "saveCar": "Save Car"
