@@ -15,8 +15,9 @@ export default function OnboardingPreferencesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { updateSettings } = useStorage();
+  const { cars, updateSettings } = useStorage();
   const colors = useThemeColors();
+  const hasCars = cars.length > 0;
 
   return (
     <Screen>
@@ -31,7 +32,15 @@ export default function OnboardingPreferencesScreen() {
           updateSettings({ onboardingDone: true });
           router.replace('/');
         }}
-        onNext={() => router.push('/onboarding/add-car')}
+        onNext={() => {
+          if (hasCars) {
+            updateSettings({ onboardingDone: true });
+            router.replace('/');
+          } else {
+            router.push('/onboarding/add-car');
+          }
+        }}
+        nextLabel={hasCars ? t('onboarding.getStarted') : undefined}
       />
     </Screen>
   );

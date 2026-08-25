@@ -16,7 +16,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SettingsSection>
           <SettingsRow label={t('settings.preferences')} onPress={() => router.push('/settings/preferences')} />
-          <SettingsRow label={t('settings.account')} onPress={() => router.push('/settings/account')} />
+          <SettingsRow label={t('settings.data')} onPress={() => router.push('/settings/data')} />
           <SettingsRow label={t('settings.notifications')} onPress={() => router.push('/settings/notifications')} />
           <SettingsRow label={t('settings.reset')} onPress={() => router.push('/settings/reset')} />
         </SettingsSection>

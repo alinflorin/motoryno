@@ -100,7 +100,6 @@ export default function HomeScreen() {
         top={topBarTop + 42}
         items={[
           { key: 'settings', label: t('home.settings'), icon: 'settings-outline', onPress: () => router.push('/settings') },
-          { key: 'about', label: t('home.about'), icon: 'information-circle-outline', onPress: () => router.push('/about') },
         ]}
       />
 

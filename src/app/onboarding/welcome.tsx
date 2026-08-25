@@ -16,14 +16,14 @@ export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { updateSettings } = useStorage();
+  const { cars, updateSettings } = useStorage();
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
   const steps = [
     t('onboarding.stepIntro'),
     t('onboarding.stepLanguage'),
-    t('onboarding.stepAddCar'),
+    ...(cars.length === 0 ? [t('onboarding.stepAddCar')] : []),
   ];
 
   return (

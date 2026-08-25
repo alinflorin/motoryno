@@ -79,22 +79,10 @@
     "addCar": "Add Car",
     "menu": "Menu",
     "settings": "Settings",
-    "about": "About",
     "viewCar": "View",
     "editCar": "Edit",
     "deleteCar": "Delete",
     "deleteCarConfirm": "Remove {{car}} and all its data? This can't be undone."
-  },
-  "about": {
-    "title": "About",
-    "tagline": "Track service intervals for every car you own, automatically or semi-automatically.",
-    "help": "Help & FAQ",
-    "rate": "Rate the App",
-    "feedback": "Send Feedback",
-    "website": "Website",
-    "version": "v{{version}}",
-    "tos": "Terms of Service",
-    "privacyPolicy": "Privacy Policy"
   },
   "car": {
     "odometer": "Odometer",
@@ -207,7 +195,7 @@
     "language": "Language",
     "currency": "Currency",
     "notifications": "Notifications",
-    "account": "Account & Sync",
+    "data": "Data",
     "reset": "Reset",
     "viewOnboarding": "View Onboarding"
   },
@@ -228,16 +216,9 @@
     "romanian": "Română",
     "currency": "Currency"
   },
-  "settingsAccount": {
-    "title": "Account & Sync",
-    "loginWithGoogle": "Login with Google",
-    "loginWithApple": "Login with Apple",
-    "loggedInAs": "Logged in with {{email}} ({{provider}}).",
-    "lastSync": "Last sync: {{date}}",
-    "syncNow": "Sync now!",
-    "logOut": "Log out",
-    "syncSubtitle": "Your data syncs automatically so your cars and service history follow you to a new device.",
-    "notConnected": "Not connected",
+  "settingsData": {
+    "title": "Data",
+    "subtitle": "Your cars and service history are backed up automatically to iCloud (iOS) or Google Drive (Android) as part of your regular device backup — no account or login needed in the app. You can also manage a copy yourself below.",
     "downloadSubtitle": "Download a copy of all your cars, tracked items and service history as a JSON file.",
     "downloadData": "Download data",
     "downloading": "Downloading…",

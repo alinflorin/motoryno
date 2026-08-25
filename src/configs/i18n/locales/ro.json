@@ -81,22 +81,10 @@
     "addCar": "Adaugă Mașină",
     "menu": "Meniu",
     "settings": "Setări",
-    "about": "Despre",
     "viewCar": "Vizualizează",
     "editCar": "Editează",
     "deleteCar": "Șterge",
     "deleteCarConfirm": "Ștergi {{car}} și toate datele sale? Această acțiune nu poate fi anulată."
-  },
-  "about": {
-    "title": "Despre",
-    "tagline": "Urmărește intervalele de service pentru fiecare mașină, automat sau semi-automat.",
-    "help": "Ajutor și Întrebări Frecvente",
-    "rate": "Evaluează Aplicația",
-    "feedback": "Trimite Feedback",
-    "website": "Website",
-    "version": "v{{version}}",
-    "tos": "Termeni și Condiții",
-    "privacyPolicy": "Politica de Confidențialitate"
   },
   "car": {
     "odometer": "Kilometraj",
@@ -213,7 +201,7 @@
     "language": "Limbă",
     "currency": "Monedă",
     "notifications": "Notificări",
-    "account": "Cont și Sincronizare",
+    "data": "Date",
     "reset": "Resetare",
     "viewOnboarding": "Vezi Introducerea"
   },
@@ -235,16 +223,9 @@
     "romanian": "Română",
     "currency": "Monedă"
   },
-  "settingsAccount": {
-    "title": "Cont și Sincronizare",
-    "loginWithGoogle": "Autentificare cu Google",
-    "loginWithApple": "Autentificare cu Apple",
-    "loggedInAs": "Autentificat cu {{email}} ({{provider}}).",
-    "lastSync": "Ultima sincronizare: {{date}}",
-    "syncNow": "Sincronizează acum!",
-    "logOut": "Deconectare",
-    "syncSubtitle": "Datele tale se sincronizează automat, astfel încât mașinile și istoricul de service te urmează pe orice dispozitiv nou.",
-    "notConnected": "Neconectat",
+  "settingsData": {
+    "title": "Date",
+    "subtitle": "Mașinile și istoricul de service sunt copiate de rezervă automat pe iCloud (iOS) sau Google Drive (Android), ca parte a copierii de rezervă obișnuite a dispozitivului — fără cont sau autentificare în aplicație. Poți gestiona și tu o copie mai jos.",
     "downloadSubtitle": "Descarcă o copie a tuturor mașinilor, elementelor urmărite și istoricului de service ca fișier JSON.",
     "downloadData": "Descarcă datele",
     "downloading": "Se descarcă…",
