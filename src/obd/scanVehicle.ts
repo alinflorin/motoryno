@@ -26,6 +26,47 @@ export interface VehicleScanResult {
   connectionFailed: boolean;
 }
 
+interface PidCandidate {
+  mode: string;
+  pid: string;
+  /** CAN header/ECU address to aim the request at, or undefined for default/auto addressing. */
+  ecuHeader?: string;
+}
+
+/**
+ * Tries each `candidate` in turn - aiming the request at its ECU header first
+ * if it has one, resetting to default/auto addressing before any candidate
+ * that doesn't - and returns the first one `decode` turns into a non-null
+ * value. Shared by `readVin` and `readOdometer`, which only differ in what
+ * candidates they try and how a response is decoded.
+ */
+async function tryPidCandidates<C extends PidCandidate, R>(
+  connection: ElmConnection,
+  candidates: C[],
+  decode: (bytes: number[], candidate: C) => R | null
+): Promise<R | null> {
+  let headerOverridden = false;
+  for (const candidate of candidates) {
+    try {
+      if (candidate.ecuHeader) {
+        await connection.sendCommand(`ATSH${candidate.ecuHeader}`);
+        headerOverridden = true;
+      } else if (headerOverridden) {
+        await connection.sendCommand('ATSP0');
+        headerOverridden = false;
+      }
+
+      const bytes = await requestPid(connection, candidate.mode, candidate.pid);
+      if (!bytes) continue;
+      const value = decode(bytes, candidate);
+      if (value !== null) return value;
+    } catch {
+      // Try the next candidate - most won't apply to this particular vehicle/module.
+    }
+  }
+  return null;
+}
+
 /**
  * Reads the VIN via the standard Mode 09 request, falling back to
  * manufacturer UDS DIDs (Mode 22, F190) aimed at each known ECU header in
@@ -42,57 +83,15 @@ async function readVin(connection: ElmConnection): Promise<string | null> {
     // Fall through to the catalog-derived UDS fallback below.
   }
 
-  let headerOverridden = false;
-  for (const candidate of vinDidCandidates()) {
-    try {
-      if (candidate.ecuHeader) {
-        await connection.sendCommand(`ATSH${candidate.ecuHeader}`);
-        headerOverridden = true;
-      } else if (headerOverridden) {
-        await connection.sendCommand('ATSP0');
-        headerOverridden = false;
-      }
-
-      const bytes = await requestPid(connection, candidate.mode, candidate.pid);
-      if (!bytes) continue;
-      const vin = decodeVinDidBytes(bytes);
-      if (vin) return vin;
-    } catch {
-      // Try the next header - most won't apply to this particular vehicle.
-    }
-  }
-  return null;
+  return tryPidCandidates(connection, vinDidCandidates(), (bytes) => decodeVinDidBytes(bytes));
 }
 
 async function readOdometer(connection: ElmConnection, vin: string | null, make: string | null): Promise<number | null> {
-  // Brand-specific candidates may target a non-default CAN header (a
-  // specific ECU); track whether one is currently set so it can be reset
-  // before falling through to a candidate (typically the standard PID) that
-  // expects default/auto addressing instead.
-  let headerOverridden = false;
-
-  for (const candidate of await odometerCandidatesForVehicle(vin, make)) {
-    try {
-      if (candidate.ecuHeader) {
-        await connection.sendCommand(`ATSH${candidate.ecuHeader}`);
-        headerOverridden = true;
-      } else if (headerOverridden) {
-        await connection.sendCommand('ATSP0');
-        headerOverridden = false;
-      }
-
-      const bytes = await requestPid(connection, candidate.mode, candidate.pid);
-      if (!bytes) continue;
-      const km = candidate.decode(bytes);
-      if (km !== null && Number.isFinite(km) && km >= 0) {
-        return Math.round(km);
-      }
-    } catch {
-      // Try the next candidate PID - a make-specific one that doesn't apply
-      // to this particular module/model year is expected, not fatal.
-    }
-  }
-  return null;
+  const candidates = await odometerCandidatesForVehicle(vin, make);
+  return tryPidCandidates(connection, candidates, (bytes, candidate) => {
+    const km = candidate.decode(bytes);
+    return km !== null && Number.isFinite(km) && km >= 0 ? Math.round(km) : null;
+  });
 }
 
 /**

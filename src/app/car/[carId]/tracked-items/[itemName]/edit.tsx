@@ -1,13 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon } from '@/components/Icon';
+import { HeaderIconButton } from '@/components/HeaderIconButton';
 import { Screen } from '@/components/Screen';
 import { TrackedItemForm } from '@/components/TrackedItemForm';
 import { useStorage } from '@/storage';
-import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync } from '@/utils/confirm';
 import { distanceUnitFor } from '@/utils/units';
@@ -22,7 +20,6 @@ export default function EditTrackedItemScreen() {
   const item = car?.trackedServiceItems.find((existing) => existing.name === itemName);
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const colors = useThemeColors();
-  const styles = getStyles(colors);
 
   const existingNames =
     car?.trackedServiceItems
@@ -48,13 +45,7 @@ export default function EditTrackedItemScreen() {
       <Stack.Screen
         options={{
           title: t('editTrackedItem.title'),
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <Pressable hitSlop={8} onPress={confirmDelete}>
-                <Icon name="trash-outline" size={18} color={colors.red} />
-              </Pressable>
-            </View>
-          ),
+          headerRight: () => <HeaderIconButton name="trash-outline" size={18} color={colors.red} onPress={confirmDelete} />,
         }}
       />
       <TrackedItemForm
@@ -72,12 +63,4 @@ export default function EditTrackedItemScreen() {
       />
     </Screen>
   );
-}
-
-function getStyles(colors: ColorTokens) {
-  return StyleSheet.create({
-    headerRightContainer: {
-      paddingRight: 16,
-    },
-  });
 }

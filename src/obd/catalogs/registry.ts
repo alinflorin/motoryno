@@ -4,7 +4,11 @@
  * so Metro treats them as opaque binary assets instead of inlining them into the JS
  * bundle - see `metro.config.js`). Regenerate this file if the vendored catalog set
  * changes (re-run the vendoring steps against github.com/erdesigns-eu/Delphi-OBD).
+ *
+ * Metro resolves asset modules via static `require()` calls only - these can't be
+ * expressed as ES imports, hence the blanket rule disable below.
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 export const CATALOG_ASSETS: Record<string, number> = {
   'aston-martin': require('@/assets/obd-catalogs/aston-martin.catalog'),

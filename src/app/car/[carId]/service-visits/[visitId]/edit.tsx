@@ -1,13 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon } from '@/components/Icon';
+import { HeaderIconButton } from '@/components/HeaderIconButton';
 import { Screen } from '@/components/Screen';
 import { ServiceVisitForm } from '@/components/ServiceVisitForm';
 import { useStorage } from '@/storage';
-import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync } from '@/utils/confirm';
 import { distanceUnitFor } from '@/utils/units';
@@ -22,7 +20,6 @@ export default function EditServiceVisitScreen() {
   const visit = car?.serviceVisits.find((existing) => existing.uuid === visitId);
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const colors = useThemeColors();
-  const styles = getStyles(colors);
 
   const confirmDelete = async () => {
     if (!car || !visit) return;
@@ -43,13 +40,7 @@ export default function EditServiceVisitScreen() {
       <Stack.Screen
         options={{
           title: t('editServiceVisit.title'),
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <Pressable hitSlop={8} onPress={confirmDelete}>
-                <Icon name="trash-outline" size={18} color={colors.red} />
-              </Pressable>
-            </View>
-          ),
+          headerRight: () => <HeaderIconButton name="trash-outline" size={18} color={colors.red} onPress={confirmDelete} />,
         }}
       />
       <ServiceVisitForm
@@ -71,12 +62,4 @@ export default function EditServiceVisitScreen() {
       />
     </Screen>
   );
-}
-
-function getStyles(colors: ColorTokens) {
-  return StyleSheet.create({
-    headerRightContainer: {
-      paddingRight: 16,
-    },
-  });
 }

@@ -2,6 +2,7 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { HeaderIconButton } from '@/components/HeaderIconButton';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
@@ -29,13 +30,12 @@ export default function ServiceVisitsScreen() {
         options={{
           title: t('serviceVisits.title'),
           headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <Link href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }} asChild>
-                <Pressable hitSlop={8} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-                  <Icon name="add" size={26} color={colors.amber} />
-                </Pressable>
-              </Link>
-            </View>
+            <HeaderIconButton
+              name="add"
+              size={26}
+              color={colors.amber}
+              href={{ pathname: '/car/[carId]/service-visits/add', params: { carId } }}
+            />
           ),
         }}
       />
@@ -213,18 +213,6 @@ function getStyles(colors: ColorTokens) {
     comments: {
       color: colors.textFaint,
       fontSize: 12,
-    },
-    headerRightContainer: {
-      paddingRight: 16,
-    },
-    addButton: {
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    addButtonPressed: {
-      opacity: 0.5,
     },
   });
 }

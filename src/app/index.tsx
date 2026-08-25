@@ -13,7 +13,6 @@ import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync } from '@/utils/confirm';
-import { translateItemName } from '@/utils/serviceItemNames';
 import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 
