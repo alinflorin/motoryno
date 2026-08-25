@@ -51,7 +51,8 @@
           "modes": ["peripheral", "central"],
           "bluetoothAlwaysPermission": "Motoryno uses Bluetooth to connect to your car's OBD2 adapter and read the odometer."
         }
-      ]
+      ],
+      "./plugins/withoutPushEntitlement"
     ],
     "experiments": {
       "typedRoutes": true,
