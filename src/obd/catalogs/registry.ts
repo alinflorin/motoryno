@@ -1,111 +1,23 @@
 /**
- * Generated registry mapping each bundled Delphi-OBD catalog to its Metro asset
+ * Generated registry mapping each bundled Delphi-OBD DTC catalog to its Metro asset
  * module. Catalog files live in `assets/obd-catalogs/*.catalog` (renamed from `.json`
  * so Metro treats them as opaque binary assets instead of inlining them into the JS
- * bundle - see `metro.config.js`). Regenerate this file if the vendored catalog set
- * changes (re-run the vendoring steps against github.com/erdesigns-eu/Delphi-OBD).
+ * bundle - see `metro.config.js`). Regenerate this file if the vendored DTC catalog
+ * set changes (re-run the vendoring steps against github.com/erdesigns-eu/Delphi-OBD).
+ *
+ * Only the small `dtc-*` catalogs (~880KB total) were ever bundled this way - the
+ * ~54MB of manufacturer catalogs were removed earlier; see `catalogs/odometerCatalog.json`
+ * and `scripts/generate-odometer-catalog.mjs` for the odometer read path, which
+ * doesn't depend on this registry at all.
+ *
+ * 2026-08-26: the `dtc-*` catalogs themselves were also pulled (not wired into
+ * any screen yet - see `catalogs/dtc.ts`) and will be re-vendored under
+ * `assets/obd-catalogs/` when the DTC detector feature is picked up. Until
+ * then this map is empty and `catalogKeys()`/`lookupDtc()` are no-ops.
  *
  * Metro resolves asset modules via static `require()` calls only - these can't be
- * expressed as ES imports, hence the blanket rule disable below.
+ * expressed as ES imports, so re-add an eslint-disable comment for the
+ * `@typescript-eslint/no-require-imports` rule when this map is populated again.
  */
-/* eslint-disable @typescript-eslint/no-require-imports */
 
-export const CATALOG_ASSETS: Record<string, number> = {
-  'aston-martin': require('@/assets/obd-catalogs/aston-martin.catalog'),
-  'bentley': require('@/assets/obd-catalogs/bentley.catalog'),
-  'bmw': require('@/assets/obd-catalogs/bmw.catalog'),
-  'byd': require('@/assets/obd-catalogs/byd.catalog'),
-  'cummins': require('@/assets/obd-catalogs/cummins.catalog'),
-  'dacia': require('@/assets/obd-catalogs/dacia.catalog'),
-  'detroit': require('@/assets/obd-catalogs/detroit.catalog'),
-  'dtc-aston-martin': require('@/assets/obd-catalogs/dtc-aston-martin.catalog'),
-  'dtc-bentley': require('@/assets/obd-catalogs/dtc-bentley.catalog'),
-  'dtc-bmw': require('@/assets/obd-catalogs/dtc-bmw.catalog'),
-  'dtc-byd': require('@/assets/obd-catalogs/dtc-byd.catalog'),
-  'dtc-cummins': require('@/assets/obd-catalogs/dtc-cummins.catalog'),
-  'dtc-dacia': require('@/assets/obd-catalogs/dtc-dacia.catalog'),
-  'dtc-detroit': require('@/assets/obd-catalogs/dtc-detroit.catalog'),
-  'dtc-ferrari': require('@/assets/obd-catalogs/dtc-ferrari.catalog'),
-  'dtc-ford': require('@/assets/obd-catalogs/dtc-ford.catalog'),
-  'dtc-geely': require('@/assets/obd-catalogs/dtc-geely.catalog'),
-  'dtc-gm': require('@/assets/obd-catalogs/dtc-gm.catalog'),
-  'dtc-gwm': require('@/assets/obd-catalogs/dtc-gwm.catalog'),
-  'dtc-hmg': require('@/assets/obd-catalogs/dtc-hmg.catalog'),
-  'dtc-honda': require('@/assets/obd-catalogs/dtc-honda.catalog'),
-  'dtc-iso-15031': require('@/assets/obd-catalogs/dtc-iso-15031.catalog'),
-  'dtc-isuzu': require('@/assets/obd-catalogs/dtc-isuzu.catalog'),
-  'dtc-iveco': require('@/assets/obd-catalogs/dtc-iveco.catalog'),
-  'dtc-jlr': require('@/assets/obd-catalogs/dtc-jlr.catalog'),
-  'dtc-lada': require('@/assets/obd-catalogs/dtc-lada.catalog'),
-  'dtc-lucid': require('@/assets/obd-catalogs/dtc-lucid.catalog'),
-  'dtc-mahindra': require('@/assets/obd-catalogs/dtc-mahindra.catalog'),
-  'dtc-man': require('@/assets/obd-catalogs/dtc-man.catalog'),
-  'dtc-mazda': require('@/assets/obd-catalogs/dtc-mazda.catalog'),
-  'dtc-mclaren': require('@/assets/obd-catalogs/dtc-mclaren.catalog'),
-  'dtc-mercedes': require('@/assets/obd-catalogs/dtc-mercedes.catalog'),
-  'dtc-mini': require('@/assets/obd-catalogs/dtc-mini.catalog'),
-  'dtc-mitsubishi': require('@/assets/obd-catalogs/dtc-mitsubishi.catalog'),
-  'dtc-nio': require('@/assets/obd-catalogs/dtc-nio.catalog'),
-  'dtc-nissan': require('@/assets/obd-catalogs/dtc-nissan.catalog'),
-  'dtc-paccar': require('@/assets/obd-catalogs/dtc-paccar.catalog'),
-  'dtc-polestar': require('@/assets/obd-catalogs/dtc-polestar.catalog'),
-  'dtc-porsche': require('@/assets/obd-catalogs/dtc-porsche.catalog'),
-  'dtc-renault': require('@/assets/obd-catalogs/dtc-renault.catalog'),
-  'dtc-rivian': require('@/assets/obd-catalogs/dtc-rivian.catalog'),
-  'dtc-rolls-royce': require('@/assets/obd-catalogs/dtc-rolls-royce.catalog'),
-  'dtc-scania': require('@/assets/obd-catalogs/dtc-scania.catalog'),
-  'dtc-smart': require('@/assets/obd-catalogs/dtc-smart.catalog'),
-  'dtc-stellantis': require('@/assets/obd-catalogs/dtc-stellantis.catalog'),
-  'dtc-subaru': require('@/assets/obd-catalogs/dtc-subaru.catalog'),
-  'dtc-suzuki': require('@/assets/obd-catalogs/dtc-suzuki.catalog'),
-  'dtc-tata': require('@/assets/obd-catalogs/dtc-tata.catalog'),
-  'dtc-tesla': require('@/assets/obd-catalogs/dtc-tesla.catalog'),
-  'dtc-toyota': require('@/assets/obd-catalogs/dtc-toyota.catalog'),
-  'dtc-volvo': require('@/assets/obd-catalogs/dtc-volvo.catalog'),
-  'dtc-volvotrucks': require('@/assets/obd-catalogs/dtc-volvotrucks.catalog'),
-  'dtc-vw': require('@/assets/obd-catalogs/dtc-vw.catalog'),
-  'dtc-xpeng': require('@/assets/obd-catalogs/dtc-xpeng.catalog'),
-  'ferrari': require('@/assets/obd-catalogs/ferrari.catalog'),
-  'ford': require('@/assets/obd-catalogs/ford.catalog'),
-  'geely': require('@/assets/obd-catalogs/geely.catalog'),
-  'gm': require('@/assets/obd-catalogs/gm.catalog'),
-  'gwm': require('@/assets/obd-catalogs/gwm.catalog'),
-  'hmg': require('@/assets/obd-catalogs/hmg.catalog'),
-  'honda': require('@/assets/obd-catalogs/honda.catalog'),
-  'isuzu': require('@/assets/obd-catalogs/isuzu.catalog'),
-  'iveco': require('@/assets/obd-catalogs/iveco.catalog'),
-  'jlr': require('@/assets/obd-catalogs/jlr.catalog'),
-  'lada': require('@/assets/obd-catalogs/lada.catalog'),
-  'lucid': require('@/assets/obd-catalogs/lucid.catalog'),
-  'mahindra': require('@/assets/obd-catalogs/mahindra.catalog'),
-  'man': require('@/assets/obd-catalogs/man.catalog'),
-  'mazda': require('@/assets/obd-catalogs/mazda.catalog'),
-  'mclaren': require('@/assets/obd-catalogs/mclaren.catalog'),
-  'mercedes': require('@/assets/obd-catalogs/mercedes.catalog'),
-  'mini': require('@/assets/obd-catalogs/mini.catalog'),
-  'mitsubishi': require('@/assets/obd-catalogs/mitsubishi.catalog'),
-  'nio': require('@/assets/obd-catalogs/nio.catalog'),
-  'nissan': require('@/assets/obd-catalogs/nissan.catalog'),
-  'obd2-pids': require('@/assets/obd-catalogs/obd2-pids.catalog'),
-  'paccar': require('@/assets/obd-catalogs/paccar.catalog'),
-  'polestar': require('@/assets/obd-catalogs/polestar.catalog'),
-  'porsche': require('@/assets/obd-catalogs/porsche.catalog'),
-  'renault': require('@/assets/obd-catalogs/renault.catalog'),
-  'rivian': require('@/assets/obd-catalogs/rivian.catalog'),
-  'rolls-royce': require('@/assets/obd-catalogs/rolls-royce.catalog'),
-  'scania': require('@/assets/obd-catalogs/scania.catalog'),
-  'smart': require('@/assets/obd-catalogs/smart.catalog'),
-  'stellantis': require('@/assets/obd-catalogs/stellantis.catalog'),
-  'subaru': require('@/assets/obd-catalogs/subaru.catalog'),
-  'suzuki': require('@/assets/obd-catalogs/suzuki.catalog'),
-  'tata': require('@/assets/obd-catalogs/tata.catalog'),
-  'tesla': require('@/assets/obd-catalogs/tesla.catalog'),
-  'toyota': require('@/assets/obd-catalogs/toyota.catalog'),
-  'uds-nrc': require('@/assets/obd-catalogs/uds-nrc.catalog'),
-  'uds-standard': require('@/assets/obd-catalogs/uds-standard.catalog'),
-  'volvo': require('@/assets/obd-catalogs/volvo.catalog'),
-  'volvotrucks': require('@/assets/obd-catalogs/volvotrucks.catalog'),
-  'vw': require('@/assets/obd-catalogs/vw.catalog'),
-  'wwhobd-dids': require('@/assets/obd-catalogs/wwhobd-dids.catalog'),
-  'xpeng': require('@/assets/obd-catalogs/xpeng.catalog'),
-};
+export const CATALOG_ASSETS: Record<string, number> = {};

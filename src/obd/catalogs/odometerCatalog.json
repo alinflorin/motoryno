@@ -1,0 +1,1109 @@
+{
+  "aston-martin": {
+    "display_name": "Aston Martin Lagonda Ltd.",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "bentley": {
+    "display_name": "Bentley Motors Ltd.",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "bmw": {
+    "display_name": "Bayerische Motoren Werke",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x40",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      },
+      {
+        "name": "kombi_odometer_km",
+        "did": "4D01",
+        "ecu_address": "0x61",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "byd": {
+    "display_name": "BYD Auto Co. Ltd.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "cummins": {
+    "display_name": "Cummins Inc. (engine OEM)",
+    "dids": [
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "dacia": {
+    "display_name": "Automobile Dacia SA (Renault Group)",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "detroit": {
+    "display_name": "Detroit Diesel Corp. (Daimler Truck — engine OEM)",
+    "dids": [
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "ferrari": {
+    "display_name": "Ferrari N.V.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "ford": {
+    "display_name": "Ford Motor Company",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "DD00",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      },
+      {
+        "name": "ipc_odometer_mi",
+        "did": "4D01",
+        "ecu_address": "0x726",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "mi"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "geely": {
+    "display_name": "Geely Auto / Lynk & Co",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "gm": {
+    "display_name": "General Motors",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "1981",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "gwm": {
+    "display_name": "Great Wall Motor (Haval / WEY / ORA / Tank / Poer)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "hmg": {
+    "display_name": "Hyundai Motor Group (Hyundai / Kia / Genesis)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x780",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "honda": {
+    "display_name": "Honda Motor Co. (incl. Acura)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7E5",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4D01",
+        "ecu_address": "0x7C3",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "isuzu": {
+    "display_name": "Isuzu Motors Ltd.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "iveco": {
+    "display_name": "Iveco S.p.A. (Iveco Group)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "jlr": {
+    "display_name": "Jaguar Land Rover Limited (Tata)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x739",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "lada": {
+    "display_name": "AvtoVAZ (Lada)",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "lucid": {
+    "display_name": "Lucid Group, Inc.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mahindra": {
+    "display_name": "Mahindra & Mahindra Ltd.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "man": {
+    "display_name": "MAN Truck & Bus SE (Traton Group)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mazda": {
+    "display_name": "Mazda Motor Corporation",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mclaren": {
+    "display_name": "McLaren Automotive Ltd.",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mercedes": {
+    "display_name": "Mercedes-Benz Group",
+    "dids": [
+      {
+        "name": "mileage_km_24bit",
+        "did": "0202",
+        "decoder": {
+          "kind": "hex"
+        },
+        "verified": false
+      },
+      {
+        "name": "ic_odometer_km",
+        "did": "4D01",
+        "ecu_address": "0x703",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mini": {
+    "display_name": "MINI (BMW Group sub-brand)",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x40",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "mitsubishi": {
+    "display_name": "Mitsubishi Motors Corp.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7C8",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "nio": {
+    "display_name": "NIO Inc.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "nissan": {
+    "display_name": "Nissan Motor (incl. Infiniti, Datsun)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x75A",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "obd2-pids": {
+    "display_name": "ISO 15031-6 / SAE J1979 OBD-II Service 01 PIDs",
+    "dids": [
+      {
+        "name": "odometer",
+        "did": "00A6",
+        "decoder": {
+          "kind": "uint32_be",
+          "scale": 0.1,
+          "unit": "km"
+        },
+        "verified": true
+      }
+    ]
+  },
+  "paccar": {
+    "display_name": "PACCAR Inc. (Peterbilt / Kenworth / DAF / Leyland)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "polestar": {
+    "display_name": "Polestar Performance AB (Geely)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x742",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "porsche": {
+    "display_name": "Dr. Ing. h.c. F. Porsche AG",
+    "dids": [
+      {
+        "name": "porsche_warranty_block",
+        "did": "F1AA",
+        "ecu_address": "0x740",
+        "decoder": {
+          "kind": "hex"
+        }
+      },
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "renault": {
+    "display_name": "Renault Group (Renault / Dacia / Alpine)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x762",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "rivian": {
+    "display_name": "Rivian Automotive, Inc.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "rolls-royce": {
+    "display_name": "Rolls-Royce Motor Cars Ltd.",
+    "dids": [
+      {
+        "name": "mileage_km",
+        "did": "D050",
+        "ecu_address": "0x40",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "scania": {
+    "display_name": "Scania AB (Traton Group)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "smart": {
+    "display_name": "smart Automobile Co. (Mercedes-Geely JV)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "stellantis": {
+    "display_name": "Stellantis (FCA + PSA)",
+    "dids": [
+      {
+        "name": "mileage_km_24bit",
+        "did": "1A02",
+        "decoder": {
+          "kind": "hex"
+        },
+        "verified": false
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x73A",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "subaru": {
+    "display_name": "Subaru Corporation",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7C8",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "suzuki": {
+    "display_name": "Suzuki Motor Corp. (incl. Maruti Suzuki India)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7C8",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "tata": {
+    "display_name": "Tata Motors Ltd.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "tesla": {
+    "display_name": "Tesla, Inc.",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7E1",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "toyota": {
+    "display_name": "Toyota Motor Corporation",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x7C8",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer_km",
+        "did": "4D01",
+        "ecu_address": "0x7C3",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "volvo": {
+    "display_name": "Volvo Cars (Geely)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x742",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "volvotrucks": {
+    "display_name": "Volvo Group (Volvo Trucks / Mack / Renault Trucks)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x17",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  },
+  "vw": {
+    "display_name": "Volkswagen Audi Group — full diagnostic catalog",
+    "dids": [
+      {
+        "name": "cluster_odometer_km",
+        "did": "1400",
+        "ecu_address": "0x714",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "cluster_odometer_miles",
+        "did": "1401",
+        "ecu_address": "0x714",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "mi"
+        }
+      }
+    ]
+  },
+  "xpeng": {
+    "display_name": "Xpeng Motors (XPeng Inc.)",
+    "dids": [
+      {
+        "name": "vehicle_mileage",
+        "did": "D050",
+        "ecu_address": "0x720",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        }
+      },
+      {
+        "name": "ic_odometer",
+        "did": "4F01",
+        "ecu_address": "0x732",
+        "decoder": {
+          "kind": "uint32_be",
+          "unit": "km"
+        },
+        "verified": false
+      }
+    ]
+  }
+}
