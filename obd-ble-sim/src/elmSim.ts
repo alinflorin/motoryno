@@ -23,11 +23,36 @@ function toHexLine(bytes: number[]): string {
   return bytes.map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
 }
 
+/**
+ * Formats a response the way a real ELM327 does with CAN auto-formatting on
+ * (its default) and headers off (`ATH0`, part of the app's init sequence):
+ * a response that fits in one ISO-TP frame (<=7 bytes) is a single hex line;
+ * anything longer - like the 20-byte VIN reply - is split across frames (6
+ * data bytes in frame 0, 7 in each frame after) and preceded by a standalone
+ * line giving the total reassembled byte count. Real adapters emit exactly
+ * this shape, and the app has to parse it - a sim that only ever produced
+ * single-line replies wouldn't exercise that path.
+ */
+function toAdapterResponse(bytes: number[]): string {
+  if (bytes.length <= 7) return toHexLine(bytes);
+
+  const lines = [bytes.length.toString(16).toUpperCase().padStart(3, '0')];
+  let offset = 0;
+  let frame = 0;
+  while (offset < bytes.length) {
+    const chunkSize = frame === 0 ? 6 : 7;
+    lines.push(`${frame.toString(16).toUpperCase()}: ${toHexLine(bytes.slice(offset, offset + chunkSize))}`);
+    offset += chunkSize;
+    frame++;
+  }
+  return lines.join('\r\n');
+}
+
 function vinResponse(vin: string): string {
   const padded = vin.slice(0, 17).padEnd(17, ' ');
   const asciiBytes = Array.from(padded).map((ch) => ch.charCodeAt(0));
   // 49 02 <number of data items> <VIN ASCII bytes>, per SAE J1979 Mode 09 PID 02.
-  return toHexLine([0x49, 0x02, 0x01, ...asciiBytes]);
+  return toAdapterResponse([0x49, 0x02, 0x01, ...asciiBytes]);
 }
 
 function odometerResponse(odometerKm: number): string {
