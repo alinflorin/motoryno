@@ -84,7 +84,9 @@
     "viewCar": "Vizualizează",
     "editCar": "Editează",
     "deleteCar": "Șterge",
-    "deleteCarConfirm": "Ștergi {{car}} și toate datele sale? Această acțiune nu poate fi anulată."
+    "deleteCarConfirm": "Ștergi {{car}} și toate datele sale? Această acțiune nu poate fi anulată.",
+    "obdSyncNow": "Sincronizare OBD",
+    "obdSyncing": "Se sincronizează…"
   },
   "car": {
     "odometer": "Kilometraj",

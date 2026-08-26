@@ -1,9 +1,10 @@
 import { Link, Redirect, useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
 import { CountBadge } from '@/components/CountBadge';
 import { Icon } from '@/components/Icon';
 import { OverflowMenu } from '@/components/OverflowMenu';
@@ -37,6 +38,36 @@ export default function HomeScreen() {
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
   const kebabRefs = useRef<Record<string, View | null>>({});
   const topBarTop = insets.top + 8;
+
+  const hasPairedObd = cars.some((car) => car.obd !== null);
+  const [obdSyncing, setObdSyncing] = useState(false);
+  const obdSyncStartedAtRef = useRef<number | null>(null);
+
+  const handleObdSyncNow = () => {
+    if (!triggerObdSyncNow()) return;
+    obdSyncStartedAtRef.current = Date.now();
+    setObdSyncing(true);
+  };
+
+  // Clears the "syncing" state once any paired car actually re-syncs after the button was
+  // pressed - `lastSyncedAt` advances on every completed attempt (success or not), see
+  // ObdMonitorController, so this also resolves for an in-range-but-unreadable adapter.
+  useEffect(() => {
+    if (!obdSyncing || obdSyncStartedAtRef.current === null) return;
+    const startedAt = obdSyncStartedAtRef.current;
+    const settled = cars.some((car) => car.obd?.lastSyncedAt !== null && car.obd?.lastSyncedAt !== undefined && car.obd.lastSyncedAt >= startedAt);
+    if (settled) {
+      setObdSyncing(false);
+      obdSyncStartedAtRef.current = null;
+    }
+  }, [cars, obdSyncing]);
+
+  // Safety net for when the adapter never comes into range at all - don't spin forever.
+  useEffect(() => {
+    if (!obdSyncing) return;
+    const timer = setTimeout(() => setObdSyncing(false), 20000);
+    return () => clearTimeout(timer);
+  }, [obdSyncing]);
 
   const overdueAlerts = useMemo<OverdueAlert[]>(
     () =>
@@ -130,6 +161,28 @@ export default function HomeScreen() {
               ))}
             </View>
           </View>
+        )}
+
+        {hasPairedObd && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('home.obdSyncNow')}
+            disabled={obdSyncing}
+            onPress={handleObdSyncNow}
+            style={({ pressed }) => [styles.obdSyncButton, pressed && styles.obdSyncButtonPressed]}
+          >
+            {obdSyncing ? (
+              <>
+                <ActivityIndicator size="small" color={colors.amber} />
+                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncing')}</Text>
+              </>
+            ) : (
+              <>
+                <Icon name="bluetooth-outline" size={16} color={colors.amber} />
+                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncNow')}</Text>
+              </>
+            )}
+          </Pressable>
         )}
 
         <View style={styles.section}>
@@ -313,6 +366,25 @@ function getStyles(colors: ColorTokens) {
   },
   alertCar: {
     color: colors.redSofter,
+    fontWeight: '700',
+  },
+  obdSyncButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.amberBorder,
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  obdSyncButtonPressed: {
+    backgroundColor: colors.surfaceAlt,
+  },
+  obdSyncButtonText: {
+    color: colors.amber,
+    fontSize: 13,
     fontWeight: '700',
   },
   carGrid: {

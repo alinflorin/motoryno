@@ -95,6 +95,31 @@ async function readOdometer(connection: ElmConnection, vin: string | null, make:
 }
 
 /**
+ * Connects to `device` for a car whose VIN/make are already known (from the
+ * initial pairing scan), reads just the odometer, and disconnects again.
+ * Used for the silent background/live re-syncs triggered by the adapter
+ * coming back into range - see `src/ble/obdMonitor.ts` and
+ * `src/ble/obdBackgroundTask.ts`.
+ */
+export async function syncOdometer(device: Device, vin: string, make: string): Promise<{ odometerKm: number | null; connectionFailed: boolean }> {
+  let connection: ElmConnection | null = null;
+  try {
+    connection = await openElmConnection(device);
+    const odometerKm = await readOdometer(connection, vin, make);
+    return { odometerKm, connectionFailed: false };
+  } catch {
+    return { odometerKm: null, connectionFailed: true };
+  } finally {
+    connection?.close();
+    try {
+      await device.cancelConnection();
+    } catch {
+      // Already disconnected, or never connected - nothing to clean up.
+    }
+  }
+}
+
+/**
  * Connects to `device`, reads what it can, and disconnects again - pairing
  * only stores the adapter's address, it doesn't keep a live connection open.
  */

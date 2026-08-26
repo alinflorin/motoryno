@@ -82,7 +82,9 @@
     "viewCar": "View",
     "editCar": "Edit",
     "deleteCar": "Delete",
-    "deleteCarConfirm": "Remove {{car}} and all its data? This can't be undone."
+    "deleteCarConfirm": "Remove {{car}} and all its data? This can't be undone.",
+    "obdSyncNow": "OBD sync now",
+    "obdSyncing": "Syncing…"
   },
   "car": {
     "odometer": "Odometer",

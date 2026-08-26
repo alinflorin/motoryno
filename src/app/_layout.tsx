@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
+import { ObdMonitorController } from '@/ble/ObdMonitorController';
 import '@/configs/i18n';
 import { NotificationsController } from '@/notifications/NotificationsController';
 import { StorageProvider } from '@/storage';
@@ -73,6 +74,7 @@ export default function RootLayout() {
     <StorageProvider>
       <ThemeProvider>
         <NotificationsController />
+        <ObdMonitorController />
         <RootLayoutNav />
       </ThemeProvider>
     </StorageProvider>
