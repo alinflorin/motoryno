@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 import type { Car, ServiceVisit, TrackedServiceItem } from '@/storage/types';
 
 export type ServiceItemStatus = 'overdue' | 'due-soon' | 'ok' | 'unknown';
@@ -91,35 +93,32 @@ export function getOverdueSummaryForAllCars(cars: Car[], useUnknownServiceStatus
     .filter((summary) => summary.overdueItems.length > 0);
 }
 
-function pluralMonths(months: number): string {
-  return `${months}mo`;
-}
-
 /** e.g. "12mo or 10,000 km", "60mo", "10,000 km", or "—" if neither is set. */
-export function formatIntervalLabel(item: TrackedServiceItem): string {
+export function formatIntervalLabel(item: TrackedServiceItem, t: TFunction): string {
   const parts: string[] = [];
   if (item.timeIntervalDays != null) {
-    parts.push(pluralMonths(Math.round((item.timeIntervalDays / 365) * 12)));
+    const months = Math.round((item.timeIntervalDays / 365) * 12);
+    parts.push(t('trackedItems.monthsShort', { count: months }));
   }
   if (item.kmInterval != null) {
-    parts.push(`${item.kmInterval.toLocaleString()} km`);
+    parts.push(`${item.kmInterval.toLocaleString()} ${t('common.km')}`);
   }
-  return parts.length > 0 ? parts.join(' or ') : '—';
+  return parts.length > 0 ? parts.join(` ${t('addTrackedItem.or')} `) : '—';
 }
 
 /** e.g. "+10,503 km · 24mo ago", "29mo ago", or "Never serviced". */
-export function formatSinceLabel(entry: TrackedItemStatus, car: Car, now = Date.now()): string {
+export function formatSinceLabel(entry: TrackedItemStatus, car: Car, t: TFunction, now = Date.now()): string {
   const { item, lastVisit } = entry;
-  if (!lastVisit) return 'Never serviced';
+  if (!lastVisit) return t('trackedItems.neverServiced');
 
   const parts: string[] = [];
   if (item.kmInterval != null) {
     const deltaKm = car.odometerKm - lastVisit.odometerKm;
-    parts.push(`${deltaKm >= 0 ? '+' : ''}${deltaKm.toLocaleString()} km`);
+    parts.push(`${deltaKm >= 0 ? '+' : ''}${deltaKm.toLocaleString()} ${t('common.km')}`);
   }
   if (item.timeIntervalDays != null) {
     const deltaMonths = Math.round(((now - lastVisit.timestamp) / MS_PER_DAY / 365) * 12);
-    parts.push(`${deltaMonths}mo ago`);
+    parts.push(t('trackedItems.monthsAgo', { count: deltaMonths }));
   }
-  return parts.length > 0 ? parts.join(' · ') : 'Recently serviced';
+  return parts.length > 0 ? parts.join(' · ') : t('trackedItems.recentlyServiced');
 }

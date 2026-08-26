@@ -79,9 +79,9 @@ export default function TrackedItemsScreen() {
                       <ProgressBar progress={entry.progress} status={entry.status} />
                       <View style={styles.cardBottom}>
                         <Text style={styles.intervalText}>
-                          {t('trackedItems.every', { interval: formatIntervalLabel(entry.item) })}
+                          {t('trackedItems.every', { interval: formatIntervalLabel(entry.item, t) })}
                         </Text>
-                        <Text style={styles.sinceText}>{formatSinceLabel(entry, car)}</Text>
+                        <Text style={styles.sinceText}>{formatSinceLabel(entry, car, t)}</Text>
                       </View>
                     </Pressable>
                   </Link>
@@ -116,7 +116,7 @@ export default function TrackedItemsScreen() {
                       />
                     </View>
                     <Text style={styles.intervalText}>
-                      {t('trackedItems.every', { interval: formatIntervalLabel(item) })}
+                      {t('trackedItems.every', { interval: formatIntervalLabel(item, t) })}
                     </Text>
                   </Pressable>
                 </Link>

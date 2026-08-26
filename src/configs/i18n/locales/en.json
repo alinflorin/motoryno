@@ -118,7 +118,13 @@
     "unknownGroup": "Unknown",
     "availableGroup": "Not tracked",
     "every": "Every {{interval}}",
-    "hint": "Tap an item to edit or delete it"
+    "hint": "Tap an item to edit or delete it",
+    "monthsShort_one": "{{count}} month",
+    "monthsShort_other": "{{count}} months",
+    "monthsAgo_one": "{{count}} month ago",
+    "monthsAgo_other": "{{count}} months ago",
+    "neverServiced": "Never serviced",
+    "recentlyServiced": "Recently serviced"
   },
   "addTrackedItem": {
     "title": "New Tracked Item",

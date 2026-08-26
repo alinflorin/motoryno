@@ -124,7 +124,15 @@
     "unknownGroup": "Necunoscut",
     "availableGroup": "Neurmărite",
     "every": "La fiecare {{interval}}",
-    "hint": "Atinge un element pentru a-l edita sau șterge"
+    "hint": "Atinge un element pentru a-l edita sau șterge",
+    "monthsShort_one": "{{count}} lună",
+    "monthsShort_few": "{{count}} luni",
+    "monthsShort_other": "{{count}} de luni",
+    "monthsAgo_one": "acum {{count}} lună",
+    "monthsAgo_few": "acum {{count}} luni",
+    "monthsAgo_other": "acum {{count}} de luni",
+    "neverServiced": "Niciun service încă",
+    "recentlyServiced": "Efectuat recent"
   },
   "addTrackedItem": {
     "title": "Element Urmărit Nou",
