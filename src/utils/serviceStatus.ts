@@ -1,6 +1,6 @@
 import type { Car, ServiceVisit, TrackedServiceItem } from '@/storage/types';
 
-export type ServiceItemStatus = 'overdue' | 'due-soon' | 'ok';
+export type ServiceItemStatus = 'overdue' | 'due-soon' | 'ok' | 'unknown';
 
 /** Progress past this fraction of an item's interval counts as "due soon". */
 const DUE_SOON_THRESHOLD = 0.85;
@@ -25,12 +25,25 @@ function findLastVisitForItem(car: Car, itemName: string): ServiceVisit | null {
 }
 
 /** How far along `item` is towards being due on `car`, based on its stored km/time intervals. */
-export function computeTrackedItemStatus(item: TrackedServiceItem, car: Car, now = Date.now()): TrackedItemStatus {
+export function computeTrackedItemStatus(
+  item: TrackedServiceItem,
+  car: Car,
+  useUnknownServiceStatus: boolean,
+  now = Date.now()
+): TrackedItemStatus {
   const lastVisit = findLastVisitForItem(car, item.name);
 
   if (item.timeIntervalDays == null && item.kmInterval == null) {
     // No interval configured — nothing to be overdue against.
     return { item, status: 'ok', progress: 0, lastVisit };
+  }
+
+  // Never serviced: there's no evidence this item is actually due, just no record of it ever
+  // being done. Report it as its own "unknown" status instead of judging it against the interval
+  // (which, with no last-visit to measure from, would otherwise always compute as overdue) —
+  // unless the aggressive-flagging setting is on, in which case fall through to that behavior.
+  if (!lastVisit && useUnknownServiceStatus) {
+    return { item, status: 'unknown', progress: 0, lastVisit };
   }
 
   let progress = 0;
@@ -48,16 +61,18 @@ export function computeTrackedItemStatus(item: TrackedServiceItem, car: Car, now
 }
 
 /** Statuses for the car's currently-active tracked items — inactive items aren't due/overdue against anything. */
-export function computeCarItemStatuses(car: Car, now = Date.now()): TrackedItemStatus[] {
-  return car.trackedServiceItems.filter((item) => item.isActive).map((item) => computeTrackedItemStatus(item, car, now));
+export function computeCarItemStatuses(car: Car, useUnknownServiceStatus: boolean, now = Date.now()): TrackedItemStatus[] {
+  return car.trackedServiceItems
+    .filter((item) => item.isActive)
+    .map((item) => computeTrackedItemStatus(item, car, useUnknownServiceStatus, now));
 }
 
-export function getOverdueItemsForCar(car: Car, now = Date.now()): TrackedItemStatus[] {
-  return computeCarItemStatuses(car, now).filter((entry) => entry.status === 'overdue');
+export function getOverdueItemsForCar(car: Car, useUnknownServiceStatus: boolean, now = Date.now()): TrackedItemStatus[] {
+  return computeCarItemStatuses(car, useUnknownServiceStatus, now).filter((entry) => entry.status === 'overdue');
 }
 
-export function getOverdueCountForCar(car: Car, now = Date.now()): number {
-  return getOverdueItemsForCar(car, now).length;
+export function getOverdueCountForCar(car: Car, useUnknownServiceStatus: boolean, now = Date.now()): number {
+  return getOverdueItemsForCar(car, useUnknownServiceStatus, now).length;
 }
 
 export interface CarOverdueSummary {
@@ -70,9 +85,9 @@ export interface CarOverdueSummary {
  * lists) and the daily notification job, so "what counts as overdue" only lives here — see
  * `getOverdueItemsForCar` for the per-car definition.
  */
-export function getOverdueSummaryForAllCars(cars: Car[], now = Date.now()): CarOverdueSummary[] {
+export function getOverdueSummaryForAllCars(cars: Car[], useUnknownServiceStatus: boolean, now = Date.now()): CarOverdueSummary[] {
   return cars
-    .map((car) => ({ car, overdueItems: getOverdueItemsForCar(car, now) }))
+    .map((car) => ({ car, overdueItems: getOverdueItemsForCar(car, useUnknownServiceStatus, now) }))
     .filter((summary) => summary.overdueItems.length > 0);
 }
 

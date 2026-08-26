@@ -73,14 +73,14 @@ export default function HomeScreen() {
   const overdueAlerts = useMemo<OverdueAlert[]>(
     () =>
       cars.flatMap((car) =>
-        getOverdueItemsForCar(car).map((entry) => ({
+        getOverdueItemsForCar(car, settings.useUnknownServiceStatus).map((entry) => ({
           id: `${car.vin}-${entry.item.name}`,
           carId: car.vin,
           carNickname: car.displayName,
           itemName: translateItemName(t, entry.item.name),
         }))
       ),
-    [cars, t]
+    [cars, settings.useUnknownServiceStatus, t]
   );
 
   const confirmDeleteCar = async (carId: string, carNickname: string) => {
@@ -190,7 +190,7 @@ export default function HomeScreen() {
           <SectionLabel>{t('home.myCars')}</SectionLabel>
           <View style={styles.carGrid}>
             {cars.map((car) => {
-              const overdueCount = getOverdueCountForCar(car);
+              const overdueCount = getOverdueCountForCar(car, settings.useUnknownServiceStatus);
               return (
                 <Link
                   key={car.vin}

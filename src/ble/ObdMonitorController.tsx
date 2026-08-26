@@ -31,7 +31,7 @@ export function ObdMonitorController() {
 
   // Kept pointed at the active scan's forceSyncNow so the AppState effect below can reach it
   // without depending on (and re-subscribing over) the scan's own start/stop effect.
-  const forceSyncNowRef = useRef<(() => void) | null>(null);
+  const forceSyncNowRef = useRef<((vin?: string) => void) | null>(null);
 
   // Keep the always-on scan running for as long as any car has a paired adapter. Forces an
   // immediate (throttle-bypassing) sync attempt right as the scan starts, covering cold app open.

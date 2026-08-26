@@ -15,7 +15,7 @@ import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type Ser
 export default function TrackedItemsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const { getCar, updateTrackedServiceItem } = useStorage();
+  const { settings, getCar, updateTrackedServiceItem } = useStorage();
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
@@ -23,13 +23,14 @@ export default function TrackedItemsScreen() {
   if (!car) return null;
 
   // computeCarItemStatuses already only considers isActive items.
-  const itemStatuses = computeCarItemStatuses(car);
+  const itemStatuses = computeCarItemStatuses(car, settings.useUnknownServiceStatus);
   const inactiveItems = car.trackedServiceItems.filter((item) => !item.isActive);
 
   const groups: { key: ServiceItemStatus; title: string; data: TrackedItemStatus[] }[] = [
     { key: 'overdue', title: t('trackedItems.overdueGroup'), data: itemStatuses.filter((i) => i.status === 'overdue') },
     { key: 'due-soon', title: t('trackedItems.dueSoonGroup'), data: itemStatuses.filter((i) => i.status === 'due-soon') },
     { key: 'ok', title: t('trackedItems.okGroup'), data: itemStatuses.filter((i) => i.status === 'ok') },
+    { key: 'unknown', title: t('trackedItems.unknownGroup'), data: itemStatuses.filter((i) => i.status === 'unknown') },
   ];
 
   return (
@@ -131,6 +132,7 @@ export default function TrackedItemsScreen() {
 function groupTitleColor(status: ServiceItemStatus, colors: ColorTokens) {
   if (status === 'overdue') return colors.red;
   if (status === 'due-soon') return colors.yellow;
+  if (status === 'unknown') return colors.textFaint;
   return colors.emerald;
 }
 

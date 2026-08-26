@@ -48,6 +48,7 @@ export default function EditServiceVisitScreen() {
         car={car}
         distanceUnit={distanceUnit}
         currency={settings.currency}
+        useUnknownServiceStatus={settings.useUnknownServiceStatus}
         insetBottom={insets.bottom}
         onCancel={() => router.back()}
         onSubmit={(parsed) => {

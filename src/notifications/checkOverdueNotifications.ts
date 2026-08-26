@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { ensureAndroidChannel } from '@/notifications/androidChannel';
 import { getLastCheckedDate, localDateKey, setLastCheckedDate } from '@/notifications/lastCheckStore';
 import { buildOverdueNotificationContent } from '@/notifications/notificationContent';
+import { normalizeAppData } from '@/storage/normalize';
 import { readAppData } from '@/storage/persistence';
 import { parseCronTime } from '@/utils/notificationCron';
 import { getOverdueSummaryForAllCars } from '@/utils/serviceStatus';
@@ -17,8 +18,9 @@ import { getOverdueSummaryForAllCars } from '@/utils/serviceStatus';
  *    having been skipped or deferred past the scheduled time.
  */
 export async function checkAndNotifyOverdueItems(now = new Date()): Promise<void> {
-  const appData = await readAppData();
-  if (!appData) return;
+  const rawAppData = await readAppData();
+  if (!rawAppData) return;
+  const appData = normalizeAppData(rawAppData);
 
   const { cron } = appData.settings.notifications;
   if (cron === null) return;
@@ -36,7 +38,7 @@ export async function checkAndNotifyOverdueItems(now = new Date()): Promise<void
   // or not it ends up finding anything overdue.
   await setLastCheckedDate(todayKey);
 
-  const summary = getOverdueSummaryForAllCars(appData.data.cars, now.getTime());
+  const summary = getOverdueSummaryForAllCars(appData.data.cars, appData.settings.useUnknownServiceStatus, now.getTime());
   if (summary.length === 0) return;
 
   await ensureAndroidChannel();

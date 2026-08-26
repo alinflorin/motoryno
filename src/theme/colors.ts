@@ -67,5 +67,6 @@ export function getStatusColors(colors: ColorTokens) {
     overdue: colors.red,
     'due-soon': colors.yellow,
     ok: colors.emerald,
+    unknown: colors.textFaint,
   } as const;
 }

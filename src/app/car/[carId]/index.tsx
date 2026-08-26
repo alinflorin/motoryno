@@ -1,9 +1,11 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
 import { Chevron } from '@/components/Chevron';
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
@@ -34,13 +36,42 @@ export default function CarScreen() {
   const [attentionPageWidth, setAttentionPageWidth] = useState(0);
   const [attentionPageIndex, setAttentionPageIndex] = useState(0);
 
+  const [obdSyncing, setObdSyncing] = useState(false);
+  const obdSyncStartedAtRef = useRef<number | null>(null);
+
+  const handleObdSyncNow = () => {
+    if (!car || !triggerObdSyncNow(car.vin)) return;
+    obdSyncStartedAtRef.current = Date.now();
+    setObdSyncing(true);
+  };
+
+  // Clears the "syncing" state once this car actually re-syncs after the button was pressed -
+  // `lastSyncedAt` advances on every completed attempt (success or not), see ObdMonitorController,
+  // so this also resolves for an in-range-but-unreadable adapter.
+  useEffect(() => {
+    if (!obdSyncing || obdSyncStartedAtRef.current === null || !car) return;
+    const startedAt = obdSyncStartedAtRef.current;
+    if (car.obd?.lastSyncedAt !== null && car.obd?.lastSyncedAt !== undefined && car.obd.lastSyncedAt >= startedAt) {
+      setObdSyncing(false);
+      obdSyncStartedAtRef.current = null;
+    }
+  }, [car, obdSyncing]);
+
+  // Safety net for when the adapter never comes into range at all - don't spin forever.
+  useEffect(() => {
+    if (!obdSyncing) return;
+    const timer = setTimeout(() => setObdSyncing(false), 20000);
+    return () => clearTimeout(timer);
+  }, [obdSyncing]);
+
   if (!car) return null;
 
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
-  const itemStatuses = computeCarItemStatuses(car);
+  const itemStatuses = computeCarItemStatuses(car, settings.useUnknownServiceStatus);
   const overdueItems = itemStatuses.filter((entry) => entry.status === 'overdue');
   const dueSoonItems = itemStatuses.filter((entry) => entry.status === 'due-soon');
-  const okCount = itemStatuses.length - overdueItems.length - dueSoonItems.length;
+  const unknownItems = itemStatuses.filter((entry) => entry.status === 'unknown');
+  const okCount = itemStatuses.length - overdueItems.length - dueSoonItems.length - unknownItems.length;
 
   const visits = [...car.serviceVisits].sort((a, b) => b.timestamp - a.timestamp);
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
@@ -72,11 +103,39 @@ export default function CarScreen() {
             <Text style={[styles.statValue, { color: colors.yellow }]}>{dueSoonItems.length}</Text>
             <Text style={styles.statLabel}>{t('car.dueSoon')}</Text>
           </View>
-          <View style={styles.statCell}>
+          <View style={[styles.statCell, unknownItems.length > 0 && styles.statCellDivider]}>
             <Text style={[styles.statValue, { color: colors.emerald }]}>{okCount}</Text>
             <Text style={styles.statLabel}>{t('car.ok')}</Text>
           </View>
+          {unknownItems.length > 0 && (
+            <View style={styles.statCell}>
+              <Text style={[styles.statValue, { color: colors.textFaint }]}>{unknownItems.length}</Text>
+              <Text style={styles.statLabel}>{t('car.unknown')}</Text>
+            </View>
+          )}
         </View>
+
+        {car.obd && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('car.obdSyncNow')}
+            disabled={obdSyncing}
+            onPress={handleObdSyncNow}
+            style={({ pressed }) => [styles.obdSyncButton, pressed && styles.obdSyncButtonPressed]}
+          >
+            {obdSyncing ? (
+              <>
+                <ActivityIndicator size="small" color={colors.amber} />
+                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncing')}</Text>
+              </>
+            ) : (
+              <>
+                <Icon name="bluetooth-outline" size={16} color={colors.amber} />
+                <Text style={styles.obdSyncButtonText}>{t('car.obdSyncNow')}</Text>
+              </>
+            )}
+          </Pressable>
+        )}
 
         {allAttentionItems.length > 0 && (
           <View style={styles.section}>
@@ -249,6 +308,27 @@ function getStyles(colors: ColorTokens) {
       color: colors.textFaint,
       fontSize: 11,
       marginTop: 2,
+    },
+    obdSyncButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      margin: 16,
+      marginBottom: 0,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.amberBorder,
+      borderRadius: 12,
+      paddingVertical: 12,
+    },
+    obdSyncButtonPressed: {
+      backgroundColor: colors.surfaceAlt,
+    },
+    obdSyncButtonText: {
+      color: colors.amber,
+      fontSize: 13,
+      fontWeight: '700',
     },
     section: {
       padding: 16,

@@ -53,6 +53,7 @@ export function createDefaultAppData(): AppData {
       notifications: {
         cron: '0 10 * * *',
       },
+      useUnknownServiceStatus: true,
     },
     data: {
       cars: [],

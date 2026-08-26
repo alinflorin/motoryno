@@ -19,6 +19,14 @@ export interface Settings {
   /** ISO 4217 currency code, e.g. 'EUR'. */
   currency: string;
   notifications: NotificationSettings;
+  /**
+   * When true (the default), a tracked item that has never had a matching service visit logged
+   * is reported as "unknown" instead of overdue/due-soon — there's no evidence it's actually due,
+   * just no record of it ever being done. When false, never-serviced items are judged the same as
+   * serviced ones (i.e. immediately overdue against their interval), matching the app's original,
+   * more aggressive behavior. Drives both in-app status badges and the daily notification.
+   */
+  useUnknownServiceStatus: boolean;
 }
 
 export interface TrackedServiceItem {

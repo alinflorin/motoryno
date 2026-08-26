@@ -91,7 +91,9 @@
     "overdue": "Overdue",
     "dueSoon": "Due soon",
     "ok": "OK",
+    "unknown": "Unknown",
     "needsAttention": "Needs attention",
+    "obdSyncNow": "OBD sync now",
     "trackedItems": "Tracked Items",
     "trackedItemsCount_one": "{{count}} item",
     "trackedItemsCount_other": "{{count}} items",
@@ -113,6 +115,7 @@
     "overdueGroup": "Overdue",
     "dueSoonGroup": "Due Soon",
     "okGroup": "OK",
+    "unknownGroup": "Unknown",
     "availableGroup": "Not tracked",
     "every": "Every {{interval}}",
     "hint": "Tap an item to edit or delete it"
@@ -206,7 +209,10 @@
     "notifications": "Notifications",
     "data": "Data",
     "reset": "Reset",
-    "viewOnboarding": "View Onboarding"
+    "viewOnboarding": "View Onboarding",
+    "overdueAlerts": "Overdue Alerts",
+    "useUnknownServiceStatus": "Flag never-serviced items as \"Unknown\"",
+    "useUnknownServiceStatusSubtitle": "When on, a tracked item that's never had a service visit logged is shown as \"Unknown\" instead of overdue, and won't trigger alerts or notifications. Turn off to flag every never-serviced item as overdue right away."
   },
   "settingsNotifications": {
     "title": "Notifications",

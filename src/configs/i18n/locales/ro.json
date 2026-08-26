@@ -93,7 +93,9 @@
     "overdue": "Restante",
     "dueSoon": "Aproape scadente",
     "ok": "OK",
+    "unknown": "Necunoscut",
     "needsAttention": "Necesită atenție",
+    "obdSyncNow": "Sincronizare OBD",
     "trackedItems": "Elemente Urmărite",
     "trackedItemsCount_one": "{{count}} element",
     "trackedItemsCount_few": "{{count}} elemente",
@@ -119,6 +121,7 @@
     "overdueGroup": "Restante",
     "dueSoonGroup": "Aproape Scadente",
     "okGroup": "OK",
+    "unknownGroup": "Necunoscut",
     "availableGroup": "Neurmărite",
     "every": "La fiecare {{interval}}",
     "hint": "Atinge un element pentru a-l edita sau șterge"
@@ -212,7 +215,10 @@
     "notifications": "Notificări",
     "data": "Date",
     "reset": "Resetare",
-    "viewOnboarding": "Vezi Introducerea"
+    "viewOnboarding": "Vezi Introducerea",
+    "overdueAlerts": "Alerte Restante",
+    "useUnknownServiceStatus": "Marchează elementele niciodată efectuate ca „Necunoscut”",
+    "useUnknownServiceStatusSubtitle": "Când este activă, un element urmărit fără nicio vizită de service înregistrată este afișat ca „Necunoscut” în loc de restant și nu va genera alerte sau notificări. Dezactiveaz-o pentru a marca imediat ca restant orice element niciodată efectuat."
   },
   "settingsNotifications": {
     "title": "Notificări",

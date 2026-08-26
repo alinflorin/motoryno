@@ -88,6 +88,7 @@ export function ServiceVisitForm({
   car,
   distanceUnit,
   currency,
+  useUnknownServiceStatus,
   onCancel,
   onSubmit,
   submitLabel,
@@ -97,6 +98,7 @@ export function ServiceVisitForm({
   car: Car | undefined;
   distanceUnit: DistanceUnit;
   currency: string;
+  useUnknownServiceStatus: boolean;
   onCancel: () => void;
   onSubmit: (values: ParsedServiceVisitFormValues) => void;
   submitLabel: string;
@@ -119,7 +121,7 @@ export function ServiceVisitForm({
 
   // `car` comes from a ref-backed lookup (not render state), so it isn't a safe useMemo
   // dependency — the list (cheap to build) is simply recomputed on every render instead.
-  const items = car ? computeCarItemStatuses(car) : [];
+  const items = car ? computeCarItemStatuses(car, useUnknownServiceStatus) : [];
   const trackedItemNames = new Set(items.map((entry) => entry.item.name));
 
   // One-off items typed in for this visit that aren't part of the car's tracked list — e.g. a

@@ -28,14 +28,16 @@ const FORCE_CONNECT_TIMEOUT_MS = 15000;
  * caller can keep it wired to live state without restarting the scan.
  * Returns `{ stop, forceSyncNow }`: `stop` ends the scan; `forceSyncNow`
  * bypasses the throttle and attempts a *direct* connect to every
- * currently-paired car's adapter right away (see below for why it doesn't
- * just wait for the scan) - used to force a read on app open/foreground and
- * from the home screen's "OBD sync now" button.
+ * currently-paired car's adapter right away (or just one, if a `vin` is
+ * given - see below for why it doesn't just wait for the scan) - used to
+ * force a read on app open/foreground, from the home screen's "OBD sync
+ * now" button (all cars), and from a car screen's own sync button (just
+ * that car).
  */
 export function startObdMonitor(
   getCars: () => Car[],
   onSyncAttempt: (attempt: ObdSyncAttempt) => void
-): { stop: () => void; forceSyncNow: () => void } {
+): { stop: () => void; forceSyncNow: (vin?: string) => void } {
   let stopped = false;
   const syncing = new Set<string>(); // car VINs currently being read, to avoid overlapping connects
 
@@ -73,7 +75,7 @@ export function startObdMonitor(
       stopped = true;
       getBleManager()?.stopDeviceScan();
     },
-    forceSyncNow: () => {
+    forceSyncNow: (vin) => {
       const manager = getBleManager();
       if (!manager) return;
       // Connect directly by known address rather than waiting for the scan to (re-)discover the
@@ -81,7 +83,8 @@ export function startObdMonitor(
       // advertising session, so a device already seen earlier this app session (the very common
       // case - e.g. it was in range at launch, or the user is testing right next to it) would
       // otherwise never fire another discovery event to bypass the throttle on.
-      for (const car of getCars()) {
+      const cars = vin ? getCars().filter((car) => car.vin === vin) : getCars();
+      for (const car of cars) {
         if (!car.obd || syncing.has(car.vin)) continue;
         const { vin, make, obd } = car;
         runSync(

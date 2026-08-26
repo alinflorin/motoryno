@@ -52,13 +52,17 @@ function getStyles(colors: ColorTokens) {
       backgroundColor: colors.surface,
     },
     label: {
+      flex: 1,
+      flexShrink: 1,
       color: colors.textPrimary,
       fontSize: 14,
+      marginRight: 12,
     },
     right: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
+      flexShrink: 0,
     },
     value: {
       color: colors.textFaint,
