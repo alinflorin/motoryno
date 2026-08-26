@@ -1,5 +1,5 @@
 import { Link, type Href } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 
@@ -14,8 +14,10 @@ type HeaderIconButtonProps = {
 
 /**
  * Icon button meant for `Stack.Screen`'s `headerRight`, e.g. an "add" link or a
- * "delete" action. Wraps the paddingRight spacing + hit target + pressed-opacity
- * feedback shared by every screen header action.
+ * "delete" action. Wraps the hit target + pressed-opacity feedback shared by
+ * every screen header action. Kept as a plain square so the platform's own
+ * round header-button background (e.g. iOS's glass buttons) lands centered
+ * on the icon instead of on a padded, off-center box.
  */
 export function HeaderIconButton({ name, color, size = 22, accessibilityLabel, href, onPress }: HeaderIconButtonProps) {
   const pressable = (
@@ -30,26 +32,20 @@ export function HeaderIconButton({ name, color, size = 22, accessibilityLabel, h
     </Pressable>
   );
 
-  return (
-    <View style={styles.container}>
-      {href ? (
-        <Link href={href} asChild>
-          {pressable}
-        </Link>
-      ) : (
-        pressable
-      )}
-    </View>
+  return href ? (
+    <Link href={href} asChild>
+      {pressable}
+    </Link>
+  ) : (
+    pressable
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingRight: 16,
-  },
   button: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
