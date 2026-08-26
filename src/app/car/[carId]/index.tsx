@@ -29,7 +29,7 @@ function chunk<T>(items: T[], size: number): T[][] {
 export default function CarScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const { settings, getCar } = useStorage();
+  const { settings, cars, getCar } = useStorage();
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
@@ -47,15 +47,18 @@ export default function CarScreen() {
 
   // Clears the "syncing" state once this car actually re-syncs after the button was pressed -
   // `lastSyncedAt` advances on every completed attempt (success or not), see ObdMonitorController,
-  // so this also resolves for an in-range-but-unreadable adapter.
+  // so this also resolves for an in-range-but-unreadable adapter. Reads `cars` (not the `car`
+  // lookup above) so this reruns on every storage commit, not just ones that touch this car's
+  // object specifically - matching the home screen's equivalent effect.
   useEffect(() => {
-    if (!obdSyncing || obdSyncStartedAtRef.current === null || !car) return;
+    if (!obdSyncing || obdSyncStartedAtRef.current === null) return;
     const startedAt = obdSyncStartedAtRef.current;
-    if (car.obd?.lastSyncedAt !== null && car.obd?.lastSyncedAt !== undefined && car.obd.lastSyncedAt >= startedAt) {
+    const lastSyncedAt = cars.find((c) => c.vin === carId)?.obd?.lastSyncedAt;
+    if (lastSyncedAt !== null && lastSyncedAt !== undefined && lastSyncedAt >= startedAt) {
       setObdSyncing(false);
       obdSyncStartedAtRef.current = null;
     }
-  }, [car, obdSyncing]);
+  }, [cars, carId, obdSyncing]);
 
   // Safety net for when the adapter never comes into range at all - don't spin forever.
   useEffect(() => {
