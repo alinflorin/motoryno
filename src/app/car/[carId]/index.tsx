@@ -1,10 +1,8 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
-import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
@@ -22,7 +20,6 @@ export default function CarScreen() {
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
-  const [attentionExpanded, setAttentionExpanded] = useState(false);
 
   if (!car) return null;
 
@@ -36,7 +33,7 @@ export default function CarScreen() {
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const lastVisit = visits[0];
   const allAttentionItems = [...overdueItems, ...dueSoonItems];
-  const visibleAttentionItems = attentionExpanded ? allAttentionItems : allAttentionItems.slice(0, 3);
+  const visibleAttentionItems = allAttentionItems.slice(0, 3);
   const attentionHiddenCount = allAttentionItems.length - visibleAttentionItems.length;
 
   return (
@@ -83,20 +80,22 @@ export default function CarScreen() {
                 </View>
               ))}
             </View>
-            {(attentionHiddenCount > 0 || attentionExpanded) && allAttentionItems.length > 3 && (
-              <Pressable
-                onPress={() => setAttentionExpanded((expanded) => !expanded)}
-                style={({ pressed }) => [styles.navRow, styles.attentionToggleRow, pressed && styles.navRowPressed]}
+            {attentionHiddenCount > 0 && (
+              <Link
+                href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.vin } }}
+                asChild
               >
-                <Text style={styles.navRowText}>
-                  {attentionExpanded
-                    ? t('car.showLess')
-                    : t('car.showMoreAttention', { count: attentionHiddenCount })}
-                </Text>
-                <View style={styles.navRowButton}>
-                  <Icon name={attentionExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={colors.onAmber} />
-                </View>
-              </Pressable>
+                <Pressable
+                  style={({ pressed }) => [styles.navRow, styles.attentionToggleRow, pressed && styles.navRowPressed]}
+                >
+                  <View style={styles.navRowButton}>
+                    <Text style={styles.navRowButtonText}>
+                      {t('car.viewAllAttention', { count: attentionHiddenCount })}
+                    </Text>
+                    <Chevron color={colors.onAmber} size={14} />
+                  </View>
+                </Pressable>
+              </Link>
             )}
           </View>
         )}
@@ -273,6 +272,7 @@ function getStyles(colors: ColorTokens) {
       fontWeight: '600',
     },
     attentionToggleRow: {
+      justifyContent: 'flex-end',
       marginTop: 8,
     },
     navRow: {
