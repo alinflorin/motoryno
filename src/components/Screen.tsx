@@ -1,35 +1,34 @@
 import type { ReactNode } from 'react';
-import { Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useThemeColors } from '@/theme/ThemeContext';
 
 /**
  * Full-bleed themed background wrapper shared by every screen.
  *
- * On native RN, tapping outside a focused text field doesn't blur it the way
- * it does on the web — so a form's "show the error once you leave the field"
- * logic would never fire from a tap on blank space. Dismissing the keyboard
- * on any such tap blurs the focused input for us there.
+ * Previously this wrapped native screens in a `Pressable` that called
+ * `Keyboard.dismiss()` on tap, so that tapping blank space would blur a
+ * focused input (see the module history for the original rationale). That
+ * broke scrolling everywhere: RN grants JS touch-responder status to
+ * whichever view the finger goes down on, and a drag that starts on the
+ * Pressable's own background (rather than on a nested Touchable/ScrollView
+ * child) let the Pressable claim the gesture before the ScrollView's native
+ * pan recognizer got a chance to — so dragging from blank space never
+ * scrolled, while dragging from a button/list item (whose own Touchable
+ * yields to an ancestor scroll on move) worked fine.
  *
- * The web doesn't need (or want) this: the browser already blurs a focused
- * input on any outside click, and DOM clicks bubble — unlike RN's native
- * touch-responder negotiation, a wrapping Pressable's onPress also fires for
- * clicks *inside* nested inputs, which stole focus from every field the
- * instant it was tapped. So this is native-only.
+ * Every native screen with a text field already renders it inside a
+ * `ScrollView` (form screens), whose own default `keyboardShouldPersistTaps`
+ * ('never') already blurs the focused input on any tap outside it — for
+ * free, and without stealing the drag gesture, since it's the ScrollView's
+ * own touch handling rather than a separate wrapper fighting it. So no
+ * extra dismiss wiring is needed here.
  */
 export function Screen({ children }: { children: ReactNode }) {
   const colors = useThemeColors();
   const style = [styles.root, { backgroundColor: colors.background }];
 
-  if (Platform.OS === 'web') {
-    return <View style={style}>{children}</View>;
-  }
-
-  return (
-    <Pressable style={style} onPress={Keyboard.dismiss} accessible={false}>
-      {children}
-    </Pressable>
-  );
+  return <View style={style}>{children}</View>;
 }
 
 const styles = StyleSheet.create({

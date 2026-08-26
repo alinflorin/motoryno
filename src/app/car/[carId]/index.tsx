@@ -1,4 +1,5 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -13,6 +14,16 @@ import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses, type ServiceItemStatus } from '@/utils/serviceStatus';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 
+const ATTENTION_PAGE_SIZE = 3;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const pages: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    pages.push(items.slice(i, i + size));
+  }
+  return pages;
+}
+
 export default function CarScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
@@ -20,6 +31,8 @@ export default function CarScreen() {
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
+  const [attentionPageWidth, setAttentionPageWidth] = useState(0);
+  const [attentionPageIndex, setAttentionPageIndex] = useState(0);
 
   if (!car) return null;
 
@@ -33,8 +46,7 @@ export default function CarScreen() {
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const lastVisit = visits[0];
   const allAttentionItems = [...overdueItems, ...dueSoonItems];
-  const visibleAttentionItems = allAttentionItems.slice(0, 3);
-  const attentionHiddenCount = allAttentionItems.length - visibleAttentionItems.length;
+  const attentionPages = chunk(allAttentionItems, ATTENTION_PAGE_SIZE);
 
   return (
     <Screen>
@@ -69,33 +81,42 @@ export default function CarScreen() {
         {allAttentionItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('car.needsAttention')}</Text>
-            <View style={styles.attentionList}>
-              {visibleAttentionItems.map((entry) => (
-                <View key={entry.item.name} style={styles.attentionRow}>
-                  <StatusDot status={entry.status} />
-                  <Text style={styles.attentionName}>{translateItemName(t, entry.item.name)}</Text>
-                  <Text style={[styles.attentionStatus, { color: statusTextColor(entry.status, colors) }]}>
-                    {entry.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            {attentionHiddenCount > 0 && (
-              <Link
-                href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.vin } }}
-                asChild
-              >
-                <Pressable
-                  style={({ pressed }) => [styles.navRow, styles.attentionToggleRow, pressed && styles.navRowPressed]}
+            <View onLayout={(event) => setAttentionPageWidth(event.nativeEvent.layout.width)}>
+              {attentionPageWidth > 0 && (
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(event) => {
+                    const index = Math.round(event.nativeEvent.contentOffset.x / attentionPageWidth);
+                    setAttentionPageIndex(index);
+                  }}
                 >
-                  <View style={styles.navRowButton}>
-                    <Text style={styles.navRowButtonText}>
-                      {t('car.viewAllAttention', { count: attentionHiddenCount })}
-                    </Text>
-                    <Chevron color={colors.onAmber} size={14} />
-                  </View>
-                </Pressable>
-              </Link>
+                  {attentionPages.map((page, pageIndex) => (
+                    <View key={pageIndex} style={[styles.attentionList, { width: attentionPageWidth }]}>
+                      {page.map((entry) => (
+                        <View key={entry.item.name} style={styles.attentionRow}>
+                          <StatusDot status={entry.status} />
+                          <Text style={styles.attentionName}>{translateItemName(t, entry.item.name)}</Text>
+                          <Text style={[styles.attentionStatus, { color: statusTextColor(entry.status, colors) }]}>
+                            {entry.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+            {attentionPages.length > 1 && (
+              <View style={styles.attentionDots}>
+                {attentionPages.map((_, pageIndex) => (
+                  <View
+                    key={pageIndex}
+                    style={[styles.attentionDot, pageIndex === attentionPageIndex && styles.attentionDotActive]}
+                  />
+                ))}
+              </View>
             )}
           </View>
         )}
@@ -271,9 +292,22 @@ function getStyles(colors: ColorTokens) {
       fontSize: 12,
       fontWeight: '600',
     },
-    attentionToggleRow: {
-      justifyContent: 'flex-end',
-      marginTop: 8,
+    attentionDots: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 10,
+    },
+    attentionDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.borderStrong,
+    },
+    attentionDotActive: {
+      width: 16,
+      backgroundColor: colors.amber,
     },
     navRow: {
       flexDirection: 'row',
