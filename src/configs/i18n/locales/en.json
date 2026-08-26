@@ -92,6 +92,8 @@
     "dueSoon": "Due soon",
     "ok": "OK",
     "needsAttention": "Needs attention",
+    "showMoreAttention": "Show {{count}} more",
+    "showLess": "Show less",
     "trackedItems": "Tracked Items",
     "trackedItemsCount_one": "{{count}} item",
     "trackedItemsCount_other": "{{count}} items",

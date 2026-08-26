@@ -1,14 +1,17 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
+import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { formatDateDMY } from '@/utils/date';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses, type ServiceItemStatus } from '@/utils/serviceStatus';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 
@@ -19,6 +22,7 @@ export default function CarScreen() {
   const car = getCar(carId);
   const colors = useThemeColors();
   const styles = getStyles(colors);
+  const [attentionExpanded, setAttentionExpanded] = useState(false);
 
   if (!car) return null;
 
@@ -31,7 +35,9 @@ export default function CarScreen() {
   const visits = [...car.serviceVisits].sort((a, b) => b.timestamp - a.timestamp);
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const lastVisit = visits[0];
-  const needsAttention = [...overdueItems, ...dueSoonItems].slice(0, 2);
+  const allAttentionItems = [...overdueItems, ...dueSoonItems];
+  const visibleAttentionItems = attentionExpanded ? allAttentionItems : allAttentionItems.slice(0, 3);
+  const attentionHiddenCount = allAttentionItems.length - visibleAttentionItems.length;
 
   return (
     <Screen>
@@ -63,20 +69,35 @@ export default function CarScreen() {
           </View>
         </View>
 
-        {needsAttention.length > 0 && (
+        {allAttentionItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('car.needsAttention')}</Text>
             <View style={styles.attentionList}>
-              {needsAttention.map((entry) => (
+              {visibleAttentionItems.map((entry) => (
                 <View key={entry.item.name} style={styles.attentionRow}>
                   <StatusDot status={entry.status} />
-                  <Text style={styles.attentionName}>{entry.item.name}</Text>
+                  <Text style={styles.attentionName}>{translateItemName(t, entry.item.name)}</Text>
                   <Text style={[styles.attentionStatus, { color: statusTextColor(entry.status, colors) }]}>
                     {entry.status === 'overdue' ? t('car.overdue') : t('car.dueSoon')}
                   </Text>
                 </View>
               ))}
             </View>
+            {(attentionHiddenCount > 0 || attentionExpanded) && allAttentionItems.length > 3 && (
+              <Pressable
+                onPress={() => setAttentionExpanded((expanded) => !expanded)}
+                style={({ pressed }) => [styles.navRow, styles.attentionToggleRow, pressed && styles.navRowPressed]}
+              >
+                <Text style={styles.navRowText}>
+                  {attentionExpanded
+                    ? t('car.showLess')
+                    : t('car.showMoreAttention', { count: attentionHiddenCount })}
+                </Text>
+                <View style={styles.navRowButton}>
+                  <Icon name={attentionExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={colors.onAmber} />
+                </View>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -250,6 +271,9 @@ function getStyles(colors: ColorTokens) {
     attentionStatus: {
       fontSize: 12,
       fontWeight: '600',
+    },
+    attentionToggleRow: {
+      marginTop: 8,
     },
     navRow: {
       flexDirection: 'row',

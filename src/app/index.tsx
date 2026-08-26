@@ -14,6 +14,7 @@ import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { confirmAsync } from '@/utils/confirm';
+import { translateItemName } from '@/utils/serviceItemNames';
 import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
 
@@ -76,10 +77,10 @@ export default function HomeScreen() {
           id: `${car.vin}-${entry.item.name}`,
           carId: car.vin,
           carNickname: car.displayName,
-          itemName: entry.item.name,
+          itemName: translateItemName(t, entry.item.name),
         }))
       ),
-    [cars]
+    [cars, t]
   );
 
   const confirmDeleteCar = async (carId: string, carNickname: string) => {
