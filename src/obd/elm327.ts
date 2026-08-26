@@ -200,6 +200,17 @@ export function parseHexResponse(raw: string): number[] {
     .map((line) => line.trim())
     .filter((line) => line.length > 0 && !/^(SEARCHING|STOPPED|NO DATA|UNABLE TO CONNECT|ERROR|BUS INIT)/i.test(line));
 
+  // With CAN auto-formatting on (the adapter's default) and headers off, a
+  // response that spans multiple ISO-TP frames - e.g. the VIN, which never
+  // fits in one 7-byte frame - is preceded by a standalone line giving the
+  // total reassembled byte count (e.g. "014"), before the "0:"/"1:"/... frame
+  // lines. It has no colon so the frame-index strip below leaves it alone,
+  // and being pure hex digits it would otherwise be misread as a data byte -
+  // drop it.
+  if (lines.length > 1 && /^[0-9A-Fa-f]{1,3}$/.test(lines[0]) && /^[0-9A-Fa-f]:/.test(lines[1])) {
+    lines.shift();
+  }
+
   for (const line of lines) {
     // Strip an optional leading ISO-TP frame index like "0:" or "1:".
     const withoutFrameIndex = line.replace(/^[0-9A-Fa-f]:\s*/, '');
