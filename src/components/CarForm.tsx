@@ -14,6 +14,7 @@ import { decodeVin } from '@/obd';
 import type { Car, ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { useKeyboardVerticalOffset } from '@/utils/useKeyboardVerticalOffset';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, kmToDisplay, type DistanceUnit } from '@/utils/units';
 import { MAX_ODOMETER, isValidVin, isValidYear, sanitizeVinInput } from '@/utils/validation';
@@ -392,8 +393,14 @@ export function CarForm({
     onSubmit(toParsedCarFormValues(values, distanceUnit, obd));
   });
 
+  const keyboardVerticalOffset = useKeyboardVerticalOffset();
+
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <CarFormFields
           control={control}

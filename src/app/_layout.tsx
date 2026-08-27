@@ -1,6 +1,6 @@
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -8,6 +8,7 @@ import { ObdMonitorController } from '@/ble/ObdMonitorController';
 import '@/configs/i18n';
 import { NotificationsController } from '@/notifications/NotificationsController';
 import { StorageProvider } from '@/storage';
+import type { ColorTokens } from '@/theme/colors';
 import { ThemeProvider, useThemeColors, useThemePreference } from '@/theme/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
@@ -42,12 +43,41 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
   });
 }
 
+/**
+ * Builds a React Navigation theme (used for the native chrome - header/back button -
+ * that iOS renders and interpolates outside our own screenOptions) from our color tokens,
+ * so it tracks dark/light instead of defaulting to React Navigation's built-in light theme.
+ * Without this, the iOS back button stays tinted for the default light theme (i.e. shows up
+ * white/wrong) even when the app itself is in dark mode - see expo-router's Stack docs on
+ * "Dark Mode Handling".
+ */
+function useNavigationTheme(scheme: 'light' | 'dark', colors: ColorTokens) {
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  return useMemo(
+    () => ({
+      ...base,
+      dark: scheme === 'dark',
+      colors: {
+        ...base.colors,
+        primary: colors.amber,
+        background: colors.background,
+        card: colors.background,
+        text: colors.textPrimary,
+        border: colors.border,
+        notification: colors.red,
+      },
+    }),
+    [base, scheme, colors]
+  );
+}
+
 function RootLayoutNav() {
   const { scheme } = useThemePreference();
   const colors = useThemeColors();
+  const navigationTheme = useNavigationTheme(scheme, colors);
 
   return (
-    <>
+    <NavigationThemeProvider value={navigationTheme}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -61,7 +91,7 @@ function RootLayoutNav() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
-    </>
+    </NavigationThemeProvider>
   );
 }
 

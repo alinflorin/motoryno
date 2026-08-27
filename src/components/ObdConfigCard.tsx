@@ -51,6 +51,10 @@ export function ObdConfigCard({
   const styles = getStyles(colors);
 
   const [scanning, setScanning] = useState(false);
+  // Set once a scan stops on its own (timeout or error) rather than because the
+  // user picked a device or cancelled - keeps `devices` on screen instead of
+  // wiping them, and switches the scan area to a "retry" affordance.
+  const [scanTimedOut, setScanTimedOut] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
   const [readingStep, setReadingStep] = useState<ScanStep | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -88,10 +92,12 @@ export function ObdConfigCard({
     }
 
     setDevices([]);
+    setScanTimedOut(false);
     setScanning(true);
     manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
       if (error) {
         stopScan();
+        setScanTimedOut(true);
         notify(t('common.error'), t('carForm.obdScanFailed'));
         return;
       }
@@ -99,12 +105,16 @@ export function ObdConfigCard({
       setDevices((prev) => (prev.some((existing) => existing.id === device.id) ? prev : [...prev, device]));
     });
 
-    scanTimeoutRef.current = setTimeout(stopScan, SCAN_TIMEOUT_MS);
+    scanTimeoutRef.current = setTimeout(() => {
+      stopScan();
+      setScanTimedOut(true);
+    }, SCAN_TIMEOUT_MS);
   }, [stopScan, t]);
 
   const selectDevice = useCallback(
     async (device: Device) => {
       stopScan();
+      setScanTimedOut(false);
       setDevices([]);
       onObdChange({ deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null });
 
@@ -158,9 +168,14 @@ export function ObdConfigCard({
         </Pressable>
       </View>
 
-      {scanning && (
+      {(scanning || scanTimedOut) && (
         <View style={styles.scanList}>
-          {devices.length === 0 && <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>}
+          {scanning && devices.length === 0 && (
+            <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>
+          )}
+          {scanTimedOut && devices.length === 0 && (
+            <Text style={styles.scanEmpty}>{t('carForm.obdScanNoneFound')}</Text>
+          )}
           {devices.map((device) => (
             <Pressable
               key={device.id}
@@ -175,6 +190,14 @@ export function ObdConfigCard({
               </Text>
             </Pressable>
           ))}
+          {scanTimedOut && (
+            <Pressable
+              style={({ pressed }) => [styles.retryRow, pressed && styles.deviceRowPressed]}
+              onPress={startScan}
+            >
+              <Text style={styles.retryText}>{t('carForm.obdScanRetry')}</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>
@@ -268,6 +291,18 @@ function getStyles(colors: ColorTokens) {
     deviceAddress: {
       color: colors.textFaint,
       fontSize: 11,
+    },
+    retryRow: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    retryText: {
+      color: colors.amber,
+      fontSize: 13,
+      fontWeight: '700',
     },
   });
 }

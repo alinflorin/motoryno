@@ -198,6 +198,8 @@
     "obdLastSynced": "Ultima sincronizare {{date}}",
     "obdNeverSynced": "Niciodată sincronizat",
     "obdScanning": "Se caută dispozitive din apropiere…",
+    "obdScanNoneFound": "Niciun dispozitiv găsit în apropiere.",
+    "obdScanRetry": "Scanează din nou",
     "obdPermissionDenied": "Este necesară permisiunea Bluetooth pentru a căuta un adaptor OBD2.",
     "obdScanFailed": "Scanarea Bluetooth a eșuat. Asigură-te că Bluetooth este pornit și încearcă din nou.",
     "obdConnecting": "Se conectează la adaptor…",

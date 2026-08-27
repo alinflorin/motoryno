@@ -15,6 +15,7 @@ import { StatusDot } from '@/components/StatusDot';
 import type { Car, ServiceVisit } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
+import { useKeyboardVerticalOffset } from '@/utils/useKeyboardVerticalOffset';
 import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
 import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses } from '@/utils/serviceStatus';
@@ -199,8 +200,14 @@ export function ServiceVisitForm({
     });
   });
 
+  const keyboardVerticalOffset = useKeyboardVerticalOffset();
+
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <FormField label={t('addServiceVisit.shop')} error={fieldError('shop')} style={styles.shopField}>
           <Controller
