@@ -191,7 +191,7 @@
     "obdNeverSynced": "Never synced",
     "obdScanning": "Scanning for nearby devices…",
     "obdScanNoneFound": "No devices found nearby.",
-    "obdScanRetry": "Scan again",
+    "obdStop": "Stop",
     "obdPermissionDenied": "Bluetooth permission is required to scan for an OBD2 adapter.",
     "obdScanFailed": "Bluetooth scan failed. Make sure Bluetooth is turned on and try again.",
     "obdConnecting": "Connecting to adapter…",

@@ -160,8 +160,13 @@ export function ObdConfigCard({
           onPress={scanning ? stopScan : startScan}
           disabled={!!readingStep}
         >
-          {scanning || readingStep ? (
+          {readingStep ? (
             <ActivityIndicator size="small" color={colors.onAmber} />
+          ) : scanning ? (
+            <View style={styles.scanButtonRow}>
+              <ActivityIndicator size="small" color={colors.onAmber} />
+              <Text style={styles.scanButtonText}>{t('carForm.obdStop')}</Text>
+            </View>
           ) : (
             <Text style={styles.scanButtonText}>{obd ? t('carForm.change') : t('carForm.scan')}</Text>
           )}
@@ -190,14 +195,6 @@ export function ObdConfigCard({
               </Text>
             </Pressable>
           ))}
-          {scanTimedOut && (
-            <Pressable
-              style={({ pressed }) => [styles.retryRow, pressed && styles.deviceRowPressed]}
-              onPress={startScan}
-            >
-              <Text style={styles.retryText}>{t('carForm.obdScanRetry')}</Text>
-            </Pressable>
-          )}
         </View>
       )}
     </View>
@@ -259,6 +256,11 @@ function getStyles(colors: ColorTokens) {
     scanButtonPressed: {
       opacity: 0.85,
     },
+    scanButtonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
     scanButtonText: {
       color: colors.onAmber,
       fontSize: 12,
@@ -291,18 +293,6 @@ function getStyles(colors: ColorTokens) {
     deviceAddress: {
       color: colors.textFaint,
       fontSize: 11,
-    },
-    retryRow: {
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      alignItems: 'center',
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-    },
-    retryText: {
-      color: colors.amber,
-      fontSize: 13,
-      fontWeight: '700',
     },
   });
 }
