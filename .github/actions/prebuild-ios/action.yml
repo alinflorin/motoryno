@@ -1,0 +1,41 @@
+name: Prebuild iOS project
+description: >
+  Regenerates the gitignored ios/ directory via `expo prebuild`, caches
+  CocoaPods (keyed on the generated Podfile), and runs `pod install` with
+  retries (CocoaPods' trunk CDN occasionally 429s shared macOS runners).
+  Assumes JS deps are already installed (see ../setup-js).
+  Configuration/variant-agnostic on purpose — debug+simulator (CodeQL),
+  release+simulator+unsigned (CI), and release+device+signed (CD) all
+  start from the same prebuilt/pod-installed project. The caller is
+  responsible for the actual xcodebuild invocation.
+
+runs:
+  using: composite
+  steps:
+    - name: Prebuild native iOS project
+      shell: bash
+      run: npx expo prebuild --platform ios --no-install
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v6
+      with:
+        path: |
+          ios/Pods
+          ~/Library/Caches/CocoaPods
+        key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+
+    - name: Install CocoaPods dependencies
+      shell: bash
+      working-directory: ios
+      run: |
+        for attempt in 1 2 3; do
+          if pod install; then
+            exit 0
+          fi
+          echo "pod install failed (attempt $attempt/3), retrying after backoff..."
+          sleep $((attempt * 30))
+        done
+        echo "pod install failed after 3 attempts"
+        exit 1

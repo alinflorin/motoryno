@@ -1,0 +1,25 @@
+name: Prebuild Android project
+description: >
+  Sets up JDK 17, regenerates the gitignored android/ directory via
+  `expo prebuild` (Continuous Native Generation), and wires up the Gradle
+  build cache. Assumes JS deps are already installed (see ../setup-js).
+  Platform/variant-agnostic on purpose — debug (CodeQL's assembleDebug),
+  release (CI's assembleRelease), and signed release (CD's bundleRelease,
+  after its own signing patch) all start from the same prebuilt project.
+  The caller is responsible for the actual ./gradlew invocation.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Prebuild native Android project
+      shell: bash
+      run: npx expo prebuild --platform android --no-install
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v6

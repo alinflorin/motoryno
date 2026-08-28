@@ -27,14 +27,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
-
-      - name: Install JS dependencies
-        run: npm ci
+      - name: Set up JS deps
+        uses: ./.github/actions/setup-js
 
       - name: Export web build
         run: npm run build:web
@@ -54,28 +48,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
+      - name: Set up JS deps
+        uses: ./.github/actions/setup-js
 
-      - name: Install JS dependencies
-        run: npm ci
-
-      - name: Set up JDK
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      # android/ is gitignored (Continuous Native Generation) — regenerate
-      # it from app.json before building.
-      - name: Prebuild native Android project
-        run: npx expo prebuild --platform android --no-install
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+      - name: Prebuild Android project
+        uses: ./.github/actions/prebuild-android
 
       # The RN/Expo template's `release` build type is signingConfig
       # signingConfigs.debug until CD's signing patch is applied, so this
@@ -104,48 +81,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
+      - name: Set up JS deps
+        uses: ./.github/actions/setup-js
 
-      - name: Install JS dependencies
-        run: npm ci
-
-      # ios/ is gitignored (Continuous Native Generation) — regenerate it
-      # from app.json before building.
-      - name: Prebuild native iOS project
-        run: npx expo prebuild --platform ios --no-install
-
-      # Keyed on the generated Podfile (Podfile.lock doesn't exist pre-`pod
-      # install` since ios/ isn't checked in); restore-keys fall back to the
-      # newest match.
-      - name: Cache CocoaPods
-        uses: actions/cache@v6
-        with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      # pod install hits CocoaPods' trunk CDN (raw.githubusercontent.com) to
-      # resolve podspecs; shared macOS runners occasionally get 429'd there.
-      # Retry with backoff before giving up.
-      - name: Install CocoaPods dependencies
-        working-directory: ios
-        run: |
-          for attempt in 1 2 3; do
-            if pod install; then
-              exit 0
-            fi
-            echo "pod install failed (attempt $attempt/3), retrying after backoff..."
-            sleep $((attempt * 30))
-          done
-          echo "pod install failed after 3 attempts"
-          exit 1
+      - name: Prebuild iOS project
+        uses: ./.github/actions/prebuild-ios
 
       # No distribution certificate is available in CI (and shouldn't be,
       # for PRs from forks), so this can't produce a real .ipa — an .ipa

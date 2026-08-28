@@ -43,14 +43,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
-
-      - name: Install JS dependencies
-        run: npm ci
+      - name: Set up JS deps
+        uses: ./.github/actions/setup-js
 
       # javascript-typescript uses build-mode: none (pure static analysis), so
       # CodeQL never actually compiles anything for this leg. Export the web
@@ -59,43 +53,18 @@ jobs:
         if: matrix.language == 'javascript-typescript'
         run: npm run build:web
 
-      - name: Set up JDK
-        if: matrix.language == 'java-kotlin'
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '17'
-
       # android/ and ios/ are gitignored (Continuous Native Generation) —
-      # regenerate them from app.json/app.config before CodeQL can see or build them.
-      - name: Prebuild native Android project
+      # these composites regenerate them from app.json/app.config (plus JDK/
+      # Gradle cache or CocoaPods install as needed) before CodeQL can see or
+      # build them. Same composites CI/CD use for their own release builds —
+      # prebuild is variant-agnostic, only the build step below differs.
+      - name: Prebuild Android project
         if: matrix.language == 'java-kotlin'
-        run: npx expo prebuild --platform android --no-install
+        uses: ./.github/actions/prebuild-android
 
-      - name: Prebuild native iOS project
+      - name: Prebuild iOS project
         if: matrix.language == 'swift'
-        run: npx expo prebuild --platform ios --no-install
-
-      # --- Gradle cache (java-kotlin only) ---
-      # Placed after prebuild since android/ is generated; setup-gradle just needs
-      # to run before any ./gradlew invocation to wire up its cache.
-      - name: Set up Gradle
-        if: matrix.language == 'java-kotlin'
-        uses: gradle/actions/setup-gradle@v6
-
-      # --- CocoaPods cache (swift only) ---
-      # Keyed on the generated Podfile (Podfile.lock doesn't exist pre-`pod install`
-      # since ios/ isn't checked in); restore-keys fall back to the newest match.
-      - name: Cache CocoaPods
-        if: matrix.language == 'swift'
-        uses: actions/cache@v6
-        with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+        uses: ./.github/actions/prebuild-ios
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -113,23 +82,7 @@ jobs:
           ./gradlew :app:assembleDebug --no-daemon -x lint -x test
 
       # --- Manual build: iOS (Xcode) ---
-      # pod install hits CocoaPods' trunk CDN (raw.githubusercontent.com) to resolve
-      # podspecs; shared macOS runners occasionally get 429'd there. Retry with backoff
-      # before giving up.
-      - name: Install CocoaPods dependencies
-        if: matrix.language == 'swift'
-        working-directory: ios
-        run: |
-          for attempt in 1 2 3; do
-            if pod install; then
-              exit 0
-            fi
-            echo "pod install failed (attempt $attempt/3), retrying after backoff..."
-            sleep $((attempt * 30))
-          done
-          echo "pod install failed after 3 attempts"
-          exit 1
-
+      # pod install already ran as part of the prebuild-ios composite above.
       - name: Build iOS app
         if: matrix.language == 'swift'
         working-directory: ios
