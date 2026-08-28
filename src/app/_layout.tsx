@@ -1,15 +1,24 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo } from 'react';
-import { Platform } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
+  Stack,
+} from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useMemo } from "react";
+import { Platform } from "react-native";
 
-import { ObdMonitorController } from '@/ble/ObdMonitorController';
-import '@/configs/i18n';
-import { NotificationsController } from '@/notifications/NotificationsController';
-import { StorageProvider } from '@/storage';
-import type { ColorTokens } from '@/theme/colors';
-import { ThemeProvider, useThemeColors, useThemePreference } from '@/theme/ThemeContext';
+import { ObdMonitorController } from "@/ble/ObdMonitorController";
+import "@/configs/i18n";
+import { NotificationsController } from "@/notifications/NotificationsController";
+import { StorageProvider } from "@/storage";
+import type { ColorTokens } from "@/theme/colors";
+import {
+  ThemeProvider,
+  useThemeColors,
+  useThemePreference,
+} from "@/theme/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,12 +31,12 @@ SplashScreen.preventAutoHideAsync();
 // own focus-on-click behavior, so instead watch for aria-hidden actually
 // being applied and, if it lands on an element that still contains focus,
 // move focus away immediately.
-if (Platform.OS === 'web' && typeof document !== 'undefined') {
+if (Platform.OS === "web" && typeof document !== "undefined") {
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       const target = mutation.target as HTMLElement;
       if (
-        target.getAttribute('aria-hidden') === 'true' &&
+        target.getAttribute("aria-hidden") === "true" &&
         document.activeElement instanceof HTMLElement &&
         target.contains(document.activeElement)
       ) {
@@ -38,7 +47,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 
   observer.observe(document.body, {
     attributes: true,
-    attributeFilter: ['aria-hidden'],
+    attributeFilter: ["aria-hidden"],
     subtree: true,
   });
 }
@@ -51,12 +60,12 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
  * white/wrong) even when the app itself is in dark mode - see expo-router's Stack docs on
  * "Dark Mode Handling".
  */
-function useNavigationTheme(scheme: 'light' | 'dark', colors: ColorTokens) {
-  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+function useNavigationTheme(scheme: "light" | "dark", colors: ColorTokens) {
+  const base = scheme === "dark" ? DarkTheme : DefaultTheme;
   return useMemo(
     () => ({
       ...base,
-      dark: scheme === 'dark',
+      dark: scheme === "dark",
       colors: {
         ...base.colors,
         primary: colors.amber,
@@ -67,7 +76,7 @@ function useNavigationTheme(scheme: 'light' | 'dark', colors: ColorTokens) {
         notification: colors.red,
       },
     }),
-    [base, scheme, colors]
+    [base, scheme, colors],
   );
 }
 
@@ -78,15 +87,20 @@ function RootLayoutNav() {
 
   return (
     <NavigationThemeProvider value={navigationTheme}>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.amber,
           headerTitleStyle: { color: colors.textPrimary },
-          headerBackTitle: 'Back',
+          headerBackTitle: "Back",
           contentStyle: { backgroundColor: colors.background },
+          // On native, the header's own safe-area/edge padding keeps headerRight
+          // (e.g. the "add" icon on tracked items / service visits) a comfortable
+          // distance from the edge. On web there's no such inset, so it lands
+          // flush against the browser's edge - add it back explicitly there.
+          ...{ headerRightContainerStyle: { paddingRight: 16 } },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
