@@ -24,7 +24,7 @@
     "expo-system-ui": "~57.0.2",
     "expo-task-manager": "~57.0.13",
     "i18next": "^26.4.0",
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.86.0",
     "react-i18next": "^17.0.12",
