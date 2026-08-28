@@ -34,7 +34,7 @@ jobs:
         run: npm run build:web
 
       - name: Upload web dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-dist
           path: dist
@@ -67,7 +67,7 @@ jobs:
           ./gradlew assembleRelease --no-daemon -x lint -x test
 
       - name: Upload Android APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
@@ -113,7 +113,7 @@ jobs:
             ios-release-simulator-build.zip
 
       - name: Upload iOS simulator build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-release-simulator-build
           path: ios-release-simulator-build.zip
