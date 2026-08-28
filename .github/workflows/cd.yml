@@ -21,6 +21,15 @@ on:
     tags:
       - '*.*.*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: >
+          Version to build (e.g. 1.2.3), written into app.json before
+          prebuild so it lands in the Android versionName and iOS
+          CFBundleShortVersionString. Only used for manual runs — release/
+          tag triggers derive it from the tag name automatically.
+        required: false
+        type: string
 
 concurrency:
   group: cd-${{ github.workflow }}-${{ github.ref }}
@@ -28,6 +37,12 @@ concurrency:
 
 permissions:
   contents: read
+
+# Resolution order: an explicit workflow_dispatch input wins; otherwise,
+# for release/tag triggers, take it from the tag name (github.ref_name is
+# the tag on both `release` and tag-`push` events).
+env:
+  RELEASE_VERSION: ${{ github.event.inputs.version || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
 
 jobs:
   release-web:
@@ -70,6 +85,17 @@ jobs:
 
       - name: Set up JS deps
         uses: ./.github/actions/setup-js
+
+      - name: Set app version
+        if: env.RELEASE_VERSION != ''
+        run: |
+          node -e "
+            const fs = require('fs');
+            const json = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            json.expo.version = process.env.RELEASE_VERSION;
+            fs.writeFileSync('app.json', JSON.stringify(json, null, 2) + '\n');
+            console.log('Set app.json version to', process.env.RELEASE_VERSION);
+          "
 
       - name: Prebuild Android project
         uses: ./.github/actions/prebuild-android
@@ -168,6 +194,17 @@ jobs:
 
       - name: Set up JS deps
         uses: ./.github/actions/setup-js
+
+      - name: Set app version
+        if: env.RELEASE_VERSION != ''
+        run: |
+          node -e "
+            const fs = require('fs');
+            const json = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            json.expo.version = process.env.RELEASE_VERSION;
+            fs.writeFileSync('app.json', JSON.stringify(json, null, 2) + '\n');
+            console.log('Set app.json version to', process.env.RELEASE_VERSION);
+          "
 
       - name: Prebuild iOS project
         uses: ./.github/actions/prebuild-ios
