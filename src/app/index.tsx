@@ -1,7 +1,15 @@
 import { Link, Redirect, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
@@ -164,7 +172,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {hasPairedObd && (
+        {hasPairedObd && Platform.OS !== 'web' && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('home.obdSyncNow')}

@@ -1,7 +1,15 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
 import { Chevron } from '@/components/Chevron';
@@ -118,7 +126,7 @@ export default function CarScreen() {
           )}
         </View>
 
-        {car.obd && (
+        {car.obd && Platform.OS !== 'web' && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('car.obdSyncNow')}
