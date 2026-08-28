@@ -1,33 +1,27 @@
 name: CD
 
-# Store-ready, properly signed builds. Triggers on a published GitHub
-# Release or a `v*` tag push (either works — use whichever fits your
-# release process), plus a manual trigger for re-running a signed build
-# without cutting a new release. `published` (not `created`) so draft
-# releases don't fire this.
+# Stage 1 of the release pipeline: build & sign, then attach to the
+# release. Triggers only when a GitHub Release is *published* — not on tag
+# push, and not on a draft (see release-draft.yml, which turns a pushed tag
+# into a draft pre-release first, so nothing here runs until you actually
+# publish it) — plus a manual trigger for re-running a signed build without
+# cutting a new release. Fires whether the published release is a
+# pre-release or final; either way this only builds and attaches.
 #
-# Each job targets a GitHub Environment (play-store / app-store) that
-# already has required reviewers configured, so the job pauses for
-# approval before touching any signing secrets.
-#
-# This pipeline builds and signs the AAB/IPA and uploads them as workflow
-# artifacts — it does NOT call the Play Store / App Store Connect APIs.
-# Upload to the consoles manually (Play Console / Transporter) until
-# you're ready to wire up real store credentials.
+# Stage 2 (deploy.yml) is separate: it runs when you later promote this
+# same release from pre-release to final (uncheck "Set as a pre-release"),
+# and pushes the artifacts attached here to the stores/CDN — no rebuild.
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - '*.*.*'
   workflow_dispatch:
     inputs:
       version:
         description: >
           Version to build (e.g. 1.2.3), written into app.json before
           prebuild so it lands in the Android versionName and iOS
-          CFBundleShortVersionString. Only used for manual runs — release/
-          tag triggers derive it from the tag name automatically.
+          CFBundleShortVersionString. Only used for manual runs — a
+          release trigger derives it from the release's tag automatically.
         required: false
         type: string
 
@@ -39,18 +33,20 @@ permissions:
   contents: read
 
 # Resolution order: an explicit workflow_dispatch input wins; otherwise,
-# for release/tag triggers, take it from the tag name (github.ref_name is
-# the tag on both `release` and tag-`push` events).
+# for a release trigger, take it from the published release's tag.
 env:
-  RELEASE_VERSION: ${{ github.event.inputs.version || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+  RELEASE_VERSION: ${{ github.event.inputs.version || github.event.release.tag_name || '' }}
 
 jobs:
   release-web:
-    name: Build & publish web
+    name: Build web
     runs-on: ubuntu-latest
-    # No GitHub Environment wired up yet — add one (e.g. `cloudflare-pages`,
-    # with its own approval gate/secrets) once the deploy step below is
-    # filled in, and set `environment:` here to match.
+    # Overrides the workflow-level `contents: read` — needed to attach the
+    # dist zip to the release below (only when this run was triggered by
+    # one). Actual Cloudflare Pages deploy happens in deploy.yml's
+    # deploy-web job once you promote the release.
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -61,6 +57,9 @@ jobs:
       - name: Export web build
         run: npm run build:web
 
+      - name: Zip web dist
+        run: (cd dist && zip -r ../web-dist.zip .)
+
       - name: Upload web dist
         uses: actions/upload-artifact@v7
         with:
@@ -69,16 +68,23 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      # TODO: deploy dist/ to Cloudflare Pages, e.g. via
-      # cloudflare/wrangler-action with CLOUDFLARE_API_TOKEN /
-      # CLOUDFLARE_ACCOUNT_ID secrets.
-      - name: Deploy to Cloudflare Pages
-        run: echo "TODO - deploy dist/ to Cloudflare Pages"
+      # Only when this run was triggered by publishing a release (not a
+      # manual dispatch, which may have no matching release to attach to).
+      - name: Attach web dist to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: web-dist.zip
+          fail_on_unmatched_files: true
 
   release-android:
     name: Build & sign Android (AAB)
     runs-on: ubuntu-latest
-    environment: play-store
+    # Overrides the workflow-level `contents: read` — needed to attach the
+    # AAB to the release below (only when this run was triggered by one).
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -184,10 +190,23 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      # Only when this run was triggered by publishing a release (not a
+      # manual dispatch, which may have no matching release to attach to).
+      - name: Attach AAB to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: android/app/build/outputs/bundle/release/app-release.aab
+          fail_on_unmatched_files: true
+
   release-ios:
     name: Build & sign iOS (IPA)
     runs-on: macos-latest
-    environment: app-store
+    # Overrides the workflow-level `contents: read` — needed to attach the
+    # IPA to the release below (only when this run was triggered by one).
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -266,3 +285,13 @@ jobs:
           path: build/ios/*.ipa
           if-no-files-found: error
           retention-days: 90
+
+      # Only when this run was triggered by publishing a release (not a
+      # manual dispatch, which may have no matching release to attach to).
+      - name: Attach IPA to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: build/ios/*.ipa
+          fail_on_unmatched_files: true

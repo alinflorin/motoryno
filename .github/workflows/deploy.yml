@@ -1,0 +1,96 @@
+name: Deploy
+
+# Stage 2 of the release pipeline. cd.yml (stage 1, on `release: published`)
+# builds, signs, and attaches the AAB/IPA/web-dist.zip to the GitHub
+# Release as assets. This workflow runs when that same release is
+# *promoted* from a pre-release to a final release (uncheck "Set as a
+# pre-release" on the release and save) — the `released` event fires
+# specifically for that transition, not for an ordinary edit (notes,
+# title, ...) or for the initial publish-as-pre-release that stage 1
+# already handled. It downloads the artifacts stage 1 already built —
+# never rebuilds — and pushes them to the stores/CDN.
+#
+# The actual store/CDN upload calls below are TODO placeholders (see
+# cd.yml's header for why) — fill them in once you're ready to wire up
+# real Play Store / App Store Connect / Cloudflare Pages credentials.
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >
+          Release tag to deploy from (must already have build artifacts
+          attached by cd.yml). Defaults to the promoted release's tag when
+          triggered that way; required for a manual run.
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+
+jobs:
+  deploy-web:
+    name: Deploy web to Cloudflare Pages
+    runs-on: ubuntu-latest
+    # No GitHub Environment wired up yet — see cd.yml's release-web job
+    # comment; add one (e.g. `cloudflare-pages`) once this is filled in.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download web dist from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'web-dist.zip' --clobber
+
+      - name: Unzip web dist
+        run: unzip -o web-dist.zip -d dist
+
+      # TODO: deploy dist/ to Cloudflare Pages, e.g. via
+      # cloudflare/wrangler-action with CLOUDFLARE_API_TOKEN /
+      # CLOUDFLARE_ACCOUNT_ID secrets.
+      - name: Deploy to Cloudflare Pages
+        run: echo "TODO - deploy dist/ to Cloudflare Pages"
+
+  deploy-android:
+    name: Upload Android AAB to Play Store
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download AAB from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'app-release.aab' --clobber
+
+      # TODO: upload app-release.aab to Play Store, e.g. via
+      # r0adkll/upload-google-play with a service-account JSON secret.
+      - name: Upload to Play Store
+        run: echo "TODO - upload app-release.aab to Play Store"
+
+  deploy-ios:
+    name: Upload iOS IPA to App Store Connect
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download IPA from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.ipa' --clobber
+
+      # TODO: upload the .ipa to App Store Connect, e.g. via
+      # apple-actions/upload-testflight-build with an App Store Connect
+      # API key secret.
+      - name: Upload to App Store Connect
+        run: echo "TODO - upload .ipa to App Store Connect"
