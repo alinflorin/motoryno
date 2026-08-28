@@ -30,6 +30,36 @@ permissions:
   contents: read
 
 jobs:
+  release-web:
+    name: Build & publish web
+    runs-on: ubuntu-latest
+    # No GitHub Environment wired up yet — add one (e.g. `cloudflare-pages`,
+    # with its own approval gate/secrets) once the deploy step below is
+    # filled in, and set `environment:` here to match.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JS deps
+        uses: ./.github/actions/setup-js
+
+      - name: Export web build
+        run: npm run build:web
+
+      - name: Upload web dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 90
+
+      # TODO: deploy dist/ to Cloudflare Pages, e.g. via
+      # cloudflare/wrangler-action with CLOUDFLARE_API_TOKEN /
+      # CLOUDFLARE_ACCOUNT_ID secrets.
+      - name: Deploy to Cloudflare Pages
+        run: echo "TODO - deploy dist/ to Cloudflare Pages"
+
   release-android:
     name: Build & sign Android (AAB)
     runs-on: ubuntu-latest
