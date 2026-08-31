@@ -94,7 +94,14 @@ export function ObdConfigCard({
     setDevices([]);
     setScanTimedOut(false);
     setScanning(true);
-    manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
+    // allowDuplicates: true - with `false`, react-native-ble-plx (particularly on
+    // Android) suppresses devices it has already reported once for the lifetime of
+    // the manager, not just within a single scan call. That means a device picked
+    // in an earlier scan (or any other already-seen peripheral) silently stops being
+    // reported on a later "Change device" scan, leaving the list empty. Dedup is
+    // already done in JS below (`setDevices` checks `existing.id`), so ask the
+    // native side to keep reporting everything and let that handle duplicates.
+    manager.startDeviceScan(null, { allowDuplicates: true }, (error, device) => {
       if (error) {
         stopScan();
         setScanTimedOut(true);
