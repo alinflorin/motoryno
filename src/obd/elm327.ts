@@ -97,6 +97,21 @@ const PROMPT_CHAR = '>';
 const COMMAND_TIMEOUT_MS = 5000;
 
 /**
+ * A protocol auto-search (ELM327 trying ISO9141/KWP/CAN in turn to find the
+ * one the vehicle actually speaks) reports back with "SEARCHING..." while
+ * it's still working, then either the real response or "UNABLE TO CONNECT".
+ * That search commonly takes well past the normal 5s command timeout on the
+ * very first OBD data request after `ATSP0` (each protocol candidate gets
+ * its own multi-second bus timeout before the adapter tries the next one) -
+ * seeing that line means the adapter is still alive and working, so the
+ * per-command timeout is pushed back rather than cutting it off mid-search.
+ */
+const SEARCHING_GRACE_MS = 10000;
+
+/** Enable with `EXPO_PUBLIC_OBD_DEBUG=1` to log every AT/OBD command and the adapter's raw reply to the console. */
+const DEBUG = process.env.EXPO_PUBLIC_OBD_DEBUG === '1';
+
+/**
  * One open ELM327 command/response session over a connected `Device`. Create
  * with `openElmConnection`, always `close()` when done (even on error) so
  * the notify subscription doesn't leak.
@@ -105,7 +120,8 @@ export class ElmConnection {
   private device: Device;
   private profile: UartProfile;
   private buffer = '';
-  private pending: { resolve: (text: string) => void; reject: (err: Error) => void } | null = null;
+  private pending: { resolve: (text: string) => void; reject: (err: Error) => void; command: string; startedAt: number } | null = null;
+  private timeoutHandle: ReturnType<typeof setTimeout> | null = null;
   private subscription: Subscription;
 
   constructor(device: Device, profile: UartProfile) {
@@ -113,20 +129,43 @@ export class ElmConnection {
     this.profile = profile;
     this.subscription = device.monitorCharacteristicForService(profile.serviceUUID, profile.notifyUUID, (error, characteristic) => {
       if (error) {
-        this.pending?.reject(error);
-        this.pending = null;
+        this.settle((pending) => pending.reject(error));
         return;
       }
       if (!characteristic?.value) return;
       this.buffer += base64ToAscii(characteristic.value);
+
+      if (DEBUG && this.pending) {
+        console.log(`[obd] <- ${JSON.stringify(this.buffer)} (${Date.now() - this.pending.startedAt}ms so far)`);
+      }
+
       if (this.buffer.includes(PROMPT_CHAR) && this.pending) {
         const response = this.buffer.slice(0, this.buffer.indexOf(PROMPT_CHAR));
         this.buffer = '';
-        const { resolve } = this.pending;
-        this.pending = null;
-        resolve(response);
+        this.settle((pending) => pending.resolve(response));
+      } else if (this.pending && /SEARCHING\.*/i.test(this.buffer)) {
+        // Still mid protocol-search - extend the timeout instead of racing it.
+        this.armTimeout(this.pending.command, SEARCHING_GRACE_MS);
       }
     });
+  }
+
+  private armTimeout(command: string, timeoutMs: number): void {
+    if (this.timeoutHandle) clearTimeout(this.timeoutHandle);
+    this.timeoutHandle = setTimeout(() => {
+      this.settle((pending) => pending.reject(new Error(`ElmConnection: "${command}" timed out`)));
+    }, timeoutMs);
+  }
+
+  private settle(run: (pending: NonNullable<typeof this.pending>) => void): void {
+    if (!this.pending) return;
+    if (this.timeoutHandle) {
+      clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = null;
+    }
+    const pending = this.pending;
+    this.pending = null;
+    run(pending);
   }
 
   /** Sends one AT/OBD command and resolves with the adapter's raw text response (prompt char stripped). */
@@ -135,9 +174,12 @@ export class ElmConnection {
       throw new Error('ElmConnection: a command is already in flight');
     }
 
+    if (DEBUG) console.log(`[obd] -> ${command}`);
+    const startedAt = Date.now();
     const responsePromise = new Promise<string>((resolve, reject) => {
-      this.pending = { resolve, reject };
+      this.pending = { resolve, reject, command, startedAt };
     });
+    this.armTimeout(command, timeoutMs);
 
     const payload = asciiToBase64(`${command}\r`);
     if (this.profile.writeWithResponse) {
@@ -146,18 +188,21 @@ export class ElmConnection {
       await this.device.writeCharacteristicWithoutResponseForService(this.profile.serviceUUID, this.profile.writeUUID, payload);
     }
 
-    const timeout = new Promise<string>((_, reject) => {
-      setTimeout(() => reject(new Error(`ElmConnection: "${command}" timed out`)), timeoutMs);
-    });
-
     try {
-      return await Promise.race([responsePromise, timeout]);
+      const response = await responsePromise;
+      if (DEBUG) console.log(`[obd] "${command}" resolved in ${Date.now() - startedAt}ms`);
+      return response;
     } finally {
       this.pending = null;
+      if (this.timeoutHandle) {
+        clearTimeout(this.timeoutHandle);
+        this.timeoutHandle = null;
+      }
     }
   }
 
   close(): void {
+    if (this.timeoutHandle) clearTimeout(this.timeoutHandle);
     this.subscription.remove();
   }
 }
