@@ -25,10 +25,12 @@ export interface ByteField {
   scale: number;
 }
 
-export interface RequestOdometerSource {
-  kind: 'request';
-  /** Human-readable, e.g. 'Mercedes EZS (612/482) 22 0100'. Shown in logs/UI only. */
-  label: string;
+/**
+ * One addressed diagnostic request: how to reach the ECU and what to send.
+ * Shared by the odometer and VIN sources, and editable by hand on the OBD
+ * setup screen when none of the built-in strategies fit a car.
+ */
+export interface DiagnosticRequest {
   /** Required bus protocol; undefined = whatever the adapter auto-detected. */
   protocol?: 'can-11-500';
   /** Transmit CAN header (`ATSH`); undefined = OBD-II functional broadcast. */
@@ -39,7 +41,18 @@ export interface RequestOdometerSource {
   session?: string;
   /** The read request as hex, e.g. '01A6', '22F1A1', '2101'. */
   request: string;
+}
+
+export interface RequestOdometerSource extends DiagnosticRequest {
+  kind: 'request';
+  /** Human-readable, e.g. 'Mercedes EZS (612/482) 22 0100'. Shown in logs/UI only. */
+  label: string;
   field: ByteField;
+}
+
+/** A manual VIN request: the reply payload is scanned for 17 printable ASCII characters. */
+export interface VinSource extends DiagnosticRequest {
+  label: string;
 }
 
 export interface BroadcastOdometerSource {
@@ -73,12 +86,29 @@ function isByteField(value: unknown): value is ByteField {
   );
 }
 
+function isDiagnosticRequest(value: Record<string, unknown>): boolean {
+  return (
+    typeof value.request === 'string' &&
+    (value.header === undefined || typeof value.header === 'string') &&
+    (value.receiveAddress === undefined || typeof value.receiveAddress === 'string') &&
+    (value.session === undefined || typeof value.session === 'string') &&
+    (value.protocol === undefined || value.protocol === 'can-11-500')
+  );
+}
+
+/** Structural check for a persisted VIN source. */
+export function isVinSource(value: unknown): value is VinSource {
+  if (!value || typeof value !== 'object') return false;
+  const source = value as Record<string, unknown>;
+  return typeof source.label === 'string' && isDiagnosticRequest(source);
+}
+
 /** Structural check for a persisted source (the JSON file may have been edited/imported). */
 export function isOdometerSource(value: unknown): value is OdometerSource {
   if (!value || typeof value !== 'object') return false;
   const source = value as Record<string, unknown>;
   if (typeof source.label !== 'string' || !isByteField(source.field)) return false;
-  if (source.kind === 'request') return typeof source.request === 'string';
+  if (source.kind === 'request') return isDiagnosticRequest(source);
   if (source.kind === 'broadcast') return typeof source.canId === 'string';
   return false;
 }

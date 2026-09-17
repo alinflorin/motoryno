@@ -15,8 +15,8 @@ export interface ObdSyncAttempt {
   connectionFailed: boolean;
 }
 
-function syncTarget(car: Car): Parameters<typeof syncOdometer>[1] {
-  return { vin: car.vin, make: car.make, odometerSource: car.obd?.odometerSource ?? null };
+function syncTarget(car: Car, obd: NonNullable<Car['obd']>): Parameters<typeof syncOdometer>[1] {
+  return { vin: car.vin, make: car.make, obd };
 }
 
 /** How long to wait for a direct (non-scan) connect attempt before giving up. */
@@ -80,7 +80,7 @@ export function startObdMonitor(
       const car = getCars().find((c) => c.obd?.deviceAddress === device.id);
       if (!car || !car.obd || syncing.has(car.vin) || !isDueForSync(car.obd)) return;
 
-      runSync(car.vin, syncOdometer(device, syncTarget(car)));
+      runSync(car.vin, syncOdometer(device, syncTarget(car, car.obd)));
     });
   })();
 
@@ -100,7 +100,7 @@ export function startObdMonitor(
       const cars = vin ? getCars().filter((car) => car.vin === vin) : getCars();
       for (const car of cars) {
         if (!car.obd || syncing.has(car.vin)) continue;
-        const target = syncTarget(car);
+        const target = syncTarget(car, car.obd);
         runSync(
           car.vin,
           manager

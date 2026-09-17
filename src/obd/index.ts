@@ -5,11 +5,13 @@ export { STANDARD_ODOMETER_SOURCE, vehicleOdometerSources } from '@/obd/odometer
 export { learnOdometerSource } from '@/obd/odometer/learn';
 export type { LearnOptions, LearnProgress, LearnResult, LearnStep } from '@/obd/odometer/learn';
 export { readOdometerSource } from '@/obd/odometer/read';
-export { decodeField, isOdometerSource } from '@/obd/odometer/source';
-export type { ByteField, OdometerSource } from '@/obd/odometer/source';
+export { decodeField, isOdometerSource, isVinSource } from '@/obd/odometer/source';
+export { testOdometerSource, testVinSource } from '@/obd/manualTest';
+export type { ManualTestResult } from '@/obd/manualTest';
+export type { ByteField, DiagnosticRequest, OdometerSource, RequestOdometerSource, VinSource } from '@/obd/odometer/source';
 export { requestVin, sendRequest } from '@/obd/protocol';
 export type { ObdResponse } from '@/obd/protocol';
-export { scanVehicleInfo, syncOdometer } from '@/obd/scanVehicle';
-export type { OdometerSyncResult, OdometerSyncTarget, ScanStep, VehicleScanResult } from '@/obd/scanVehicle';
+export { DEFAULT_OBD_READ_CONFIG, readVinSource, scanVehicleInfo, syncOdometer } from '@/obd/scanVehicle';
+export type { ObdReadConfig, OdometerSyncResult, OdometerSyncTarget, ScanStep, VehicleScanResult } from '@/obd/scanVehicle';
 export { decodeVin, resetVinDecoder, setVinDecoder } from '@/obd/vin';
 export type { DecodedVin, VinDecoder } from '@/obd/vin';

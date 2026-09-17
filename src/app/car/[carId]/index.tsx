@@ -1,9 +1,11 @@
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import { ObdSyncButton } from '@/components/ObdSyncButton';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
@@ -27,6 +29,7 @@ function chunk<T>(items: T[], size: number): T[][] {
 
 export default function CarScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const { settings, getCar } = useStorage();
   const car = getCar(carId);
@@ -85,9 +88,28 @@ export default function CarScreen() {
           )}
         </View>
 
-        {car.obd && (
-          <View style={styles.obdSync}>
-            <ObdSyncButton vin={car.vin} />
+        {car.obd && Platform.OS !== 'web' && (
+          <View style={styles.obdSection}>
+            <Card title={t('car.obdAdapter')}>
+              <View>
+                <Text style={styles.obdDeviceName}>{car.obd.deviceName}</Text>
+                <Text style={styles.obdSubtitle}>
+                  {car.obd.lastSyncedAt
+                    ? t('carForm.obdLastSynced', { date: formatDateDMY(car.obd.lastSyncedAt) })
+                    : t('carForm.obdNeverSynced')}
+                </Text>
+              </View>
+              <View style={styles.obdActions}>
+                <ObdSyncButton vin={car.vin} size="sm" />
+                <Button
+                  label={t('car.obdSetup')}
+                  variant="secondary"
+                  size="sm"
+                  fullWidth={false}
+                  onPress={() => router.push({ pathname: '/car/[carId]/obd', params: { carId: car.vin } })}
+                />
+              </View>
+            </Card>
           </View>
         )}
 
@@ -252,9 +274,24 @@ function getStyles(colors: ColorTokens) {
       fontSize: 11,
       marginTop: 2,
     },
-    obdSync: {
-      margin: 16,
-      marginBottom: 0,
+    obdSection: {
+      padding: 16,
+      paddingBottom: 0,
+    },
+    obdDeviceName: {
+      color: colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    obdSubtitle: {
+      color: colors.textFaint,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    obdActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
     },
     section: {
       padding: 16,

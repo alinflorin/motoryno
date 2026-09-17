@@ -136,10 +136,10 @@ export interface ElmAddressing {
   receiveAddress?: string;
 }
 
-export type ElmProtocol = 'auto' | 'can-11-500';
+export type ElmProtocol = 'auto' | 'can-11-500' | 'other';
 
 /** The ELM327 protocol numbers (`ATSP`/`ATDPN`) - only the two this app selects explicitly. */
-const PROTOCOL_NUMBER: Record<ElmProtocol, string> = { auto: '0', 'can-11-500': '6' };
+const PROTOCOL_NUMBER: Record<Exclude<ElmProtocol, 'other'>, string> = { auto: '0', 'can-11-500': '6' };
 
 const OBD_FUNCTIONAL_HEADER = '7DF';
 
@@ -291,7 +291,7 @@ export class ElmConnection {
   }
 
   /** Selects the bus protocol (`ATSP`). 'auto' lets the adapter search on the next request. */
-  async setProtocol(protocol: ElmProtocol): Promise<void> {
+  async setProtocol(protocol: Exclude<ElmProtocol, 'other'>): Promise<void> {
     if (protocol === this.protocol) return;
     const ok = await this.sendAt(`ATSP${PROTOCOL_NUMBER[protocol]}`);
     if (!ok) throw new Error(`ElmConnection: adapter rejected protocol ${protocol}`);
@@ -321,6 +321,26 @@ export class ElmConnection {
   async isOnCan11Bit500k(): Promise<boolean> {
     const number = await this.describeProtocolNumber();
     return number === '6' || number === 'A6';
+  }
+
+  /**
+   * Mirrors any addressing/protocol the user's custom init commands set, so
+   * the idempotent setters above don't skip a needed reset later.
+   */
+  async noteInitCommands(commands: string[]): Promise<void> {
+    for (const raw of commands) {
+      const command = raw.trim().toUpperCase().replace(/\s+/g, '');
+      const header = command.match(/^ATSH([0-9A-F]{3,8})$/)?.[1];
+      if (header) this.header = normalizeHex(header) ?? null;
+      const receive = command.match(/^ATCRA([0-9A-F]{3,8})$/)?.[1];
+      if (receive) this.receiveAddress = normalizeHex(receive) ?? null;
+      if (command === 'ATCRA') this.receiveAddress = null;
+      const protocol = command.match(/^ATSP([0-9A-C])$/)?.[1];
+      if (protocol) {
+        this.protocol = protocol === '6' ? 'can-11-500' : protocol === '0' ? 'auto' : 'other';
+        this.detectedProtocolNumber = null;
+      }
+    }
   }
 
   /** Sets the adapter's receive timeout (`ATST`, in 4ms units, hex). Shorter = faster "NO DATA" during sweeps. */
@@ -395,8 +415,13 @@ export class ElmConnection {
 /** Standard ELM327 reset/configure sequence: echo/linefeeds/spaces/headers off, auto-detect protocol. */
 const INIT_COMMANDS = ['ATZ', 'ATE0', 'ATL0', 'ATS0', 'ATH0', 'ATSP0'];
 
+export interface OpenElmOptions {
+  /** Extra AT commands to send after the standard init, in order. Failures are logged, not fatal. */
+  initCommands?: string[];
+}
+
 /** Connects to `device` (if not already connected), discovers services, and opens an initialized ELM327 session. */
-export async function openElmConnection(device: Device): Promise<ElmConnection> {
+export async function openElmConnection(device: Device, options: OpenElmOptions = {}): Promise<ElmConnection> {
   const connected = await device.isConnected();
   const activeDevice = connected ? device : await device.connect();
   await activeDevice.discoverAllServicesAndCharacteristics();
@@ -416,6 +441,13 @@ export async function openElmConnection(device: Device): Promise<ElmConnection> 
       if (command !== 'ATZ') throw error;
     }
   }
+  for (const command of options.initCommands ?? []) {
+    const trimmed = command.trim();
+    if (!trimmed) continue;
+    const ok = await connection.sendAt(trimmed);
+    if (!ok) obdLog('info', `custom init command "${trimmed}" was not acknowledged`);
+  }
+  await connection.noteInitCommands(options.initCommands ?? []);
   return connection;
 }
 

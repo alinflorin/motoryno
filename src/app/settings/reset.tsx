@@ -1,7 +1,8 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
@@ -32,12 +33,8 @@ export default function SettingsResetScreen() {
         <Text style={styles.warning}>{t('settingsReset.warning')}</Text>
 
         <View style={styles.buttonRow}>
-          <Pressable onPress={() => router.back()} style={({ pressed }) => [styles.button, styles.noButton, pressed && styles.pressed]}>
-            <Text style={styles.noText}>{t('common.no')}</Text>
-          </Pressable>
-          <Pressable onPress={handleReset} style={({ pressed }) => [styles.button, styles.yesButton, pressed && styles.pressed]}>
-            <Text style={styles.yesText}>{t('common.yes')}</Text>
-          </Pressable>
+          <Button label={t('common.no')} variant="secondary" onPress={() => router.back()} style={styles.button} />
+          <Button label={t('common.yes')} variant="danger" onPress={handleReset} style={styles.button} />
         </View>
 
         <Text style={styles.databaseSize}>{t('settingsReset.databaseSize', { size: databaseSizeLabel })}</Text>
@@ -75,29 +72,6 @@ function getStyles(colors: ColorTokens) {
     },
     button: {
       flex: 1,
-      alignItems: 'center',
-      paddingVertical: 13,
-      borderRadius: 14,
-    },
-    pressed: {
-      opacity: 0.85,
-    },
-    noButton: {
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-    },
-    noText: {
-      color: colors.textSecondary,
-      fontSize: 14,
-      fontWeight: '700',
-    },
-    yesButton: {
-      backgroundColor: colors.red,
-    },
-    yesText: {
-      color: colors.onRed,
-      fontSize: 14,
-      fontWeight: '700',
     },
     databaseSize: {
       color: colors.textFainter,

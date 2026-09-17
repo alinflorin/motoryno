@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Switch, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
+import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 import { TimePickerField } from '@/components/TimePickerField';
@@ -13,7 +15,7 @@ import { formatCronTime, parseCronTime } from '@/utils/notificationCron';
 
 export default function SettingsNotificationsScreen() {
   const { t } = useTranslation();
-  const { colors, styles } = useStyles(getStyles);
+  const { styles } = useStyles(getStyles);
   const { settings, updateNotificationSettings } = useStorage();
   const { cron } = settings.notifications;
   const enabled = cron !== null;
@@ -22,16 +24,14 @@ export default function SettingsNotificationsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: t('settingsNotifications.title') }} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView contentStyle={styles.content}>
         <SettingsSection>
           <SettingsRow
             label={t('settingsNotifications.enabled')}
             right={
-              <Switch
+              <ThemedSwitch
                 value={enabled}
                 onValueChange={(next) => updateNotificationSettings({ cron: next ? formatCronTime(time) : null })}
-                trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                thumbColor={colors.textPrimary}
               />
             }
           />
@@ -46,7 +46,7 @@ export default function SettingsNotificationsScreen() {
             onChange={(next) => updateNotificationSettings({ cron: formatCronTime(next) })}
           />
         </SettingsSection>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 }
@@ -54,9 +54,7 @@ export default function SettingsNotificationsScreen() {
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
     content: {
-      padding: 16,
       gap: 10,
-      paddingBottom: 32,
     },
     footnote: {
       color: colors.textFaint,

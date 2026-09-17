@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import type { ColorTokens } from '@/theme/colors';
-import { useStyles } from '@/theme/useStyles';
+import { Button } from '@/components/Button';
+import { layout, spacing } from '@/theme/tokens';
 
+/** Cancel / submit pair pinned under a form, inset for the home indicator. */
 export function FormButtonRow({
   onCancel,
   onSubmit,
@@ -18,69 +19,23 @@ export function FormButtonRow({
   insetBottom: number;
 }) {
   const { t } = useTranslation();
-  const { styles } = useStyles(getStyles);
 
   return (
-    <View style={[styles.row, { paddingBottom: Math.max(16, insetBottom) }]}>
-      <Pressable onPress={onCancel} style={({ pressed }) => [styles.button, styles.cancelButton, pressed && styles.pressed]}>
-        <Text style={styles.cancelText}>{t('common.cancel')}</Text>
-      </Pressable>
-      <Pressable
-        onPress={onSubmit}
-        disabled={submitDisabled}
-        style={({ pressed }) => [
-          styles.button,
-          styles.submitButton,
-          submitDisabled && styles.submitButtonDisabled,
-          pressed && !submitDisabled && styles.pressed,
-        ]}
-      >
-        <Text style={[styles.submitText, submitDisabled && styles.submitTextDisabled]}>{submitLabel}</Text>
-      </Pressable>
+    <View style={[styles.row, { paddingBottom: Math.max(layout.screenPadding, insetBottom) }]}>
+      <Button label={t('common.cancel')} variant="secondary" onPress={onCancel} style={styles.button} />
+      <Button label={submitLabel} onPress={onSubmit} disabled={submitDisabled} style={styles.button} />
     </View>
   );
 }
 
-function getStyles(colors: ColorTokens) {
-  return StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      gap: 10,
-      paddingHorizontal: 16,
-      paddingTop: 10,
-    },
-    button: {
-      flex: 1,
-      paddingVertical: 14,
-      borderRadius: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    pressed: {
-      opacity: 0.85,
-    },
-    cancelButton: {
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-    },
-    cancelText: {
-      color: colors.textSecondary,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    submitButton: {
-      backgroundColor: colors.amber,
-    },
-    submitButtonDisabled: {
-      opacity: 0.4,
-    },
-    submitText: {
-      color: colors.onAmber,
-      fontSize: 14,
-      fontWeight: '700',
-    },
-    submitTextDisabled: {
-      color: colors.onAmber,
-    },
-  });
-}
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm + 2,
+    paddingHorizontal: layout.screenPadding,
+    paddingTop: spacing.sm + 2,
+  },
+  button: {
+    flex: 1,
+  },
+});

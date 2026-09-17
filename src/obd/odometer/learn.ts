@@ -47,6 +47,8 @@ export interface LearnResult {
 }
 
 export interface LearnOptions {
+  /** The car's custom adapter init commands (`ObdConfig.initCommands`). */
+  initCommands?: string[];
   /** Give up once this much time has passed, whatever pass is running. */
   budgetMs?: number;
   signal?: AbortSignal;
@@ -92,14 +94,14 @@ async function runLearn(
   referenceKm: number,
   options: LearnOptions
 ): Promise<LearnResult | null> {
-  const { budgetMs = DEFAULT_BUDGET_MS, signal, onProgress } = options;
+  const { initCommands = [], budgetMs = DEFAULT_BUDGET_MS, signal, onProgress } = options;
   const deadline = Date.now() + budgetMs;
   const report = (progress: LearnProgress) => onProgress?.(progress);
 
   report({ step: 'connecting' });
   let connection: ElmConnection | null = null;
   try {
-    connection = await openElmConnection(device);
+    connection = await openElmConnection(device, { initCommands });
     obdLog(
       'info',
       `learn: reference ${referenceKm} km (tolerance ${matchTolerance(referenceKm).toFixed(1)} km), vin=${vehicle.vin ?? '?'} make=${vehicle.make ?? '?'}`

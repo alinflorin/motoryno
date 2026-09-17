@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
+import { Controller, useForm, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -178,6 +178,7 @@ export function CarFormFields({
   distanceUnit,
   obd,
   onObdChange,
+  carId,
 }: {
   control: Control<CarFormValues>;
   errors: FieldErrors<CarFormValues>;
@@ -189,18 +190,11 @@ export function CarFormFields({
   obd: ObdConfig | null;
   /** Called when the user pairs a (different) adapter from the scan list. */
   onObdChange: (obd: ObdConfig) => void;
+  /** The persisted car's VIN when editing - unlocks the OBD setup screen link on the adapter card. */
+  carId?: string;
 }) {
   const { t } = useTranslation();
   const { styles } = useStyles(getStyles);
-
-  // The odometer/VIN/make as currently typed feed the OBD card's "Find odometer" flow: the
-  // odometer is the reference value it searches the car for, the VIN/make pick the strategy.
-  const [odometerText, vinText, makeText] = useWatch({ control, name: ['odometer', 'vin', 'make'] });
-  const referenceOdometerKm = /^\d+$/.test(odometerText.trim()) ? Math.round(displayToKm(Number(odometerText.trim()), distanceUnit)) : null;
-  const vehicle = useMemo(
-    () => ({ vin: isValidVin(vinText.trim()) ? vinText.trim() : null, make: makeText.trim() || null }),
-    [vinText, makeText]
-  );
 
   // Don't show a field's error until the user has actually left it (or tried to
   // submit) — otherwise every required field complains the instant the form mounts.
@@ -247,8 +241,7 @@ export function CarFormFields({
         obd={obd}
         onObdChange={onObdChange}
         onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)}
-        referenceOdometerKm={referenceOdometerKm}
-        vehicle={vehicle}
+        carId={carId}
       />
 
       <FormField label={t('carForm.vin')} error={fieldError('vin')}>
@@ -392,6 +385,7 @@ export function CarForm({
           distanceUnit={distanceUnit}
           obd={obd}
           onObdChange={setObd}
+          carId={car?.vin}
         />
       </ScrollView>
       <FormButtonRow insetBottom={insetBottom} onCancel={onCancel} onSubmit={submit} submitLabel={submitLabel} submitDisabled={!isValid} />

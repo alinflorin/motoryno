@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
 import { downloadAppData, pickAppData, shareCarsData, useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useStyles } from '@/theme/useStyles';
@@ -69,7 +71,7 @@ export default function SettingsDataScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: t('settingsData.title') }} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView>
         <Text style={styles.intro}>{t('settingsData.subtitle')}</Text>
 
         <SectionBlock
@@ -95,7 +97,7 @@ export default function SettingsDataScreen() {
           onPress={handleShare}
           disabled={sharing}
         />
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 }
@@ -116,24 +118,13 @@ function SectionBlock({
   return (
     <View style={styles.downloadBlock}>
       <Text style={styles.downloadSubtitle}>{subtitle}</Text>
-      <Pressable
-        onPress={onPress}
-        disabled={disabled}
-        style={({ pressed }) => [styles.downloadButton, pressed && styles.downloadButtonPressed, disabled && styles.downloadButtonDisabled]}
-      >
-        <Text style={styles.downloadButtonText}>{buttonLabel}</Text>
-      </Pressable>
+      <Button label={buttonLabel} variant="secondary" onPress={onPress} loading={disabled} />
     </View>
   );
 }
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    content: {
-      padding: 16,
-      gap: 20,
-      paddingBottom: 32,
-    },
     intro: {
       color: colors.textFaint,
       fontSize: 13,
@@ -146,24 +137,6 @@ function getStyles(colors: ColorTokens) {
       color: colors.textFaint,
       fontSize: 13,
       lineHeight: 18,
-    },
-    downloadButton: {
-      alignItems: 'center',
-      paddingVertical: 13,
-      borderRadius: 14,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-    },
-    downloadButtonPressed: {
-      backgroundColor: colors.surface,
-    },
-    downloadButtonDisabled: {
-      opacity: 0.6,
-    },
-    downloadButtonText: {
-      color: colors.textPrimary,
-      fontSize: 13,
-      fontWeight: '700',
     },
   });
 }

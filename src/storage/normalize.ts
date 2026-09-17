@@ -1,4 +1,4 @@
-import { isOdometerSource } from '@/obd/odometer/source';
+import { isOdometerSource, isVinSource } from '@/obd/odometer/source';
 import type { AppData } from '@/storage/types';
 
 /**
@@ -6,8 +6,8 @@ import type { AppData } from '@/storage/types';
  * - `isActive: true` on tracked items from before that field existed.
  * - `comments: null` on service visits from before that field existed.
  * - `useUnknownServiceStatus: true` on settings from before that field existed.
- * - `obd.odometerSource: null` on paired adapters from before the learn flow existed
- *   (or anything malformed that came in through an import).
+ * - `obd.odometerSource`/`obd.vinSource: null` and `obd.initCommands: []` on paired
+ *   adapters from before those existed (or anything malformed that came in through an import).
  */
 export function normalizeAppData(data: AppData): AppData {
   return {
@@ -31,6 +31,10 @@ export function normalizeAppData(data: AppData): AppData {
         obd: car.obd
           ? {
               ...car.obd,
+              initCommands: Array.isArray(car.obd.initCommands)
+                ? car.obd.initCommands.filter((c): c is string => typeof c === 'string')
+                : [],
+              vinSource: isVinSource(car.obd.vinSource) ? car.obd.vinSource : null,
               odometerSource: isOdometerSource(car.obd.odometerSource) ? car.obd.odometerSource : null,
             }
           : null,

@@ -77,7 +77,7 @@ export async function runObdBackgroundSync(): Promise<boolean> {
       if (!car) return;
 
       inFlight.add(car.vin);
-      void syncOdometer(device, { vin: car.vin, make: car.make, odometerSource: car.obd.odometerSource })
+      void syncOdometer(device, { vin: car.vin, make: car.make, obd: car.obd })
         .then((result) => {
           results.set(car.vin, { odometerKm: result.odometerKm, odometerSource: result.odometerSource });
         })

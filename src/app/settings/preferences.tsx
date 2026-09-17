@@ -1,32 +1,19 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet } from 'react-native';
 
 import { PreferencesFields } from '@/components/PreferencesFields';
 import { Screen } from '@/components/Screen';
-import type { ColorTokens } from '@/theme/colors';
-import { useStyles } from '@/theme/useStyles';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
 
 export default function SettingsPreferencesScreen() {
   const { t } = useTranslation();
-  const { styles } = useStyles(getStyles);
 
   return (
     <Screen>
       <Stack.Screen options={{ title: t('settings.preferences') }} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView>
         <PreferencesFields />
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
-}
-
-function getStyles(colors: ColorTokens) {
-  return StyleSheet.create({
-    content: {
-      padding: 16,
-      gap: 20,
-      paddingBottom: 32,
-    },
-  });
 }
