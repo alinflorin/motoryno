@@ -7,7 +7,7 @@ import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatDateDMY } from '@/utils/date';
 import { translateItemName } from '@/utils/serviceItemNames';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
@@ -21,8 +21,7 @@ export default function ServiceVisitsScreen() {
   const visits = [...(car?.serviceVisits ?? [])].sort((a, b) => b.timestamp - a.timestamp);
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const currency = settings.currency;
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   return (
     <Screen>
@@ -74,8 +73,7 @@ export default function ServiceVisitsScreen() {
                     <View style={styles.cardTopLeft}>
                       <Text style={styles.shopName}>{visit.shopName}</Text>
                       <Text style={styles.visitMeta}>
-                        {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} ·{' '}
-                        {formatDateDMY(visit.timestamp)}
+                        {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} · {formatDateDMY(visit.timestamp)}
                       </Text>
                     </View>
                     <Text style={styles.price}>

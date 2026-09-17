@@ -82,7 +82,10 @@ async function readVin(connection: ElmConnection): Promise<string | null> {
 }
 
 /** Tries `sources` in order and returns the first plausible reading along with the source that produced it. */
-async function readFirstOdometer(connection: ElmConnection, sources: OdometerSource[]): Promise<{ km: number; source: OdometerSource } | null> {
+async function readFirstOdometer(
+  connection: ElmConnection,
+  sources: OdometerSource[]
+): Promise<{ km: number; source: OdometerSource } | null> {
   for (const source of sources) {
     try {
       const result = await readOdometerSource(connection, source);

@@ -10,7 +10,7 @@ import { formatObdLog, getObdLog, learnOdometerSource, scanVehicleInfo } from '@
 import type { ObdConfig } from '@/storage';
 import { shareTextFile } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { notify } from '@/utils/confirm';
 import { formatDateDMY } from '@/utils/date';
 
@@ -79,8 +79,7 @@ export function ObdConfigCard({
   vehicle: { vin: string | null; make: string | null };
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   const [scanning, setScanning] = useState(false);
   // Set once a scan stops on its own (timeout or error) rather than because the
@@ -164,7 +163,12 @@ export function ObdConfigCard({
       stopScan();
       setScanTimedOut(false);
       setDevices([]);
-      const paired: ObdConfig = { deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null, odometerSource: null };
+      const paired: ObdConfig = {
+        deviceName: device.name ?? device.id,
+        deviceAddress: device.id,
+        lastSyncedAt: null,
+        odometerSource: null,
+      };
       onObdChange(paired);
 
       try {
@@ -285,12 +289,8 @@ export function ObdConfigCard({
 
       {(scanning || scanTimedOut) && (
         <View style={styles.scanList}>
-          {scanning && devices.length === 0 && (
-            <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>
-          )}
-          {scanTimedOut && devices.length === 0 && (
-            <Text style={styles.scanEmpty}>{t('carForm.obdScanNoneFound')}</Text>
-          )}
+          {scanning && devices.length === 0 && <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>}
+          {scanTimedOut && devices.length === 0 && <Text style={styles.scanEmpty}>{t('carForm.obdScanNoneFound')}</Text>}
           {devices.map((device) => (
             <Pressable
               key={device.id}
@@ -332,7 +332,11 @@ export function ObdConfigCard({
               <View style={styles.learnRow}>
                 <Pressable
                   accessibilityRole="button"
-                  style={({ pressed }) => [styles.learnButton, !canLearn && styles.learnButtonDisabled, pressed && styles.scanButtonPressed]}
+                  style={({ pressed }) => [
+                    styles.learnButton,
+                    !canLearn && styles.learnButtonDisabled,
+                    pressed && styles.scanButtonPressed,
+                  ]}
                   onPress={startLearn}
                   disabled={!canLearn}
                 >

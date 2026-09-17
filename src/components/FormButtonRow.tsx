@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export function FormButtonRow({
   onCancel,
@@ -18,15 +18,11 @@ export function FormButtonRow({
   insetBottom: number;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   return (
     <View style={[styles.row, { paddingBottom: Math.max(16, insetBottom) }]}>
-      <Pressable
-        onPress={onCancel}
-        style={({ pressed }) => [styles.button, styles.cancelButton, pressed && styles.pressed]}
-      >
+      <Pressable onPress={onCancel} style={({ pressed }) => [styles.button, styles.cancelButton, pressed && styles.pressed]}>
         <Text style={styles.cancelText}>{t('common.cancel')}</Text>
       </Pressable>
       <Pressable
@@ -39,9 +35,7 @@ export function FormButtonRow({
           pressed && !submitDisabled && styles.pressed,
         ]}
       >
-        <Text style={[styles.submitText, submitDisabled && styles.submitTextDisabled]}>
-          {submitLabel}
-        </Text>
+        <Text style={[styles.submitText, submitDisabled && styles.submitTextDisabled]}>{submitLabel}</Text>
       </Pressable>
     </View>
   );

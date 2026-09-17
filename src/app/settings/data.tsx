@@ -6,13 +6,12 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { downloadAppData, pickAppData, shareCarsData, useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { confirmAsync, notify } from '@/utils/confirm';
 
 export default function SettingsDataScreen() {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
   const { settings, cars, replaceAllData } = useStorage();
   const [downloading, setDownloading] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -120,11 +119,7 @@ function SectionBlock({
       <Pressable
         onPress={onPress}
         disabled={disabled}
-        style={({ pressed }) => [
-          styles.downloadButton,
-          pressed && styles.downloadButtonPressed,
-          disabled && styles.downloadButtonDisabled,
-        ]}
+        style={({ pressed }) => [styles.downloadButton, pressed && styles.downloadButtonPressed, disabled && styles.downloadButtonDisabled]}
       >
         <Text style={styles.downloadButtonText}>{buttonLabel}</Text>
       </Pressable>

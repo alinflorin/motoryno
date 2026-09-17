@@ -1,6 +1,6 @@
-const fs = require("fs");
-const plist = require("@expo/plist").default ?? require("@expo/plist");
-const { withFinalizedMod, IOSConfig } = require("@expo/config-plugins");
+const fs = require('fs');
+const plist = require('@expo/plist').default ?? require('@expo/plist');
+const { withFinalizedMod, IOSConfig } = require('@expo/config-plugins');
 
 /**
  * expo-notifications unconditionally adds the `aps-environment` (Push
@@ -19,14 +19,12 @@ const { withFinalizedMod, IOSConfig } = require("@expo/config-plugins");
  */
 const withoutPushEntitlement = (config) => {
   return withFinalizedMod(config, [
-    "ios",
+    'ios',
     (config) => {
-      const entitlementsPath = IOSConfig.Entitlements.getEntitlementsPath(
-        config.modRequest.projectRoot
-      );
-      const contents = plist.parse(fs.readFileSync(entitlementsPath, "utf8"));
-      if ("aps-environment" in contents) {
-        delete contents["aps-environment"];
+      const entitlementsPath = IOSConfig.Entitlements.getEntitlementsPath(config.modRequest.projectRoot);
+      const contents = plist.parse(fs.readFileSync(entitlementsPath, 'utf8'));
+      if ('aps-environment' in contents) {
+        delete contents['aps-environment'];
         fs.writeFileSync(entitlementsPath, plist.build(contents));
       }
       return config;

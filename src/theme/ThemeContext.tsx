@@ -23,17 +23,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
   const { settings, updateSettings } = useStorage();
   const preference = settings.theme;
-  const setPreference = useCallback(
-    (next: ThemePreference) => updateSettings({ theme: next }),
-    [updateSettings],
-  );
+  const setPreference = useCallback((next: ThemePreference) => updateSettings({ theme: next }), [updateSettings]);
 
   const scheme: ColorScheme = preference === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : preference;
   const colors = scheme === 'dark' ? darkColors : lightColors;
 
   const value = useMemo<ThemeContextValue>(
     () => ({ preference, setPreference, scheme, colors }),
-    [preference, setPreference, scheme, colors],
+    [preference, setPreference, scheme, colors]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

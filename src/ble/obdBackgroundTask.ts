@@ -46,7 +46,9 @@ export async function runObdBackgroundSync(): Promise<boolean> {
   const appData = await readAppData();
   if (!appData) return false;
 
-  const dueCars = appData.data.cars.filter((car): car is Car & { obd: NonNullable<Car['obd']> } => car.obd !== null && isDueForSync(car.obd));
+  const dueCars = appData.data.cars.filter(
+    (car): car is Car & { obd: NonNullable<Car['obd']> } => car.obd !== null && isDueForSync(car.obd)
+  );
   if (dueCars.length === 0) return false;
 
   const manager = getBleManager();

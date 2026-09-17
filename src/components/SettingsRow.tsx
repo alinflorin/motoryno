@@ -3,21 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Chevron } from '@/components/Chevron';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
-export function SettingsRow({
-  label,
-  value,
-  onPress,
-  right,
-}: {
-  label: string;
-  value?: string;
-  onPress?: () => void;
-  right?: ReactNode;
-}) {
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+export function SettingsRow({ label, value, onPress, right }: { label: string; value?: string; onPress?: () => void; right?: ReactNode }) {
+  const { styles } = useStyles(getStyles);
 
   const content = (
     <View style={styles.row}>

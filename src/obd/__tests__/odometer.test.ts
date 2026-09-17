@@ -40,10 +40,14 @@ describe('findFieldMatches', () => {
   });
 
   it('recognises 0.1 km/bit and miles encodings', () => {
-    expect(findFieldMatches([0x00, 0x1d, 0x9a, 0x20], 194000)).toContainEqual( // 0x1D9A20 = 1940000 x 0.1 km
-      { field: { offset: 0, length: 4, endian: 'be', scale: 0.1 }, km: 194000 });
+    expect(findFieldMatches([0x00, 0x1d, 0x9a, 0x20], 194000)).toContainEqual(
+      // 0x1D9A20 = 1940000 x 0.1 km
+      { field: { offset: 0, length: 4, endian: 'be', scale: 0.1 }, km: 194000 }
+    );
     const miles = Math.round(194000 / 1.60934); // 120546
-    expect(findFieldMatches([(miles >> 16) & 0xff, (miles >> 8) & 0xff, miles & 0xff], 194000).some((m) => m.field.scale === 1.60934)).toBe(true);
+    expect(findFieldMatches([(miles >> 16) & 0xff, (miles >> 8) & 0xff, miles & 0xff], 194000).some((m) => m.field.scale === 1.60934)).toBe(
+      true
+    );
   });
 
   it('never matches on 2-byte windows', () => {
@@ -90,7 +94,9 @@ describe('vehicleOdometerSources', () => {
 
 describe('isOdometerSource', () => {
   it('accepts well-formed sources and rejects malformed ones', () => {
-    expect(isOdometerSource({ kind: 'broadcast', label: 'x', canId: '009E', field: { offset: 4, length: 3, endian: 'be', scale: 1 } })).toBe(true);
+    expect(
+      isOdometerSource({ kind: 'broadcast', label: 'x', canId: '009E', field: { offset: 4, length: 3, endian: 'be', scale: 1 } })
+    ).toBe(true);
     expect(isOdometerSource({ kind: 'request', label: 'x', request: '01A6' })).toBe(false);
     expect(isOdometerSource(null)).toBe(false);
   });

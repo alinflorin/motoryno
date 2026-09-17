@@ -1,24 +1,15 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
 import { Chevron } from '@/components/Chevron';
-import { Icon } from '@/components/Icon';
+import { ObdSyncButton } from '@/components/ObdSyncButton';
 import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatDateDMY } from '@/utils/date';
 import { translateItemName } from '@/utils/serviceItemNames';
 import { computeCarItemStatuses, type ServiceItemStatus } from '@/utils/serviceStatus';
@@ -37,43 +28,11 @@ function chunk<T>(items: T[], size: number): T[][] {
 export default function CarScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
-  const { settings, cars, getCar } = useStorage();
+  const { settings, getCar } = useStorage();
   const car = getCar(carId);
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
   const [attentionPageWidth, setAttentionPageWidth] = useState(0);
   const [attentionPageIndex, setAttentionPageIndex] = useState(0);
-
-  const [obdSyncing, setObdSyncing] = useState(false);
-  // The car's `lastSyncedAt` as it was when the button was pressed - the sync is over once it moves.
-  const obdSyncBaselineRef = useRef<number | null | undefined>(undefined);
-
-  const handleObdSyncNow = () => {
-    if (!car || !triggerObdSyncNow(car.vin)) return;
-    obdSyncBaselineRef.current = car.obd?.lastSyncedAt ?? null;
-    setObdSyncing(true);
-  };
-
-  // Clears the "syncing" state once this car actually re-syncs after the button was pressed -
-  // `lastSyncedAt` advances on every completed attempt (success or not), see ObdMonitorController,
-  // so this also resolves for an in-range-but-unreadable adapter. Reads `cars` (not the `car`
-  // lookup above) so this reruns on every storage commit, not just ones that touch this car's
-  // object specifically - matching the home screen's equivalent effect.
-  useEffect(() => {
-    if (!obdSyncing || obdSyncBaselineRef.current === undefined) return;
-    const lastSyncedAt = cars.find((c) => c.vin === carId)?.obd?.lastSyncedAt ?? null;
-    if (lastSyncedAt !== obdSyncBaselineRef.current) {
-      setObdSyncing(false);
-      obdSyncBaselineRef.current = undefined;
-    }
-  }, [cars, carId, obdSyncing]);
-
-  // Safety net for when the adapter never comes into range at all - don't spin forever.
-  useEffect(() => {
-    if (!obdSyncing) return;
-    const timer = setTimeout(() => setObdSyncing(false), 20000);
-    return () => clearTimeout(timer);
-  }, [obdSyncing]);
 
   if (!car) return null;
 
@@ -126,26 +85,10 @@ export default function CarScreen() {
           )}
         </View>
 
-        {car.obd && Platform.OS !== 'web' && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('car.obdSyncNow')}
-            disabled={obdSyncing}
-            onPress={handleObdSyncNow}
-            style={({ pressed }) => [styles.obdSyncButton, pressed && styles.obdSyncButtonPressed]}
-          >
-            {obdSyncing ? (
-              <>
-                <ActivityIndicator size="small" color={colors.amber} />
-                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncing')}</Text>
-              </>
-            ) : (
-              <>
-                <Icon name="bluetooth-outline" size={16} color={colors.amber} />
-                <Text style={styles.obdSyncButtonText}>{t('car.obdSyncNow')}</Text>
-              </>
-            )}
-          </Pressable>
+        {car.obd && (
+          <View style={styles.obdSync}>
+            <ObdSyncButton vin={car.vin} />
+          </View>
         )}
 
         {allAttentionItems.length > 0 && (
@@ -181,10 +124,7 @@ export default function CarScreen() {
             {attentionPages.length > 1 && (
               <View style={styles.attentionDots}>
                 {attentionPages.map((_, pageIndex) => (
-                  <View
-                    key={pageIndex}
-                    style={[styles.attentionDot, pageIndex === attentionPageIndex && styles.attentionDotActive]}
-                  />
+                  <View key={pageIndex} style={[styles.attentionDot, pageIndex === attentionPageIndex && styles.attentionDotActive]} />
                 ))}
               </View>
             )}
@@ -194,14 +134,9 @@ export default function CarScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeadRow}>
             <Text style={styles.sectionTitle}>{t('car.trackedItems')}</Text>
-            <Text style={styles.sectionCount}>
-              {t('car.trackedItemsCount', { count: itemStatuses.length })}
-            </Text>
+            <Text style={styles.sectionCount}>{t('car.trackedItemsCount', { count: itemStatuses.length })}</Text>
           </View>
-          <Link
-            href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.vin } }}
-            asChild
-          >
+          <Link href={{ pathname: '/car/[carId]/tracked-items', params: { carId: car.vin } }} asChild>
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
               <View style={styles.navRowLeft}>
                 <StatusDot status={overdueItems.length > 0 ? 'overdue' : dueSoonItems.length > 0 ? 'due-soon' : 'ok'} />
@@ -226,10 +161,7 @@ export default function CarScreen() {
             <Text style={styles.sectionTitle}>{t('car.serviceVisits')}</Text>
             <Text style={styles.sectionCount}>{t('car.visitsCount', { count: visits.length })}</Text>
           </View>
-          <Link
-            href={{ pathname: '/car/[carId]/service-visits', params: { carId: car.vin } }}
-            asChild
-          >
+          <Link href={{ pathname: '/car/[carId]/service-visits', params: { carId: car.vin } }} asChild>
             <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]}>
               <View style={styles.navRowTextGroup}>
                 <Text style={styles.navRowText}>
@@ -320,26 +252,9 @@ function getStyles(colors: ColorTokens) {
       fontSize: 11,
       marginTop: 2,
     },
-    obdSyncButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
+    obdSync: {
       margin: 16,
       marginBottom: 0,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.amberBorder,
-      borderRadius: 12,
-      paddingVertical: 12,
-    },
-    obdSyncButtonPressed: {
-      backgroundColor: colors.surfaceAlt,
-    },
-    obdSyncButtonText: {
-      color: colors.amber,
-      fontSize: 13,
-      fontWeight: '700',
     },
     section: {
       padding: 16,

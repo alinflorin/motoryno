@@ -1,4 +1,3 @@
-export { lookupDtc } from '@/obd/catalogs/dtc';
 export { findUartProfile, openElmConnection, parseHexResponse, parseMonitorFrames } from '@/obd/elm327';
 export type { UartProfile } from '@/obd/elm327';
 export { clearObdLog, formatObdLog, getObdLog } from '@/obd/log';

@@ -3,8 +3,10 @@ import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Platform, Pressable, StyleSheet, Text } from 'react-native';
 
+import { getTextInputStyle } from '@/components/TextField';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors, useThemePreference } from '@/theme/ThemeContext';
+import { useThemePreference } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatDateDMY } from '@/utils/date';
 
 function toInputValue(date: Date): string {
@@ -24,19 +26,16 @@ export function DatePickerField({
   onChange,
   onBlur,
   maxDate,
-  style,
 }: {
   value: number;
   onChange: (timestamp: number) => void;
   onBlur?: () => void;
   /** Latest selectable date — defaults to now, since a service visit can't be logged for the future. */
   maxDate?: Date;
-  style?: object;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
+  const { colors, styles } = useStyles(getStyles);
   const { scheme } = useThemePreference();
-  const styles = getStyles(colors);
   const [iosSheetOpen, setIosSheetOpen] = useState(false);
   const [iosPendingValue, setIosPendingValue] = useState(value);
   const max = maxDate ?? new Date();
@@ -95,7 +94,7 @@ export function DatePickerField({
 
   return (
     <>
-      <Pressable style={[styles.input, style]} onPress={openPicker}>
+      <Pressable style={styles.input} onPress={openPicker}>
         <Text style={styles.inputText}>{label}</Text>
       </Pressable>
       <Modal visible={iosSheetOpen} transparent animationType="slide" onRequestClose={() => setIosSheetOpen(false)}>
@@ -127,9 +126,7 @@ export function DatePickerField({
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    input: {
-      justifyContent: 'center',
-    },
+    input: getTextInputStyle(colors),
     inputText: {
       color: colors.textPrimary,
       fontSize: 14,

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export interface OverflowMenuItem {
   key: string;
@@ -27,8 +27,7 @@ export function OverflowMenu({
   right?: number;
   left?: number;
 }) {
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   if (!visible) return null;
 
@@ -43,11 +42,7 @@ export function OverflowMenu({
               onDismiss();
               item.onPress();
             }}
-            style={({ pressed }) => [
-              styles.row,
-              index < items.length - 1 && styles.rowDivider,
-              pressed && styles.rowPressed,
-            ]}
+            style={({ pressed }) => [styles.row, index < items.length - 1 && styles.rowDivider, pressed && styles.rowPressed]}
           >
             <Icon name={item.icon} size={16} color={colors.textMuted} />
             <Text style={styles.label}>{item.label}</Text>

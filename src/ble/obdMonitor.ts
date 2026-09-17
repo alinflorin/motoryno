@@ -52,7 +52,12 @@ export function startObdMonitor(
     syncing.add(vin);
     void connectAndSync
       .then((result) =>
-        onSyncAttempt({ vin, odometerKm: result.odometerKm, odometerSource: result.odometerSource, connectionFailed: result.connectionFailed })
+        onSyncAttempt({
+          vin,
+          odometerKm: result.odometerKm,
+          odometerSource: result.odometerSource,
+          connectionFailed: result.connectionFailed,
+        })
       )
       .catch(() => onSyncAttempt({ vin, odometerKm: null, odometerSource: null, connectionFailed: true }))
       .finally(() => {
@@ -98,7 +103,9 @@ export function startObdMonitor(
         const target = syncTarget(car);
         runSync(
           car.vin,
-          manager.connectToDevice(car.obd.deviceAddress, { timeout: FORCE_CONNECT_TIMEOUT_MS }).then((device) => syncOdometer(device, target))
+          manager
+            .connectToDevice(car.obd.deviceAddress, { timeout: FORCE_CONNECT_TIMEOUT_MS })
+            .then((device) => syncOdometer(device, target))
         );
       }
     },

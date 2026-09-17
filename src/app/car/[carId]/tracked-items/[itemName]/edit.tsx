@@ -22,9 +22,7 @@ export default function EditTrackedItemScreen() {
   const colors = useThemeColors();
 
   const existingNames =
-    car?.trackedServiceItems
-      .filter((existing) => existing.name !== itemName)
-      .map((existing) => existing.name.trim().toLowerCase()) ?? [];
+    car?.trackedServiceItems.filter((existing) => existing.name !== itemName).map((existing) => existing.name.trim().toLowerCase()) ?? [];
 
   const confirmDelete = async () => {
     if (!car || !item) return;

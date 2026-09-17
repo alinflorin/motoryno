@@ -49,7 +49,16 @@ export interface SimState {
 }
 
 export function createSimState(): SimState {
-  return { header: '7DF', receiveAddress: null, protocol: '0', headersOn: false, spacesOn: false, autoFormat: true, monitoring: false, sessions: new Map() };
+  return {
+    header: '7DF',
+    receiveAddress: null,
+    protocol: '0',
+    headersOn: false,
+    spacesOn: false,
+    autoFormat: true,
+    monitoring: false,
+    sessions: new Map(),
+  };
 }
 
 function toHexLine(bytes: number[]): string {

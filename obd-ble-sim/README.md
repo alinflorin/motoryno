@@ -40,13 +40,13 @@ an OBD adapter and scan - it should show up like any other BLE dongle.
 
 Environment variables, all optional:
 
-| Var                | Default              | Meaning                                          |
-| ------------------ | -------------------- | ------------------------------------------------- |
-| `OBD_NAME`          | `OBDII`               | Advertised BLE device name                        |
-| `OBD_VIN`           | `WDD2050471F123456`   | VIN returned for Mode 09 PID 02 (`WDD2040471F123456` for `w204`) |
-| `OBD_ODOMETER_KM`   | `123458`              | Odometer the simulated car reports                 |
-| `OBD_PROFILE`       | `hm10`                | GATT shape: `hm10`, `fff0`, or `nordic`            |
-| `OBD_CAR`           | `generic`             | Simulated car: `generic` (answers 01 A6) or `w204` (see below) |
+| Var               | Default             | Meaning                                                          |
+| ----------------- | ------------------- | ---------------------------------------------------------------- |
+| `OBD_NAME`        | `OBDII`             | Advertised BLE device name                                       |
+| `OBD_VIN`         | `WDD2050471F123456` | VIN returned for Mode 09 PID 02 (`WDD2040471F123456` for `w204`) |
+| `OBD_ODOMETER_KM` | `123458`            | Odometer the simulated car reports                               |
+| `OBD_PROFILE`     | `hm10`              | GATT shape: `hm10`, `fff0`, or `nordic`                          |
+| `OBD_CAR`         | `generic`           | Simulated car: `generic` (answers 01 A6) or `w204` (see below)   |
 
 Example:
 
@@ -78,8 +78,8 @@ checking the app's profile-detection fallback path actually finds each one.
     before `21 42` returns the km (and answers `3E 00` with a negative
     response, which still proves it's there);
   - a periodic km broadcast on frame `0A8` (bytes 4-6) in `ATMA` mode.
-  The EZS/cluster identifiers and the cluster's CAN IDs are made up - the
-  real ones aren't public, which is exactly why the app learns them.
+    The EZS/cluster identifiers and the cluster's CAN IDs are made up - the
+    real ones aren't public, which is exactly why the app learns them.
 
 It logs every command it receives and response it sends, so the terminal
 running it doubles as a live trace of what the app is asking for.

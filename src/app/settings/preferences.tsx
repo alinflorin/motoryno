@@ -5,12 +5,11 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { PreferencesFields } from '@/components/PreferencesFields';
 import { Screen } from '@/components/Screen';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export default function SettingsPreferencesScreen() {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   return (
     <Screen>

@@ -93,7 +93,11 @@ function catalogOdometerSources(vin: string | null, make: string | null): Odomet
 
 /** Every request worth trying up front for this vehicle, de-duplicated, generic first. */
 export function vehicleOdometerSources(vin: string | null, make: string | null): OdometerSource[] {
-  const all: OdometerSource[] = [STANDARD_ODOMETER_SOURCE, ...catalogOdometerSources(vin, make), ...mercedesKnownOdometerSources(vin, make)];
+  const all: OdometerSource[] = [
+    STANDARD_ODOMETER_SOURCE,
+    ...catalogOdometerSources(vin, make),
+    ...mercedesKnownOdometerSources(vin, make),
+  ];
   const seen = new Set<string>();
   return all.filter((source) => {
     const key = odometerSourceKey(source);

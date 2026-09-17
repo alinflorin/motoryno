@@ -429,7 +429,13 @@ export function parseHexResponse(raw: string): number[] {
   const lines = raw
     .split(/[\r\n]+/)
     .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !/^(SEARCHING|STOPPED|NO DATA|UNABLE TO CONNECT|ERROR|BUS INIT|CAN ERROR|BUS BUSY|DATA ERROR|<DATA ERROR|BUFFER FULL|FB ERROR|\?)/i.test(line));
+    .filter(
+      (line) =>
+        line.length > 0 &&
+        !/^(SEARCHING|STOPPED|NO DATA|UNABLE TO CONNECT|ERROR|BUS INIT|CAN ERROR|BUS BUSY|DATA ERROR|<DATA ERROR|BUFFER FULL|FB ERROR|\?)/i.test(
+          line
+        )
+    );
 
   // With CAN auto-formatting on (the adapter's default) and headers off, a
   // response that spans multiple ISO-TP frames - e.g. the VIN, which never

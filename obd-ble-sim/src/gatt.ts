@@ -63,12 +63,7 @@ export function createGattService(profile: UartProfile, config: SimConfig): Prim
     sendResponse(`${response}\r\r>`);
   }
 
-  function onWriteRequest(
-    data: Buffer,
-    _offset: number,
-    _withoutResponse: boolean,
-    callback: (result: number) => void
-  ) {
+  function onWriteRequest(data: Buffer, _offset: number, _withoutResponse: boolean, callback: (result: number) => void) {
     if (state.monitoring) {
       // Any byte ends monitor mode, exactly like a real ELM327; the byte itself isn't a command.
       inbound = '';

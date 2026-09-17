@@ -8,13 +8,12 @@ import { SettingsSection } from '@/components/SettingsSection';
 import { TimePickerField } from '@/components/TimePickerField';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatCronTime, parseCronTime } from '@/utils/notificationCron';
 
 export default function SettingsNotificationsScreen() {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
   const { settings, updateNotificationSettings } = useStorage();
   const { cron } = settings.notifications;
   const enabled = cron !== null;

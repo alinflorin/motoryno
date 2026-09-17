@@ -27,7 +27,9 @@ export interface OdometerReadResult {
 /** Points the adapter at the ECU a request source targets (protocol + CAN IDs). */
 export async function applySourceAddressing(connection: ElmConnection, source: RequestOdometerSource): Promise<void> {
   if (source.protocol === 'can-11-500') await connection.setProtocol('can-11-500');
-  await connection.setAddressing(source.header || source.receiveAddress ? { header: source.header, receiveAddress: source.receiveAddress } : null);
+  await connection.setAddressing(
+    source.header || source.receiveAddress ? { header: source.header, receiveAddress: source.receiveAddress } : null
+  );
 }
 
 /** Opens the diagnostic session a source needs, if any. A refusal isn't fatal - the read may still work in the default session. */

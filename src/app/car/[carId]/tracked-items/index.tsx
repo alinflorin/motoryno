@@ -8,17 +8,22 @@ import { Screen } from '@/components/Screen';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { translateItemName } from '@/utils/serviceItemNames';
-import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type ServiceItemStatus, type TrackedItemStatus } from '@/utils/serviceStatus';
+import {
+  computeCarItemStatuses,
+  formatIntervalLabel,
+  formatSinceLabel,
+  type ServiceItemStatus,
+  type TrackedItemStatus,
+} from '@/utils/serviceStatus';
 
 export default function TrackedItemsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const { settings, getCar, updateTrackedServiceItem } = useStorage();
   const car = getCar(carId);
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   if (!car) return null;
 
@@ -49,9 +54,7 @@ export default function TrackedItemsScreen() {
         }}
       />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {(itemStatuses.length > 0 || inactiveItems.length > 0) && (
-          <Text style={styles.hint}>{t('trackedItems.hint')}</Text>
-        )}
+        {(itemStatuses.length > 0 || inactiveItems.length > 0) && <Text style={styles.hint}>{t('trackedItems.hint')}</Text>}
         {groups.map((group) =>
           group.data.length === 0 ? null : (
             <View key={group.key} style={styles.group}>
@@ -78,9 +81,7 @@ export default function TrackedItemsScreen() {
                       </View>
                       <ProgressBar progress={entry.progress} status={entry.status} />
                       <View style={styles.cardBottom}>
-                        <Text style={styles.intervalText}>
-                          {t('trackedItems.every', { interval: formatIntervalLabel(entry.item, t) })}
-                        </Text>
+                        <Text style={styles.intervalText}>{t('trackedItems.every', { interval: formatIntervalLabel(entry.item, t) })}</Text>
                         <Text style={styles.sinceText}>{formatSinceLabel(entry, car, t)}</Text>
                       </View>
                     </Pressable>
@@ -88,14 +89,12 @@ export default function TrackedItemsScreen() {
                 ))}
               </View>
             </View>
-          ),
+          )
         )}
 
         {inactiveItems.length > 0 && (
           <View style={styles.group}>
-            <Text style={[styles.groupTitle, { color: colors.textFaint }]}>
-              {t('trackedItems.availableGroup')}
-            </Text>
+            <Text style={[styles.groupTitle, { color: colors.textFaint }]}>{t('trackedItems.availableGroup')}</Text>
             <View style={styles.groupList}>
               {inactiveItems.map((item) => (
                 <Link
@@ -115,9 +114,7 @@ export default function TrackedItemsScreen() {
                         thumbColor={colors.textPrimary}
                       />
                     </View>
-                    <Text style={styles.intervalText}>
-                      {t('trackedItems.every', { interval: formatIntervalLabel(item, t) })}
-                    </Text>
+                    <Text style={styles.intervalText}>{t('trackedItems.every', { interval: formatIntervalLabel(item, t) })}</Text>
                   </Pressable>
                 </Link>
               ))}

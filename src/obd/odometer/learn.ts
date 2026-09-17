@@ -100,7 +100,10 @@ async function runLearn(
   let connection: ElmConnection | null = null;
   try {
     connection = await openElmConnection(device);
-    obdLog('info', `learn: reference ${referenceKm} km (tolerance ${matchTolerance(referenceKm).toFixed(1)} km), vin=${vehicle.vin ?? '?'} make=${vehicle.make ?? '?'}`);
+    obdLog(
+      'info',
+      `learn: reference ${referenceKm} km (tolerance ${matchTolerance(referenceKm).toFixed(1)} km), vin=${vehicle.vin ?? '?'} make=${vehicle.make ?? '?'}`
+    );
 
     // One plain OBD-II request first: it makes the adapter run its protocol
     // search now (so later "NO DATA"s are real), and tells us whether the car
@@ -146,7 +149,12 @@ function withinTolerance(km: number, referenceKm: number): boolean {
 }
 
 /** Re-reads `source` and accepts it only if it reports the reference again. */
-async function verify(connection: ElmConnection, source: OdometerSource, referenceKm: number, report: (p: LearnProgress) => void): Promise<LearnResult | null> {
+async function verify(
+  connection: ElmConnection,
+  source: OdometerSource,
+  referenceKm: number,
+  report: (p: LearnProgress) => void
+): Promise<LearnResult | null> {
   report({ step: 'verifying', detail: source.label });
   const check = await readOdometerSource(connection, source);
   if (check.km !== null && withinTolerance(check.km, referenceKm)) return { source, odometerKm: check.km };
@@ -176,7 +184,12 @@ async function tryKnownCandidates(
         // The documented field didn't match, but the same reply might still carry the reading elsewhere.
         const match = findFieldMatches(result.payload, referenceKm)[0];
         if (match && source.kind === 'request') {
-          const confirmed = await verify(connection, { ...source, label: `${source.label} [learned field]`, field: match.field }, referenceKm, report);
+          const confirmed = await verify(
+            connection,
+            { ...source, label: `${source.label} [learned field]`, field: match.field },
+            referenceKm,
+            report
+          );
           if (confirmed) return confirmed;
         }
       }
