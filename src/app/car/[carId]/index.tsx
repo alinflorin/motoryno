@@ -45,11 +45,12 @@ export default function CarScreen() {
   const [attentionPageIndex, setAttentionPageIndex] = useState(0);
 
   const [obdSyncing, setObdSyncing] = useState(false);
-  const obdSyncStartedAtRef = useRef<number | null>(null);
+  // The car's `lastSyncedAt` as it was when the button was pressed - the sync is over once it moves.
+  const obdSyncBaselineRef = useRef<number | null | undefined>(undefined);
 
   const handleObdSyncNow = () => {
     if (!car || !triggerObdSyncNow(car.vin)) return;
-    obdSyncStartedAtRef.current = Date.now();
+    obdSyncBaselineRef.current = car.obd?.lastSyncedAt ?? null;
     setObdSyncing(true);
   };
 
@@ -59,12 +60,11 @@ export default function CarScreen() {
   // lookup above) so this reruns on every storage commit, not just ones that touch this car's
   // object specifically - matching the home screen's equivalent effect.
   useEffect(() => {
-    if (!obdSyncing || obdSyncStartedAtRef.current === null) return;
-    const startedAt = obdSyncStartedAtRef.current;
-    const lastSyncedAt = cars.find((c) => c.vin === carId)?.obd?.lastSyncedAt;
-    if (lastSyncedAt !== null && lastSyncedAt !== undefined && lastSyncedAt >= startedAt) {
+    if (!obdSyncing || obdSyncBaselineRef.current === undefined) return;
+    const lastSyncedAt = cars.find((c) => c.vin === carId)?.obd?.lastSyncedAt ?? null;
+    if (lastSyncedAt !== obdSyncBaselineRef.current) {
       setObdSyncing(false);
-      obdSyncStartedAtRef.current = null;
+      obdSyncBaselineRef.current = undefined;
     }
   }, [cars, carId, obdSyncing]);
 

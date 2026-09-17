@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Controller, useForm, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
+import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -197,6 +197,15 @@ export function CarFormFields({
   const colors = useThemeColors();
   const styles = getStyles(colors);
 
+  // The odometer/VIN/make as currently typed feed the OBD card's "Find odometer" flow: the
+  // odometer is the reference value it searches the car for, the VIN/make pick the strategy.
+  const [odometerText, vinText, makeText] = useWatch({ control, name: ['odometer', 'vin', 'make'] });
+  const referenceOdometerKm = /^\d+$/.test(odometerText.trim()) ? Math.round(displayToKm(Number(odometerText.trim()), distanceUnit)) : null;
+  const vehicle = useMemo(
+    () => ({ vin: isValidVin(vinText.trim()) ? vinText.trim() : null, make: makeText.trim() || null }),
+    [vinText, makeText]
+  );
+
   // Don't show a field's error until the user has actually left it (or tried to
   // submit) — otherwise every required field complains the instant the form mounts.
   const fieldError = (name: keyof CarFormValues) => (touchedFields[name] || isSubmitted ? errors[name]?.message : undefined);
@@ -238,7 +247,13 @@ export function CarFormFields({
 
   return (
     <>
-      <ObdConfigCard obd={obd} onObdChange={onObdChange} onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)} />
+      <ObdConfigCard
+        obd={obd}
+        onObdChange={onObdChange}
+        onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)}
+        referenceOdometerKm={referenceOdometerKm}
+        vehicle={vehicle}
+      />
 
       <FormField label={t('carForm.vin')} error={fieldError('vin')}>
         <Controller

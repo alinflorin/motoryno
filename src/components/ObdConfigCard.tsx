@@ -5,9 +5,10 @@ import type { Device } from 'react-native-ble-plx';
 
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { requestBlePermissions } from '@/ble/permissions';
-import type { ScanStep, VehicleScanResult } from '@/obd';
-import { scanVehicleInfo } from '@/obd';
+import type { LearnProgress, ScanStep, VehicleScanResult } from '@/obd';
+import { formatObdLog, getObdLog, learnOdometerSource, scanVehicleInfo } from '@/obd';
 import type { ObdConfig } from '@/storage';
+import { shareTextFile } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { useThemeColors } from '@/theme/ThemeContext';
 import { notify } from '@/utils/confirm';
@@ -15,6 +16,8 @@ import { formatDateDMY } from '@/utils/date';
 
 /** Stop scanning after this long even if nothing (more) was found. */
 const SCAN_TIMEOUT_MS = 15000;
+/** How long to wait for a direct connect to an already-paired adapter before giving up on a learn. */
+const LEARN_CONNECT_TIMEOUT_MS = 15000;
 
 function scanStepLabelKey(step: ScanStep) {
   switch (step) {
@@ -27,6 +30,23 @@ function scanStepLabelKey(step: ScanStep) {
   }
 }
 
+function learnStepLabelKey(step: LearnProgress['step']) {
+  switch (step) {
+    case 'connecting':
+      return 'carForm.obdLearnStepConnecting' as const;
+    case 'known-candidates':
+      return 'carForm.obdLearnStepKnownCandidates' as const;
+    case 'monitoring':
+      return 'carForm.obdLearnStepMonitoring' as const;
+    case 'discovering':
+      return 'carForm.obdLearnStepDiscovering' as const;
+    case 'sweeping':
+      return 'carForm.obdLearnStepSweeping' as const;
+    case 'verifying':
+      return 'carForm.obdLearnStepVerifying' as const;
+  }
+}
+
 /**
  * Card offering to scan for/pair a BLE OBD2 adapter, shown on the car form.
  * When `obd` is already persisted for the car, it's displayed instead of the
@@ -34,17 +54,29 @@ function scanStepLabelKey(step: ScanStep) {
  * nearby BLE devices right in the card — tapping one pairs it, then the
  * adapter is briefly connected to read the VIN/make/model/year/odometer,
  * reported back via `onScanResult` for the form to prefill.
+ *
+ * Once paired, the card also offers "Find odometer" (see
+ * `src/obd/odometer/learn.ts`): with the dashboard reading typed into the
+ * form as a reference, it discovers where this car keeps its odometer and
+ * stores that on the `ObdConfig` so silent syncs can read it directly.
+ *
  * BLE isn't available on web, so this renders nothing there.
  */
 export function ObdConfigCard({
   obd,
   onObdChange,
   onScanResult,
+  referenceOdometerKm,
+  vehicle,
 }: {
   obd: ObdConfig | null;
   onObdChange: (obd: ObdConfig) => void;
   /** Called with whatever the post-pairing vehicle scan found (fields not read come back null). */
   onScanResult: (result: VehicleScanResult) => void;
+  /** The odometer currently typed into the form, in km - the reference value the learn flow searches for. Null if empty/invalid. */
+  referenceOdometerKm: number | null;
+  /** What's currently in the form's VIN/make fields, to pick the right make-specific strategy. */
+  vehicle: { vin: string | null; make: string | null };
 }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -57,7 +89,10 @@ export function ObdConfigCard({
   const [scanTimedOut, setScanTimedOut] = useState(false);
   const [devices, setDevices] = useState<Device[]>([]);
   const [readingStep, setReadingStep] = useState<ScanStep | null>(null);
+  const [learnProgress, setLearnProgress] = useState<LearnProgress | null>(null);
+  const [hasLog, setHasLog] = useState(() => getObdLog().length > 0);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const learnAbortRef = useRef<AbortController | null>(null);
 
   const stopScan = useCallback(() => {
     if (scanTimeoutRef.current) {
@@ -68,8 +103,14 @@ export function ObdConfigCard({
     setScanning(false);
   }, []);
 
-  // Stop any in-flight scan when the card leaves the screen.
-  useEffect(() => stopScan, [stopScan]);
+  // Stop any in-flight scan/learn when the card leaves the screen.
+  useEffect(
+    () => () => {
+      stopScan();
+      learnAbortRef.current?.abort();
+    },
+    [stopScan]
+  );
 
   const startScan = useCallback(async () => {
     const manager = getBleManager();
@@ -123,24 +164,86 @@ export function ObdConfigCard({
       stopScan();
       setScanTimedOut(false);
       setDevices([]);
-      onObdChange({ deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null });
+      const paired: ObdConfig = { deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null, odometerSource: null };
+      onObdChange(paired);
 
       try {
         const result = await scanVehicleInfo(device, setReadingStep);
         if (result.connectionFailed) {
           notify(t('common.error'), t('carForm.obdScanInfoFailed'));
         }
+        if (result.odometerSource) onObdChange({ ...paired, odometerSource: result.odometerSource });
         onScanResult(result);
       } finally {
         setReadingStep(null);
+        setHasLog(getObdLog().length > 0);
       }
     },
     [stopScan, onObdChange, onScanResult, t]
   );
 
+  const startLearn = useCallback(async () => {
+    const manager = getBleManager();
+    if (!manager || !obd) return;
+    if (referenceOdometerKm === null || referenceOdometerKm <= 0) {
+      notify(t('carForm.obdLearn'), t('carForm.obdLearnNeedsOdometer'));
+      return;
+    }
+
+    const granted = await requestBlePermissions();
+    if (!granted) {
+      notify(t('common.error'), t('carForm.obdPermissionDenied'));
+      return;
+    }
+    if (!(await waitForPoweredOn(manager))) {
+      notify(t('common.error'), t('carForm.obdScanFailed'));
+      return;
+    }
+
+    const abort = new AbortController();
+    learnAbortRef.current = abort;
+    setLearnProgress({ step: 'connecting' });
+    try {
+      const device = await manager.connectToDevice(obd.deviceAddress, { timeout: LEARN_CONNECT_TIMEOUT_MS });
+      const result = await learnOdometerSource(device, vehicle, referenceOdometerKm, {
+        signal: abort.signal,
+        onProgress: (progress) => {
+          if (!abort.signal.aborted) setLearnProgress(progress);
+        },
+      });
+      if (abort.signal.aborted) return;
+      if (result) {
+        onObdChange({ ...obd, odometerSource: result.source });
+        notify(t('carForm.obdLearn'), t('carForm.obdLearnSuccess', { km: result.odometerKm }));
+      } else {
+        notify(t('carForm.obdLearn'), t('carForm.obdLearnFailed'));
+      }
+    } catch {
+      if (!abort.signal.aborted) notify(t('common.error'), t('carForm.obdLearnConnectionFailed'));
+    } finally {
+      learnAbortRef.current = null;
+      setLearnProgress(null);
+      setHasLog(getObdLog().length > 0);
+    }
+  }, [obd, referenceOdometerKm, vehicle, onObdChange, t]);
+
+  const cancelLearn = useCallback(() => {
+    learnAbortRef.current?.abort();
+    setLearnProgress(null);
+  }, []);
+
+  const shareLog = useCallback(async () => {
+    const fileName = `motoryno-obd-log-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+    const shared = await shareTextFile(formatObdLog(), fileName, 'text/plain');
+    if (!shared) notify(t('common.error'), t('carForm.obdShareLogUnavailable'));
+  }, [t]);
+
   if (Platform.OS === 'web') {
     return null;
   }
+
+  const busy = readingStep !== null || learnProgress !== null;
+  const canLearn = obd !== null && referenceOdometerKm !== null && referenceOdometerKm > 0;
 
   return (
     <View style={styles.obdCard}>
@@ -165,7 +268,7 @@ export function ObdConfigCard({
         <Pressable
           style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}
           onPress={scanning ? stopScan : startScan}
-          disabled={!!readingStep}
+          disabled={busy}
         >
           {readingStep ? (
             <ActivityIndicator size="small" color={colors.onAmber} />
@@ -202,6 +305,47 @@ export function ObdConfigCard({
               </Text>
             </Pressable>
           ))}
+        </View>
+      )}
+
+      {obd && !scanning && !readingStep && (
+        <View style={styles.learnSection}>
+          {learnProgress ? (
+            <View style={styles.learnRow}>
+              <ActivityIndicator size="small" color={colors.amber} />
+              <Text style={styles.learnProgressText} numberOfLines={2}>
+                {t(learnStepLabelKey(learnProgress.step), {
+                  detail: learnProgress.detail ?? '',
+                  percent: Math.round((learnProgress.fraction ?? 0) * 100),
+                })}
+              </Text>
+              <Pressable onPress={cancelLearn} hitSlop={8}>
+                <Text style={styles.learnLink}>{t('carForm.obdLearnCancel')}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.learnStatus} numberOfLines={2}>
+                {obd.odometerSource ? t('carForm.obdLearnKnown', { label: obd.odometerSource.label }) : t('carForm.obdLearnUnknown')}
+              </Text>
+              <Text style={styles.learnHint}>{t('carForm.obdLearnHint')}</Text>
+              <View style={styles.learnRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.learnButton, !canLearn && styles.learnButtonDisabled, pressed && styles.scanButtonPressed]}
+                  onPress={startLearn}
+                  disabled={!canLearn}
+                >
+                  <Text style={styles.learnButtonText}>{t('carForm.obdLearn')}</Text>
+                </Pressable>
+                {hasLog && (
+                  <Pressable onPress={shareLog} hitSlop={8}>
+                    <Text style={styles.learnLink}>{t('carForm.obdShareLog')}</Text>
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
         </View>
       )}
     </View>
@@ -300,6 +444,55 @@ function getStyles(colors: ColorTokens) {
     deviceAddress: {
       color: colors.textFaint,
       fontSize: 11,
+    },
+    learnSection: {
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      gap: 8,
+    },
+    learnStatus: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    learnHint: {
+      color: colors.textFaint,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    learnRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    learnProgressText: {
+      flex: 1,
+      color: colors.textSecondary,
+      fontSize: 12,
+    },
+    learnButton: {
+      borderWidth: 1,
+      borderColor: colors.amberBorder,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    learnButtonDisabled: {
+      opacity: 0.5,
+    },
+    learnButtonText: {
+      color: colors.amber,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    learnLink: {
+      color: colors.amber,
+      fontSize: 12,
+      fontWeight: '600',
     },
   });
 }

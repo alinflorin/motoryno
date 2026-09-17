@@ -3,6 +3,8 @@
  * in the README's "Technical implementation details" section.
  */
 
+import type { OdometerSource } from '@/obd/odometer/source';
+
 export type ThemePreference = 'system' | 'dark' | 'light';
 
 export interface NotificationSettings {
@@ -58,6 +60,12 @@ export interface ObdConfig {
   deviceAddress: string;
   /** Unix epoch milliseconds of the last successful odometer sync, or null. */
   lastSyncedAt: number | null;
+  /**
+   * Where this car's odometer was found on its diagnostic bus (which ECU,
+   * which request/frame, which bytes) - set by the post-pairing scan or the
+   * learn flow, replayed by every later silent sync. Null until known.
+   */
+  odometerSource: OdometerSource | null;
 }
 
 export interface Car {

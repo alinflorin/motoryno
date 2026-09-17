@@ -50,11 +50,12 @@ export default function HomeScreen() {
 
   const hasPairedObd = cars.some((car) => car.obd !== null);
   const [obdSyncing, setObdSyncing] = useState(false);
-  const obdSyncStartedAtRef = useRef<number | null>(null);
+  // Each paired car's `lastSyncedAt` as it was when the button was pressed - the sync is over once any moves.
+  const obdSyncBaselineRef = useRef<Map<string, number | null> | null>(null);
 
   const handleObdSyncNow = () => {
     if (!triggerObdSyncNow()) return;
-    obdSyncStartedAtRef.current = Date.now();
+    obdSyncBaselineRef.current = new Map(cars.filter((car) => car.obd).map((car) => [car.vin, car.obd?.lastSyncedAt ?? null]));
     setObdSyncing(true);
   };
 
@@ -62,12 +63,12 @@ export default function HomeScreen() {
   // pressed - `lastSyncedAt` advances on every completed attempt (success or not), see
   // ObdMonitorController, so this also resolves for an in-range-but-unreadable adapter.
   useEffect(() => {
-    if (!obdSyncing || obdSyncStartedAtRef.current === null) return;
-    const startedAt = obdSyncStartedAtRef.current;
-    const settled = cars.some((car) => car.obd?.lastSyncedAt !== null && car.obd?.lastSyncedAt !== undefined && car.obd.lastSyncedAt >= startedAt);
+    const baseline = obdSyncBaselineRef.current;
+    if (!obdSyncing || !baseline) return;
+    const settled = cars.some((car) => car.obd && baseline.has(car.vin) && baseline.get(car.vin) !== car.obd.lastSyncedAt);
     if (settled) {
       setObdSyncing(false);
-      obdSyncStartedAtRef.current = null;
+      obdSyncBaselineRef.current = null;
     }
   }, [cars, obdSyncing]);
 

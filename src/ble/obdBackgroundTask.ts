@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { isDueForSync, OBD_SCAN_SERVICE_UUIDS, OBD_SYNC_TASK_NAME } from '@/ble/obdSync';
 import { syncOdometer } from '@/obd';
+import type { OdometerSource } from '@/obd/odometer/source';
 import { readAppData, writeAppData } from '@/storage/persistence';
 import type { Car } from '@/storage/types';
 
@@ -54,7 +55,7 @@ export async function runObdBackgroundSync(): Promise<boolean> {
   const poweredOn = await waitForPoweredOn(manager, 5000);
   if (!poweredOn) return false;
 
-  const results = new Map<string, number | null>();
+  const results = new Map<string, { odometerKm: number | null; odometerSource: OdometerSource | null }>();
   const inFlight = new Set<string>();
 
   await new Promise<void>((resolve) => {
@@ -74,14 +75,14 @@ export async function runObdBackgroundSync(): Promise<boolean> {
       if (!car) return;
 
       inFlight.add(car.vin);
-      void syncOdometer(device, car.vin, car.make)
+      void syncOdometer(device, { vin: car.vin, make: car.make, odometerSource: car.obd.odometerSource })
         .then((result) => {
-          results.set(car.vin, result.odometerKm);
+          results.set(car.vin, { odometerKm: result.odometerKm, odometerSource: result.odometerSource });
         })
         .catch(() => {
           // Leave it unset - lastSyncedAt still advances below so a persistently unreachable
           // adapter doesn't get retried every single wake-up.
-          results.set(car.vin, null);
+          results.set(car.vin, { odometerKm: null, odometerSource: null });
         })
         .finally(() => {
           inFlight.delete(car.vin);
@@ -101,13 +102,13 @@ export async function runObdBackgroundSync(): Promise<boolean> {
   const now = Date.now();
   let anySynced = false;
   const updatedCars = latest.data.cars.map((car) => {
-    if (!results.has(car.vin) || !car.obd) return car;
-    const odometerKm = results.get(car.vin) ?? null;
-    if (odometerKm !== null) anySynced = true;
+    const result = results.get(car.vin);
+    if (!result || !car.obd) return car;
+    if (result.odometerKm !== null) anySynced = true;
     return {
       ...car,
-      odometerKm: odometerKm ?? car.odometerKm,
-      obd: { ...car.obd, lastSyncedAt: now },
+      odometerKm: result.odometerKm ?? car.odometerKm,
+      obd: { ...car.obd, lastSyncedAt: now, odometerSource: result.odometerSource ?? car.obd.odometerSource },
     };
   });
 
