@@ -5,7 +5,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text } from 'react-native';
 
 import { SettingsRow } from '@/components/SettingsRow';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatTimeLabel, type DailyTime } from '@/utils/notificationCron';
 
 function toDate({ hour, minute }: DailyTime): Date {
@@ -30,8 +30,7 @@ export function TimePickerField({
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
   const [iosSheetOpen, setIosSheetOpen] = useState(false);
   const [iosPendingValue, setIosPendingValue] = useState(value);
   const timeLabel = formatTimeLabel(value);

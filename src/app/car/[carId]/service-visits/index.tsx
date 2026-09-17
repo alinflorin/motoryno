@@ -1,13 +1,14 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { HeaderIconButton } from '@/components/HeaderIconButton';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { formatDateDMY } from '@/utils/date';
 import { translateItemName } from '@/utils/serviceItemNames';
 import { distanceUnitFor, formatDistance } from '@/utils/units';
@@ -21,8 +22,7 @@ export default function ServiceVisitsScreen() {
   const visits = [...(car?.serviceVisits ?? [])].sort((a, b) => b.timestamp - a.timestamp);
   const totalSpent = visits.reduce((sum, visit) => sum + visit.spend, 0);
   const currency = settings.currency;
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   return (
     <Screen>
@@ -53,7 +53,7 @@ export default function ServiceVisitsScreen() {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView contentStyle={styles.content}>
         {visits.length === 0 ? (
           <View style={styles.empty}>
             <Icon name="construct-outline" size={32} color={colors.textFaint} />
@@ -74,8 +74,7 @@ export default function ServiceVisitsScreen() {
                     <View style={styles.cardTopLeft}>
                       <Text style={styles.shopName}>{visit.shopName}</Text>
                       <Text style={styles.visitMeta}>
-                        {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} ·{' '}
-                        {formatDateDMY(visit.timestamp)}
+                        {formatDistance(visit.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)} · {formatDateDMY(visit.timestamp)}
                       </Text>
                     </View>
                     <Text style={styles.price}>
@@ -101,7 +100,7 @@ export default function ServiceVisitsScreen() {
             ))}
           </>
         )}
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 }
@@ -136,9 +135,7 @@ function getStyles(colors: ColorTokens) {
       marginTop: 2,
     },
     content: {
-      padding: 16,
       gap: 10,
-      paddingBottom: 32,
       flexGrow: 1,
     },
     empty: {

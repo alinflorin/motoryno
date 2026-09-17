@@ -8,12 +8,7 @@ declare module '@abandonware/bleno' {
       uuid: string;
       properties: Array<'read' | 'write' | 'writeWithoutResponse' | 'notify' | 'indicate'>;
       onReadRequest?: (offset: number, callback: (result: number, data?: Buffer) => void) => void;
-      onWriteRequest?: (
-        data: Buffer,
-        offset: number,
-        withoutResponse: boolean,
-        callback: (result: number) => void
-      ) => void;
+      onWriteRequest?: (data: Buffer, offset: number, withoutResponse: boolean, callback: (result: number) => void) => void;
       onSubscribe?: (maxValueSize: number, updateValueCallback: (data: Buffer) => void) => void;
       onUnsubscribe?: () => void;
     });

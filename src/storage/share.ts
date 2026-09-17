@@ -5,21 +5,18 @@ import { downloadJson } from '@/storage/downloadJson';
 import type { Car } from '@/storage/types';
 
 /**
- * Shares just the `cars` data (README > "Agent integration") as a JSON file
- * through the OS share sheet, so the user can hand it off to an AI app of
- * their choice (Claude, ChatGPT, Gemini, ...).
+ * Hands `text` to the OS share sheet as a file named `fileName`.
  *
  * Returns whether a share dialog was actually presented — false means no
- * share target was available on this platform/device.
+ * share target was available on this platform/device. On web the Web Share
+ * API is used where the browser allows sharing files, and a plain download
+ * otherwise.
  */
-export async function shareCarsData(cars: Car[]): Promise<boolean> {
-  const fileName = `motoryno-cars-${new Date().toISOString().slice(0, 10)}.json`;
-  const text = JSON.stringify({ cars }, null, 2);
-
+export async function shareTextFile(text: string, fileName: string, mimeType: string): Promise<boolean> {
   if (Platform.OS === 'web') {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        const file = new File([text], fileName, { type: 'application/json' });
+        const file = new File([text], fileName, { type: mimeType });
         if (!navigator.canShare || navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title: fileName });
           return true;
@@ -43,9 +40,19 @@ export async function shareCarsData(cars: Car[]): Promise<boolean> {
   const file = new CacheFile(new Directory(Paths.cache), fileName);
   file.write(text);
   try {
-    await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: fileName });
+    await Sharing.shareAsync(file.uri, { mimeType, dialogTitle: fileName });
     return true;
   } finally {
     if (file.exists) file.delete();
   }
+}
+
+/**
+ * Shares just the `cars` data (README > "Agent integration") as a JSON file
+ * through the OS share sheet, so the user can hand it off to an AI app of
+ * their choice (Claude, ChatGPT, Gemini, ...).
+ */
+export function shareCarsData(cars: Car[]): Promise<boolean> {
+  const fileName = `motoryno-cars-${new Date().toISOString().slice(0, 10)}.json`;
+  return shareTextFile(JSON.stringify({ cars }, null, 2), fileName, 'application/json');
 }

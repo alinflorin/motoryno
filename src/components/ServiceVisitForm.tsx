@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
 
 import { ComboBoxInput } from '@/components/ComboBoxInput';
@@ -12,9 +12,10 @@ import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 import { Icon } from '@/components/Icon';
 import { StatusDot } from '@/components/StatusDot';
+import { TextField } from '@/components/TextField';
 import type { Car, ServiceVisit } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { useKeyboardVerticalOffset } from '@/utils/useKeyboardVerticalOffset';
 import { sanitizeDecimalInput, sanitizeIntegerInput } from '@/utils/numericInput';
 import { translateItemName } from '@/utils/serviceItemNames';
@@ -106,8 +107,7 @@ export function ServiceVisitForm({
   insetBottom: number;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set(visit?.itemsDone ?? []));
 
@@ -128,17 +128,13 @@ export function ServiceVisitForm({
   // One-off items typed in for this visit that aren't part of the car's tracked list — e.g. a
   // repair that doesn't warrant its own recurring interval. Seeded from the visit being edited
   // so its own past one-offs still show up (and stay editable) here.
-  const [extraItems, setExtraItems] = useState<string[]>(
-    (visit?.itemsDone ?? []).filter((name) => !trackedItemNames.has(name))
-  );
+  const [extraItems, setExtraItems] = useState<string[]>((visit?.itemsDone ?? []).filter((name) => !trackedItemNames.has(name)));
   const [extraItemInput, setExtraItemInput] = useState('');
 
   const addExtraItem = () => {
     const trimmed = extraItemInput.trim();
     if (!trimmed) return;
-    const alreadyListed = [...trackedItemNames, ...extraItems].some(
-      (name) => name.toLowerCase() === trimmed.toLowerCase()
-    );
+    const alreadyListed = [...trackedItemNames, ...extraItems].some((name) => name.toLowerCase() === trimmed.toLowerCase());
     if (!alreadyListed) {
       setExtraItems((prev) => [...prev, trimmed]);
       setSelectedNames((prev) => new Set(prev).add(trimmed));
@@ -184,8 +180,7 @@ export function ServiceVisitForm({
 
   // Don't show a field's error until the user has actually left it (or tried to
   // submit) — otherwise every required field complains the instant the form mounts.
-  const fieldError = (name: keyof ServiceVisitFormValues) =>
-    touchedFields[name] || isSubmitted ? errors[name]?.message : undefined;
+  const fieldError = (name: keyof ServiceVisitFormValues) => (touchedFields[name] || isSubmitted ? errors[name]?.message : undefined);
 
   const submit = handleSubmit((values) => {
     const odometerKm = Math.round(displayToKm(Number(values.odometer.trim()), distanceUnit));
@@ -215,9 +210,7 @@ export function ServiceVisitForm({
             name="shop"
             render={({ field: { value, onChange, onBlur } }) => (
               <ComboBoxInput
-                style={styles.input}
                 placeholder={t('addServiceVisit.shopPlaceholder')}
-                placeholderTextColor={colors.textFainter}
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}
@@ -233,53 +226,44 @@ export function ServiceVisitForm({
               <Controller
                 control={control}
                 name="date"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <DatePickerField style={styles.input} value={value} onChange={onChange} onBlur={onBlur} />
-                )}
+                render={({ field: { value, onChange, onBlur } }) => <DatePickerField value={value} onChange={onChange} onBlur={onBlur} />}
               />
             </FormField>
           </View>
           <View style={styles.twoColItem}>
             <FormField label={t('addServiceVisit.odometer')} error={fieldError('odometer')}>
-              <View style={styles.suffixField}>
-                <Controller
-                  control={control}
-                  name="odometer"
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <TextInput
-                      style={styles.input}
-                      keyboardType="number-pad"
-                      value={value}
-                      onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
-                      onBlur={onBlur}
-                    />
-                  )}
-                />
-                <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
-              </View>
+              <Controller
+                control={control}
+                name="odometer"
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <TextField
+                    suffix={t(`common.${distanceUnit}`)}
+                    keyboardType="number-pad"
+                    value={value}
+                    onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
+                    onBlur={onBlur}
+                  />
+                )}
+              />
             </FormField>
           </View>
         </View>
 
         <FormField label={t('addServiceVisit.amountSpent')} error={fieldError('price')}>
-          <View style={styles.suffixField}>
-            <Controller
-              control={control}
-              name="price"
-              render={({ field: { value, onChange, onBlur } }) => (
-                <TextInput
-                  style={styles.input}
-                  placeholder="0"
-                  placeholderTextColor={colors.textFainter}
-                  keyboardType="decimal-pad"
-                  value={value}
-                  onChangeText={(text) => onChange(sanitizeDecimalInput(text))}
-                  onBlur={onBlur}
-                />
-              )}
-            />
-            <Text style={styles.inputSuffix}>{currency}</Text>
-          </View>
+          <Controller
+            control={control}
+            name="price"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <TextField
+                suffix={currency}
+                placeholder="0"
+                keyboardType="decimal-pad"
+                value={value}
+                onChangeText={(text) => onChange(sanitizeDecimalInput(text))}
+                onBlur={onBlur}
+              />
+            )}
+          />
         </FormField>
 
         <FormField label={t('addServiceVisit.itemsPerformed')}>
@@ -303,11 +287,7 @@ export function ServiceVisitForm({
             {extraItems.map((name) => {
               const selected = selectedNames.has(name);
               return (
-                <Pressable
-                  key={name}
-                  onPress={() => toggleItem(name)}
-                  style={[styles.itemRow, selected && styles.itemRowSelected]}
-                >
+                <Pressable key={name} onPress={() => toggleItem(name)} style={[styles.itemRow, selected && styles.itemRowSelected]}>
                   <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                     {selected && <Icon name="checkmark" size={12} color={colors.onAmber} />}
                   </View>
@@ -320,10 +300,9 @@ export function ServiceVisitForm({
             })}
           </View>
           <View style={styles.addItemRow}>
-            <TextInput
-              style={[styles.input, styles.addItemInput]}
+            <TextField
+              style={styles.addItemInput}
               placeholder={t('addServiceVisit.addItemPlaceholder')}
-              placeholderTextColor={colors.textFainter}
               value={extraItemInput}
               onChangeText={setExtraItemInput}
               onSubmitEditing={addExtraItem}
@@ -345,10 +324,9 @@ export function ServiceVisitForm({
             control={control}
             name="comments"
             render={({ field: { value, onChange, onBlur } }) => (
-              <TextInput
-                style={[styles.input, styles.commentsInput]}
+              <TextField
+                style={styles.commentsInput}
                 placeholder={t('addServiceVisit.commentsPlaceholder')}
-                placeholderTextColor={colors.textFainter}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -384,17 +362,6 @@ function getStyles(colors: ColorTokens) {
     shopField: {
       zIndex: 20,
     },
-    input: {
-      flex: 1,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      color: colors.textPrimary,
-      fontSize: 14,
-    },
     commentsInput: {
       minHeight: 72,
       paddingTop: 12,
@@ -405,15 +372,6 @@ function getStyles(colors: ColorTokens) {
     },
     twoColItem: {
       flex: 1,
-    },
-    suffixField: {
-      justifyContent: 'center',
-    },
-    inputSuffix: {
-      position: 'absolute',
-      right: 14,
-      color: colors.textFaint,
-      fontSize: 12,
     },
     itemList: {
       gap: 6,

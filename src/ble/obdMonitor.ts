@@ -2,14 +2,21 @@ import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { isDueForSync, OBD_SCAN_SERVICE_UUIDS } from '@/ble/obdSync';
 import { requestBlePermissions } from '@/ble/permissions';
 import { syncOdometer } from '@/obd';
+import type { OdometerSource } from '@/obd/odometer/source';
 import type { Car } from '@/storage/types';
 
 export interface ObdSyncAttempt {
   vin: string;
-  /** The freshly-read odometer, or null if the connection succeeded but no known PID answered. */
+  /** The freshly-read odometer, or null if the connection succeeded but no known request answered. */
   odometerKm: number | null;
+  /** The request that answered when it wasn't the car's persisted one - worth persisting so the next sync is a single read. */
+  odometerSource: OdometerSource | null;
   /** True if the adapter couldn't be connected to/initialized at all. */
   connectionFailed: boolean;
+}
+
+function syncTarget(car: Car, obd: NonNullable<Car['obd']>): Parameters<typeof syncOdometer>[1] {
+  return { vin: car.vin, make: car.make, obd };
 }
 
 /** How long to wait for a direct (non-scan) connect attempt before giving up. */
@@ -44,8 +51,15 @@ export function startObdMonitor(
   const runSync = (vin: string, connectAndSync: ReturnType<typeof syncOdometer>) => {
     syncing.add(vin);
     void connectAndSync
-      .then((result) => onSyncAttempt({ vin, odometerKm: result.odometerKm, connectionFailed: result.connectionFailed }))
-      .catch(() => onSyncAttempt({ vin, odometerKm: null, connectionFailed: true }))
+      .then((result) =>
+        onSyncAttempt({
+          vin,
+          odometerKm: result.odometerKm,
+          odometerSource: result.odometerSource,
+          connectionFailed: result.connectionFailed,
+        })
+      )
+      .catch(() => onSyncAttempt({ vin, odometerKm: null, odometerSource: null, connectionFailed: true }))
       .finally(() => {
         syncing.delete(vin);
       });
@@ -66,7 +80,7 @@ export function startObdMonitor(
       const car = getCars().find((c) => c.obd?.deviceAddress === device.id);
       if (!car || !car.obd || syncing.has(car.vin) || !isDueForSync(car.obd)) return;
 
-      runSync(car.vin, syncOdometer(device, car.vin, car.make));
+      runSync(car.vin, syncOdometer(device, syncTarget(car, car.obd)));
     });
   })();
 
@@ -86,10 +100,12 @@ export function startObdMonitor(
       const cars = vin ? getCars().filter((car) => car.vin === vin) : getCars();
       for (const car of cars) {
         if (!car.obd || syncing.has(car.vin)) continue;
-        const { vin, make, obd } = car;
+        const target = syncTarget(car, car.obd);
         runSync(
-          vin,
-          manager.connectToDevice(obd.deviceAddress, { timeout: FORCE_CONNECT_TIMEOUT_MS }).then((device) => syncOdometer(device, vin, make))
+          car.vin,
+          manager
+            .connectToDevice(car.obd.deviceAddress, { timeout: FORCE_CONNECT_TIMEOUT_MS })
+            .then((device) => syncOdometer(device, target))
         );
       }
     },

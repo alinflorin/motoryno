@@ -1,24 +1,31 @@
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { HeaderIconButton } from '@/components/HeaderIconButton';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Screen } from '@/components/Screen';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
+import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { StatusDot } from '@/components/StatusDot';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { translateItemName } from '@/utils/serviceItemNames';
-import { computeCarItemStatuses, formatIntervalLabel, formatSinceLabel, type ServiceItemStatus, type TrackedItemStatus } from '@/utils/serviceStatus';
+import {
+  computeCarItemStatuses,
+  formatIntervalLabel,
+  formatSinceLabel,
+  type ServiceItemStatus,
+  type TrackedItemStatus,
+} from '@/utils/serviceStatus';
 
 export default function TrackedItemsScreen() {
   const { t } = useTranslation();
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const { settings, getCar, updateTrackedServiceItem } = useStorage();
   const car = getCar(carId);
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
   if (!car) return null;
 
@@ -48,10 +55,8 @@ export default function TrackedItemsScreen() {
           ),
         }}
       />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {(itemStatuses.length > 0 || inactiveItems.length > 0) && (
-          <Text style={styles.hint}>{t('trackedItems.hint')}</Text>
-        )}
+      <ScreenScrollView>
+        {(itemStatuses.length > 0 || inactiveItems.length > 0) && <Text style={styles.hint}>{t('trackedItems.hint')}</Text>}
         {groups.map((group) =>
           group.data.length === 0 ? null : (
             <View key={group.key} style={styles.group}>
@@ -69,18 +74,14 @@ export default function TrackedItemsScreen() {
                           <StatusDot status={entry.status} />
                           <Text style={styles.itemName}>{translateItemName(t, entry.item.name)}</Text>
                         </View>
-                        <Switch
+                        <ThemedSwitch
                           value={entry.item.isActive}
                           onValueChange={(value) => updateTrackedServiceItem(car.vin, entry.item.name, { isActive: value })}
-                          trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                          thumbColor={colors.textPrimary}
                         />
                       </View>
                       <ProgressBar progress={entry.progress} status={entry.status} />
                       <View style={styles.cardBottom}>
-                        <Text style={styles.intervalText}>
-                          {t('trackedItems.every', { interval: formatIntervalLabel(entry.item, t) })}
-                        </Text>
+                        <Text style={styles.intervalText}>{t('trackedItems.every', { interval: formatIntervalLabel(entry.item, t) })}</Text>
                         <Text style={styles.sinceText}>{formatSinceLabel(entry, car, t)}</Text>
                       </View>
                     </Pressable>
@@ -88,14 +89,12 @@ export default function TrackedItemsScreen() {
                 ))}
               </View>
             </View>
-          ),
+          )
         )}
 
         {inactiveItems.length > 0 && (
           <View style={styles.group}>
-            <Text style={[styles.groupTitle, { color: colors.textFaint }]}>
-              {t('trackedItems.availableGroup')}
-            </Text>
+            <Text style={[styles.groupTitle, { color: colors.textFaint }]}>{t('trackedItems.availableGroup')}</Text>
             <View style={styles.groupList}>
               {inactiveItems.map((item) => (
                 <Link
@@ -108,23 +107,19 @@ export default function TrackedItemsScreen() {
                       <View style={styles.cardTopLeft}>
                         <Text style={styles.itemName}>{translateItemName(t, item.name)}</Text>
                       </View>
-                      <Switch
+                      <ThemedSwitch
                         value={false}
                         onValueChange={(value) => updateTrackedServiceItem(car.vin, item.name, { isActive: value })}
-                        trackColor={{ true: colors.amber, false: colors.borderStrong }}
-                        thumbColor={colors.textPrimary}
                       />
                     </View>
-                    <Text style={styles.intervalText}>
-                      {t('trackedItems.every', { interval: formatIntervalLabel(item, t) })}
-                    </Text>
+                    <Text style={styles.intervalText}>{t('trackedItems.every', { interval: formatIntervalLabel(item, t) })}</Text>
                   </Pressable>
                 </Link>
               ))}
             </View>
           </View>
         )}
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 }
@@ -138,11 +133,6 @@ function groupTitleColor(status: ServiceItemStatus, colors: ColorTokens) {
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    content: {
-      padding: 16,
-      gap: 20,
-      paddingBottom: 32,
-    },
     hint: {
       color: colors.textFainter,
       fontSize: 12,

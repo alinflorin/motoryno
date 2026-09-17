@@ -1,8 +1,8 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { ScreenScrollView } from '@/components/ScreenScrollView';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
 
@@ -13,7 +13,7 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: t('settings.title') }} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView>
         <SettingsSection>
           <SettingsRow label={t('settings.preferences')} onPress={() => router.push('/settings/preferences')} />
           <SettingsRow label={t('settings.data')} onPress={() => router.push('/settings/data')} />
@@ -24,15 +24,7 @@ export default function SettingsScreen() {
         <SettingsSection>
           <SettingsRow label={t('settings.viewOnboarding')} onPress={() => router.push('/onboarding/welcome')} />
         </SettingsSection>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    gap: 20,
-    paddingBottom: 32,
-  },
-});

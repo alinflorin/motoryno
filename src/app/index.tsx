@@ -1,30 +1,23 @@
 import { Link, Redirect, useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { triggerObdSyncNow } from '@/ble/obdMonitorHandle';
+import { AddCarCard, CarCard } from '@/components/CarCard';
 import { CountBadge } from '@/components/CountBadge';
 import { Icon } from '@/components/Icon';
+import { ObdSyncButton } from '@/components/ObdSyncButton';
 import { OverflowMenu } from '@/components/OverflowMenu';
 import { Screen } from '@/components/Screen';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { confirmAsync } from '@/utils/confirm';
 import { translateItemName } from '@/utils/serviceItemNames';
 import { getOverdueCountForCar, getOverdueItemsForCar } from '@/utils/serviceStatus';
-import { distanceUnitFor, formatDistance } from '@/utils/units';
+import { distanceUnitFor } from '@/utils/units';
 
 const CARD_MENU_WIDTH = 176;
 
@@ -39,44 +32,14 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
   const { loading, settings, cars, removeCar } = useStorage();
   const distanceUnit = distanceUnitFor(settings.useImperialUnits);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cardMenu, setCardMenu] = useState<{ carId: string; top: number; left: number } | null>(null);
-  const kebabRefs = useRef<Record<string, View | null>>({});
   const topBarTop = insets.top + 8;
 
   const hasPairedObd = cars.some((car) => car.obd !== null);
-  const [obdSyncing, setObdSyncing] = useState(false);
-  const obdSyncStartedAtRef = useRef<number | null>(null);
-
-  const handleObdSyncNow = () => {
-    if (!triggerObdSyncNow()) return;
-    obdSyncStartedAtRef.current = Date.now();
-    setObdSyncing(true);
-  };
-
-  // Clears the "syncing" state once any paired car actually re-syncs after the button was
-  // pressed - `lastSyncedAt` advances on every completed attempt (success or not), see
-  // ObdMonitorController, so this also resolves for an in-range-but-unreadable adapter.
-  useEffect(() => {
-    if (!obdSyncing || obdSyncStartedAtRef.current === null) return;
-    const startedAt = obdSyncStartedAtRef.current;
-    const settled = cars.some((car) => car.obd?.lastSyncedAt !== null && car.obd?.lastSyncedAt !== undefined && car.obd.lastSyncedAt >= startedAt);
-    if (settled) {
-      setObdSyncing(false);
-      obdSyncStartedAtRef.current = null;
-    }
-  }, [cars, obdSyncing]);
-
-  // Safety net for when the adapter never comes into range at all - don't spin forever.
-  useEffect(() => {
-    if (!obdSyncing) return;
-    const timer = setTimeout(() => setObdSyncing(false), 20000);
-    return () => clearTimeout(timer);
-  }, [obdSyncing]);
 
   const overdueAlerts = useMemo<OverdueAlert[]>(
     () =>
@@ -101,8 +64,8 @@ export default function HomeScreen() {
     if (confirmed) removeCar(carId);
   };
 
-  const openCardMenu = (carId: string) => {
-    kebabRefs.current[carId]?.measureInWindow((x, y, width, height) => {
+  const openCardMenu = (carId: string, anchor: View) => {
+    anchor.measureInWindow((x, y, width, height) => {
       setCardMenu({
         carId,
         top: y + height + 4,
@@ -137,24 +100,16 @@ export default function HomeScreen() {
         visible={menuOpen}
         onDismiss={() => setMenuOpen(false)}
         top={topBarTop + 42}
-        items={[
-          { key: 'settings', label: t('home.settings'), icon: 'settings-outline', onPress: () => router.push('/settings') },
-        ]}
+        items={[{ key: 'settings', label: t('home.settings'), icon: 'settings-outline', onPress: () => router.push('/settings') }]}
       />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {overdueAlerts.length > 0 && (
           <View style={styles.section}>
-            <SectionLabel right={<CountBadge count={overdueAlerts.length} />}>
-              {t('home.alerts')}
-            </SectionLabel>
+            <SectionLabel right={<CountBadge count={overdueAlerts.length} />}>{t('home.alerts')}</SectionLabel>
             <View style={styles.alertList}>
               {overdueAlerts.map((alert) => (
-                <Link
-                  key={alert.id}
-                  href={{ pathname: '/car/[carId]', params: { carId: alert.carId } }}
-                  asChild
-                >
+                <Link key={alert.id} href={{ pathname: '/car/[carId]', params: { carId: alert.carId } }} asChild>
                   <Pressable>
                     {({ pressed }) => (
                       <View style={[styles.alertRow, pressed && styles.cardPressed]}>
@@ -172,90 +127,25 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {hasPairedObd && Platform.OS !== 'web' && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('home.obdSyncNow')}
-            disabled={obdSyncing}
-            onPress={handleObdSyncNow}
-            style={({ pressed }) => [styles.obdSyncButton, pressed && styles.obdSyncButtonPressed]}
-          >
-            {obdSyncing ? (
-              <>
-                <ActivityIndicator size="small" color={colors.amber} />
-                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncing')}</Text>
-              </>
-            ) : (
-              <>
-                <Icon name="bluetooth-outline" size={16} color={colors.amber} />
-                <Text style={styles.obdSyncButtonText}>{t('home.obdSyncNow')}</Text>
-              </>
-            )}
-          </Pressable>
+        {hasPairedObd && (
+          <View style={styles.obdSync}>
+            <ObdSyncButton />
+          </View>
         )}
 
         <View style={styles.section}>
           <SectionLabel>{t('home.myCars')}</SectionLabel>
           <View style={styles.carGrid}>
-            {cars.map((car) => {
-              const overdueCount = getOverdueCountForCar(car, settings.useUnknownServiceStatus);
-              return (
-                <Link
-                  key={car.vin}
-                  href={{ pathname: '/car/[carId]', params: { carId: car.vin } }}
-                  asChild
-                >
-                  <Pressable style={styles.cardHit}>
-                    {({ pressed }) => (
-                      <View style={[styles.carCard, pressed && styles.cardPressed]}>
-                        <View style={styles.carCardTop}>
-                          <Text style={styles.carNickname}>{car.displayName}</Text>
-                          <View style={styles.carCardTopRight}>
-                            {overdueCount > 0 && <CountBadge count={overdueCount} />}
-                            <Pressable
-                              ref={(node) => {
-                                kebabRefs.current[car.vin] = node;
-                              }}
-                              hitSlop={8}
-                              accessibilityRole="button"
-                              accessibilityLabel={t('home.menu')}
-                              onPress={(event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                openCardMenu(car.vin);
-                              }}
-                              style={styles.cardKebab}
-                            >
-                              <Icon name="ellipsis-vertical" size={16} color={colors.textFaint} />
-                            </Pressable>
-                          </View>
-                        </View>
-                        <Text style={styles.carMake}>{car.make}</Text>
-                        <Text style={styles.carModel}>
-                          {car.model} · {car.year}
-                        </Text>
-                        <Text style={styles.carOdometer}>
-                          {formatDistance(car.odometerKm, distanceUnit)} {t(`common.${distanceUnit}`)}
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable>
-                </Link>
-              );
-            })}
-
-            <Link href="/add-car" asChild>
-              <Pressable style={styles.cardHit}>
-                {({ pressed }) => (
-                  <View style={[styles.addCarCard, pressed && styles.cardPressed]}>
-                    <View style={styles.addCarPlus}>
-                      <Icon name="add" size={20} color={colors.textFaint} />
-                    </View>
-                    <Text style={styles.addCarLabel}>{t('home.addCar')}</Text>
-                  </View>
-                )}
-              </Pressable>
-            </Link>
+            {cars.map((car) => (
+              <CarCard
+                key={car.vin}
+                car={car}
+                overdueCount={getOverdueCountForCar(car, settings.useUnknownServiceStatus)}
+                distanceUnit={distanceUnit}
+                onMenuPress={(anchor) => openCardMenu(car.vin, anchor)}
+              />
+            ))}
+            <AddCarCard />
           </View>
         </View>
       </ScrollView>
@@ -297,193 +187,97 @@ export default function HomeScreen() {
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoMark: {
-    width: 28,
-    height: 28,
-    borderRadius: 7,
-    backgroundColor: colors.amber,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoGlyph: {
-    color: colors.onAmber,
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  brandText: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  iconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconButtonPressed: {
-    backgroundColor: colors.surface,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-    gap: 20,
-  },
-  section: {
-    gap: 0,
-  },
-  alertList: {
-    gap: 6,
-  },
-  alertRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.redBg,
-    borderWidth: 1,
-    borderColor: colors.redBorder,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  alertDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.red,
-  },
-  alertText: {
-    color: colors.redSoft,
-    fontSize: 13,
-    flex: 1,
-  },
-  alertCar: {
-    color: colors.redSofter,
-    fontWeight: '700',
-  },
-  obdSyncButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.amberBorder,
-    borderRadius: 12,
-    paddingVertical: 12,
-  },
-  obdSyncButtonPressed: {
-    backgroundColor: colors.surfaceAlt,
-  },
-  obdSyncButtonText: {
-    color: colors.amber,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  carGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  cardHit: {
-    width: '48%',
-  },
-  carCard: {
-    minHeight: 132,
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.borderStrong,
-    borderRadius: 16,
-    padding: 14,
-    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
-    elevation: 2,
-  },
-  cardPressed: {
-    borderColor: colors.amberBorder,
-  },
-  carCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  carCardTopRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  cardKebab: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: -6,
-    marginTop: -4,
-  },
-  carNickname: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  carMake: {
-    color: colors.textFaint,
-    fontSize: 11,
-    marginBottom: 10,
-  },
-  carModel: {
-    color: colors.textMuted,
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  carOdometer: {
-    color: colors.amber,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  addCarCard: {
-    minHeight: 132,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.borderStrong,
-    borderRadius: 16,
-    padding: 14,
-    gap: 10,
-    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.25)',
-    elevation: 2,
-  },
-  addCarPlus: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addCarLabel: {
-    color: colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-  },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    brand: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    logoMark: {
+      width: 28,
+      height: 28,
+      borderRadius: 7,
+      backgroundColor: colors.amber,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logoGlyph: {
+      color: colors.onAmber,
+      fontWeight: '800',
+      fontSize: 15,
+    },
+    brandText: {
+      color: colors.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+      letterSpacing: -0.3,
+    },
+    iconButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconButtonPressed: {
+      backgroundColor: colors.surface,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 32,
+      gap: 20,
+    },
+    section: {
+      gap: 0,
+    },
+    alertList: {
+      gap: 6,
+    },
+    alertRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: colors.redBg,
+      borderWidth: 1,
+      borderColor: colors.redBorder,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    alertDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.red,
+    },
+    alertText: {
+      color: colors.redSoft,
+      fontSize: 13,
+      flex: 1,
+    },
+    alertCar: {
+      color: colors.redSofter,
+      fontWeight: '700',
+    },
+    obdSync: {
+      marginHorizontal: 16,
+      marginBottom: 20,
+    },
+    carGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+    cardPressed: {
+      borderColor: colors.amberBorder,
+    },
   });
 }

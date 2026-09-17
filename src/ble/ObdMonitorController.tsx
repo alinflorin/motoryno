@@ -40,15 +40,16 @@ export function ObdMonitorController() {
 
     const { stop, forceSyncNow } = startObdMonitor(
       () => carsRef.current,
-      ({ vin, odometerKm }) => {
+      ({ vin, odometerKm, odometerSource }) => {
         const car = carsRef.current.find((c) => c.vin === vin);
         if (!car?.obd) return;
         // `lastSyncedAt` advances on every completed attempt, success or not - it's the throttle
         // clock for isDueForSync, so a persistently unreachable/unreadable adapter also backs off
-        // instead of being retried on every single re-discovery.
+        // instead of being retried on every single re-discovery. A newly-successful request is
+        // remembered so the next sync is a single targeted read.
         updateCar(vin, {
           odometerKm: odometerKm ?? car.odometerKm,
-          obd: { ...car.obd, lastSyncedAt: Date.now() },
+          obd: { ...car.obd, lastSyncedAt: Date.now(), odometerSource: odometerSource ?? car.obd.odometerSource },
         });
       }
     );

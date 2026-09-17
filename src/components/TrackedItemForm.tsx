@@ -2,15 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
 import type { TFunction } from 'i18next';
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
+import { TextField } from '@/components/TextField';
 import type { TrackedServiceItem } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { useKeyboardVerticalOffset } from '@/utils/useKeyboardVerticalOffset';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, kmToDisplay, type DistanceUnit } from '@/utils/units';
@@ -38,10 +39,7 @@ export interface ParsedTrackedItemFormValues {
   kmInterval: number | null;
 }
 
-export function toParsedTrackedItemFormValues(
-  values: TrackedItemFormValues,
-  distanceUnit: DistanceUnit
-): ParsedTrackedItemFormValues {
+export function toParsedTrackedItemFormValues(values: TrackedItemFormValues, distanceUnit: DistanceUnit): ParsedTrackedItemFormValues {
   const months = values.months.trim();
   const distance = values.distance.trim();
   return {
@@ -84,11 +82,7 @@ function buildTrackedItemSchema(t: TFunction, existingNames: string[]) {
  * `existingNames` should list every *other* item's name (lowercased, trimmed — i.e.
  * excluding the item being edited, if any) so the duplicate check doesn't flag itself.
  */
-export function useTrackedItemForm(
-  item: TrackedServiceItem | undefined,
-  distanceUnit: DistanceUnit,
-  existingNames: string[]
-) {
+export function useTrackedItemForm(item: TrackedServiceItem | undefined, distanceUnit: DistanceUnit, existingNames: string[]) {
   const { t } = useTranslation();
   const schema = useMemo(() => buildTrackedItemSchema(t, existingNames), [t, existingNames]);
   const form = useForm<TrackedItemFormValues>({
@@ -127,8 +121,7 @@ export function TrackedItemForm({
     schema,
     formState: { errors, touchedFields, isSubmitted },
   } = useTrackedItemForm(item, distanceUnit, existingNames);
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   // RHF's own `formState.isValid` runs the resolver asynchronously and only settles after
   // a field is touched/changed post-mount — for an edit form (already-valid defaults) that
@@ -139,14 +132,11 @@ export function TrackedItemForm({
 
   // Don't show a field's error until the user has actually left it (or tried to
   // submit) — otherwise every required field complains the instant the form mounts.
-  const fieldError = (name: keyof TrackedItemFormValues) =>
-    touchedFields[name] || isSubmitted ? errors[name]?.message : undefined;
+  const fieldError = (name: keyof TrackedItemFormValues) => (touchedFields[name] || isSubmitted ? errors[name]?.message : undefined);
   // Months and distance share one error slot (either satisfies the "pick one" rule),
   // so show it once either side of that pair has been visited.
   const intervalError =
-    touchedFields.months || touchedFields.distance || isSubmitted
-      ? (errors.months?.message ?? errors.distance?.message)
-      : undefined;
+    touchedFields.months || touchedFields.distance || isSubmitted ? (errors.months?.message ?? errors.distance?.message) : undefined;
 
   const submit = handleSubmit((values) => {
     onSubmit(toParsedTrackedItemFormValues(values, distanceUnit));
@@ -166,14 +156,7 @@ export function TrackedItemForm({
             control={control}
             name="name"
             render={({ field: { value, onChange, onBlur } }) => (
-              <TextInput
-                style={styles.input}
-                placeholder={t('addTrackedItem.itemNamePlaceholder')}
-                placeholderTextColor={colors.textFainter}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
+              <TextField placeholder={t('addTrackedItem.itemNamePlaceholder')} value={value} onChangeText={onChange} onBlur={onBlur} />
             )}
           />
         </FormField>
@@ -185,10 +168,9 @@ export function TrackedItemForm({
                 control={control}
                 name="months"
                 render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={styles.input}
+                  <TextField
+                    suffix={t('addTrackedItem.months')}
                     placeholder="12"
-                    placeholderTextColor={colors.textFainter}
                     keyboardType="number-pad"
                     value={value}
                     onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
@@ -196,7 +178,6 @@ export function TrackedItemForm({
                   />
                 )}
               />
-              <Text style={styles.inputSuffix}>{t('addTrackedItem.months')}</Text>
             </View>
             <Text style={styles.orLabel}>{t('addTrackedItem.or')}</Text>
             <View style={styles.intervalField}>
@@ -204,10 +185,9 @@ export function TrackedItemForm({
                 control={control}
                 name="distance"
                 render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={styles.input}
+                  <TextField
+                    suffix={t(`common.${distanceUnit}`)}
                     placeholder="10000"
-                    placeholderTextColor={colors.textFainter}
                     keyboardType="number-pad"
                     value={value}
                     onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
@@ -215,18 +195,11 @@ export function TrackedItemForm({
                   />
                 )}
               />
-              <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
             </View>
           </View>
         </FormField>
       </ScrollView>
-      <FormButtonRow
-        insetBottom={insetBottom}
-        onCancel={onCancel}
-        onSubmit={submit}
-        submitLabel={submitLabel}
-        submitDisabled={!isValid}
-      />
+      <FormButtonRow insetBottom={insetBottom} onCancel={onCancel} onSubmit={submit} submitLabel={submitLabel} submitDisabled={!isValid} />
     </KeyboardAvoidingView>
   );
 }
@@ -240,17 +213,6 @@ function getStyles(colors: ColorTokens) {
       padding: 16,
       gap: 20,
     },
-    input: {
-      flex: 1,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      color: colors.textPrimary,
-      fontSize: 14,
-    },
     intervalRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -258,14 +220,6 @@ function getStyles(colors: ColorTokens) {
     },
     intervalField: {
       flex: 1,
-      position: 'relative',
-      justifyContent: 'center',
-    },
-    inputSuffix: {
-      position: 'absolute',
-      right: 14,
-      color: colors.textFaint,
-      fontSize: 12,
     },
     orLabel: {
       color: colors.textFainter,

@@ -24,7 +24,11 @@ export default function OnboardingAddCarScreen() {
     handleSubmit,
     setValue,
     formState: { errors, isValid, touchedFields, isSubmitted },
-  } = useCarForm(undefined, distanceUnit, cars.map((car) => car.vin));
+  } = useCarForm(
+    undefined,
+    distanceUnit,
+    cars.map((car) => car.vin)
+  );
 
   return (
     <Screen>

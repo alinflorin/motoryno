@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export function OnboardingFooter({
   onSkip,
@@ -18,16 +18,11 @@ export function OnboardingFooter({
   insetBottom: number;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   return (
     <View style={[styles.row, { paddingBottom: Math.max(14, insetBottom) }]}>
-      <Pressable
-        onPress={onSkip}
-        disabled={!onSkip}
-        style={({ pressed }) => [styles.half, pressed && onSkip && styles.pressed]}
-      >
+      <Pressable onPress={onSkip} disabled={!onSkip} style={({ pressed }) => [styles.half, pressed && onSkip && styles.pressed]}>
         <Text style={[styles.skipText, !onSkip && styles.hidden]}>{t('onboarding.skip')}</Text>
       </Pressable>
       <View style={styles.divider} />
@@ -36,9 +31,7 @@ export function OnboardingFooter({
         disabled={nextDisabled}
         style={({ pressed }) => [styles.half, pressed && !nextDisabled && styles.pressed]}
       >
-        <Text style={[styles.nextText, nextDisabled && styles.nextTextDisabled]}>
-          {nextLabel ?? t('onboarding.next')}
-        </Text>
+        <Text style={[styles.nextText, nextDisabled && styles.nextTextDisabled]}>{nextLabel ?? t('onboarding.next')}</Text>
       </Pressable>
     </View>
   );

@@ -28,8 +28,15 @@ function isValidCar(value: unknown): value is Car {
     typeof car.odometerKm === 'number' &&
     Array.isArray(car.trackedServiceItems) &&
     car.trackedServiceItems.every(isValidTrackedServiceItem) &&
-    Array.isArray(car.serviceVisits)
+    Array.isArray(car.serviceVisits) &&
+    (car.obd === null || car.obd === undefined || isValidObdConfig(car.obd))
   );
+}
+
+function isValidObdConfig(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  const obd = value as Record<string, unknown>;
+  return typeof obd.deviceName === 'string' && typeof obd.deviceAddress === 'string';
 }
 
 function isValidTrackedServiceItem(value: unknown): value is TrackedServiceItem {

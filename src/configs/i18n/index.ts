@@ -17,17 +17,15 @@ import {
 // i18next's default export doubles as its own named exports for CJS/ESM
 // interop, which trips this rule as a false positive on `.use`/`.changeLanguage`.
 /* eslint-disable import/no-named-as-default-member */
-void i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: detectDeviceLanguage(),
-    fallbackLng: defaultLanguage,
-    supportedLngs: supportedLanguages,
-    interpolation: {
-      escapeValue: false, // React already escapes rendered output
-    },
-  });
+void i18n.use(initReactI18next).init({
+  resources,
+  lng: detectDeviceLanguage(),
+  fallbackLng: defaultLanguage,
+  supportedLngs: supportedLanguages,
+  interpolation: {
+    escapeValue: false, // React already escapes rendered output
+  },
+});
 
 /** Call from the Settings screen when the user manually picks a language. */
 export function setLanguage(language: SupportedLanguage) {

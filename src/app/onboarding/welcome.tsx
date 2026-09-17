@@ -10,21 +10,16 @@ import { OnboardingHeader } from '@/components/OnboardingHeader';
 import { Screen } from '@/components/Screen';
 import { useStorage } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { cars, updateSettings } = useStorage();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
 
-  const steps = [
-    t('onboarding.stepIntro'),
-    t('onboarding.stepLanguage'),
-    ...(cars.length === 0 ? [t('onboarding.stepAddCar')] : []),
-  ];
+  const steps = [t('onboarding.stepIntro'), t('onboarding.stepLanguage'), ...(cars.length === 0 ? [t('onboarding.stepAddCar')] : [])];
 
   return (
     <Screen>

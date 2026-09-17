@@ -137,10 +137,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
     [commit]
   );
 
-  const setCarOdometer = useCallback<StorageApi['setCarOdometer']>(
-    (vin, odometerKm) => updateCar(vin, { odometerKm }),
-    [updateCar]
-  );
+  const setCarOdometer = useCallback<StorageApi['setCarOdometer']>((vin, odometerKm) => updateCar(vin, { odometerKm }), [updateCar]);
 
   const setCarObd = useCallback<StorageApi['setCarObd']>((vin, obd) => updateCar(vin, { obd }), [updateCar]);
 
@@ -169,9 +166,7 @@ export function StorageProvider({ children }: { children: ReactNode }) {
       commit((prev) =>
         mapCar(prev, vin, (car) => ({
           ...car,
-          trackedServiceItems: car.trackedServiceItems.map((item) =>
-            item.name === name ? { ...item, ...patch } : item
-          ),
+          trackedServiceItems: car.trackedServiceItems.map((item) => (item.name === name ? { ...item, ...patch } : item)),
         }))
       );
     },

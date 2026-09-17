@@ -3,12 +3,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 export function OnboardingHeader({ title, right }: { title: string; right?: ReactNode }) {
-  const colors = useThemeColors();
+  const { styles } = useStyles(getStyles);
   const insets = useSafeAreaInsets();
-  const styles = getStyles(colors);
 
   return (
     <View style={[styles.wrap, { paddingTop: insets.top + 12 }]}>

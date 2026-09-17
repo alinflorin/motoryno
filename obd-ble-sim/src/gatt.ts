@@ -1,11 +1,13 @@
 import bleno, { Characteristic, PrimaryService } from '@abandonware/bleno';
 
-import { handleCommand, SimConfig } from './elmSim';
+import { createSimState, handleCommand, monitorFrame, SimConfig } from './elmSim';
 import { UartProfile } from './profiles';
 
 /** Default BLE ATT payload size (23-byte MTU minus the 3-byte ATT header) - matches most unnegotiated connections. */
 const CHUNK_SIZE = 20;
 const CHUNK_DELAY_MS = 15;
+/** How often a monitored frame is streamed while in `ATMA` mode. */
+const MONITOR_FRAME_INTERVAL_MS = 60;
 
 /**
  * Builds the GATT service for `profile`, wired to the ELM327 command
@@ -16,6 +18,18 @@ const CHUNK_DELAY_MS = 15;
 export function createGattService(profile: UartProfile, config: SimConfig): PrimaryService {
   let notifyCallback: ((data: Buffer) => void) | null = null;
   let inbound = '';
+  const state = createSimState();
+  let monitorTimer: NodeJS.Timeout | null = null;
+  let monitorTick = 0;
+
+  function stopMonitoring() {
+    if (!monitorTimer) return;
+    clearInterval(monitorTimer);
+    monitorTimer = null;
+    state.monitoring = false;
+    console.log('< STOPPED');
+    sendResponse('STOPPED\r\r>');
+  }
 
   function sendResponse(text: string) {
     const bytes = Buffer.from(text, 'ascii');
@@ -32,18 +46,31 @@ export function createGattService(profile: UartProfile, config: SimConfig): Prim
   function onCommandLine(line: string) {
     const command = line.trim();
     if (!command) return;
-    const response = handleCommand(command, config);
+    const response = handleCommand(command, config, state);
     console.log(`> ${command}`);
+    if (state.monitoring) {
+      // ATMA: stream frames until the central sends anything at all.
+      console.log('< (monitoring)');
+      monitorTimer = setInterval(() => {
+        const frame = monitorFrame(config, monitorTick++);
+        const id = frame.split(' ')[0].padStart(4, '0');
+        if (state.receiveAddress && state.receiveAddress.padStart(4, '0') !== id) return;
+        sendResponse(`${frame}\r`);
+      }, MONITOR_FRAME_INTERVAL_MS);
+      return;
+    }
     console.log(`< ${response}`);
     sendResponse(`${response}\r\r>`);
   }
 
-  function onWriteRequest(
-    data: Buffer,
-    _offset: number,
-    _withoutResponse: boolean,
-    callback: (result: number) => void
-  ) {
+  function onWriteRequest(data: Buffer, _offset: number, _withoutResponse: boolean, callback: (result: number) => void) {
+    if (state.monitoring) {
+      // Any byte ends monitor mode, exactly like a real ELM327; the byte itself isn't a command.
+      inbound = '';
+      stopMonitoring();
+      callback(Characteristic.RESULT_SUCCESS);
+      return;
+    }
     inbound += data.toString('ascii');
     let idx: number;
     while ((idx = inbound.indexOf('\r')) !== -1) {

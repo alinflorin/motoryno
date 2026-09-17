@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Switch, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import { SettingsRow } from '@/components/SettingsRow';
 import { SettingsSection } from '@/components/SettingsSection';
+import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { setLanguage, type SupportedLanguage } from '@/configs/i18n';
 import { useStorage } from '@/storage';
 import { useThemeColors, useThemePreference, type ThemePreference } from '@/theme/ThemeContext';
@@ -97,11 +98,9 @@ export function PreferencesFields() {
         <SettingsRow
           label={t('settings.useUnknownServiceStatus')}
           right={
-            <Switch
+            <ThemedSwitch
               value={settings.useUnknownServiceStatus}
               onValueChange={(next) => updateSettings({ useUnknownServiceStatus: next })}
-              trackColor={{ true: colors.amber, false: colors.borderStrong }}
-              thumbColor={colors.textPrimary}
             />
           }
         />

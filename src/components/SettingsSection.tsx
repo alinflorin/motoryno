@@ -2,11 +2,11 @@ import { Children, Fragment, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { radius } from '@/theme/tokens';
+import { useStyles } from '@/theme/useStyles';
 
 export function SettingsSection({ title, children }: { title?: string; children: ReactNode }) {
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
   const rows = Children.toArray(children);
 
   return (
@@ -41,7 +41,7 @@ function getStyles(colors: ColorTokens) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.borderStrong,
-      borderRadius: 14,
+      borderRadius: radius.lg,
       overflow: 'hidden',
     },
     divider: {

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -5,11 +6,14 @@ import type { Device } from 'react-native-ble-plx';
 
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { requestBlePermissions } from '@/ble/permissions';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import type { ScanStep, VehicleScanResult } from '@/obd';
 import { scanVehicleInfo } from '@/obd';
 import type { ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { fontSize, fontWeight, spacing } from '@/theme/tokens';
+import { useStyles } from '@/theme/useStyles';
 import { notify } from '@/utils/confirm';
 import { formatDateDMY } from '@/utils/date';
 
@@ -34,21 +38,28 @@ function scanStepLabelKey(step: ScanStep) {
  * nearby BLE devices right in the card — tapping one pairs it, then the
  * adapter is briefly connected to read the VIN/make/model/year/odometer,
  * reported back via `onScanResult` for the form to prefill.
- * BLE isn't available on web, so this renders nothing there.
+ *
+ * Everything beyond pairing (finding the odometer, manual request
+ * configuration, the log) lives on the OBD setup screen, linked from here
+ * once the car exists (`carId`). BLE isn't available on web, so this
+ * renders nothing there.
  */
 export function ObdConfigCard({
   obd,
   onObdChange,
   onScanResult,
+  carId,
 }: {
   obd: ObdConfig | null;
   onObdChange: (obd: ObdConfig) => void;
   /** Called with whatever the post-pairing vehicle scan found (fields not read come back null). */
   onScanResult: (result: VehicleScanResult) => void;
+  /** The persisted car's VIN, when editing an existing car - enables the link to its OBD setup screen. */
+  carId?: string;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const router = useRouter();
+  const { colors, styles } = useStyles(getStyles);
 
   const [scanning, setScanning] = useState(false);
   // Set once a scan stops on its own (timeout or error) rather than because the
@@ -123,71 +134,85 @@ export function ObdConfigCard({
       stopScan();
       setScanTimedOut(false);
       setDevices([]);
-      onObdChange({ deviceName: device.name ?? device.id, deviceAddress: device.id, lastSyncedAt: null });
+      // A new adapter keeps the car's custom init commands (they're about the car as much as
+      // the dongle) but drops learned/manual request sources that may have been adapter-specific.
+      const paired: ObdConfig = {
+        deviceName: device.name ?? device.id,
+        deviceAddress: device.id,
+        lastSyncedAt: null,
+        initCommands: obd?.initCommands ?? [],
+        vinSource: obd?.vinSource ?? null,
+        odometerSource: null,
+      };
+      onObdChange(paired);
 
       try {
-        const result = await scanVehicleInfo(device, setReadingStep);
+        const result = await scanVehicleInfo(device, paired, setReadingStep);
         if (result.connectionFailed) {
           notify(t('common.error'), t('carForm.obdScanInfoFailed'));
         }
+        if (result.odometerSource) onObdChange({ ...paired, odometerSource: result.odometerSource });
         onScanResult(result);
       } finally {
         setReadingStep(null);
       }
     },
-    [stopScan, onObdChange, onScanResult, t]
+    [stopScan, obd, onObdChange, onScanResult, t]
   );
 
   if (Platform.OS === 'web') {
     return null;
   }
 
+  const scanButton = readingStep ? (
+    <ActivityIndicator size="small" color={colors.amber} />
+  ) : (
+    <Button
+      label={scanning ? t('carForm.obdStop') : obd ? t('carForm.change') : t('carForm.scan')}
+      variant={scanning ? 'secondary' : 'primary'}
+      size="sm"
+      fullWidth={false}
+      loading={false}
+      onPress={scanning ? stopScan : startScan}
+    />
+  );
+
   return (
-    <View style={styles.obdCard}>
-      <View style={styles.obdHeader}>
-        <Text style={styles.obdTitle}>{t('carForm.obdTitle')}</Text>
-      </View>
-      <View style={styles.obdBody}>
+    <Card title={t('carForm.obdTitle')} right={scanButton} padded={false}>
+      <View style={styles.body}>
         {readingStep ? (
-          <View style={styles.obdDeviceInfo}>
-            <Text style={styles.obdSubtitle}>{t(scanStepLabelKey(readingStep))}</Text>
-          </View>
+          <Text style={styles.subtitle}>{t(scanStepLabelKey(readingStep))}</Text>
         ) : obd ? (
-          <View style={styles.obdDeviceInfo}>
-            <Text style={styles.obdDeviceName}>{obd.deviceName}</Text>
-            <Text style={styles.obdSubtitle}>
+          <View style={styles.deviceInfo}>
+            <Text style={styles.deviceName}>{obd.deviceName}</Text>
+            <Text style={styles.subtitle}>
               {obd.lastSyncedAt ? t('carForm.obdLastSynced', { date: formatDateDMY(obd.lastSyncedAt) }) : t('carForm.obdNeverSynced')}
             </Text>
           </View>
         ) : (
-          <Text style={styles.obdSubtitle}>{t('carForm.obdSubtitle')}</Text>
+          <Text style={styles.subtitle}>{t('carForm.obdSubtitle')}</Text>
         )}
-        <Pressable
-          style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}
-          onPress={scanning ? stopScan : startScan}
-          disabled={!!readingStep}
-        >
-          {readingStep ? (
-            <ActivityIndicator size="small" color={colors.onAmber} />
-          ) : scanning ? (
-            <View style={styles.scanButtonRow}>
-              <ActivityIndicator size="small" color={colors.onAmber} />
-              <Text style={styles.scanButtonText}>{t('carForm.obdStop')}</Text>
-            </View>
-          ) : (
-            <Text style={styles.scanButtonText}>{obd ? t('carForm.change') : t('carForm.scan')}</Text>
-          )}
-        </Pressable>
+        {obd && !readingStep && !scanning && (
+          <View style={styles.setupRow}>
+            {carId ? (
+              <Button
+                label={t('carForm.obdSetupLink')}
+                variant="ghost"
+                size="sm"
+                fullWidth={false}
+                onPress={() => router.push({ pathname: '/car/[carId]/obd', params: { carId } })}
+              />
+            ) : (
+              <Text style={styles.hint}>{t('carForm.obdSetupHint')}</Text>
+            )}
+          </View>
+        )}
       </View>
 
       {(scanning || scanTimedOut) && (
         <View style={styles.scanList}>
-          {scanning && devices.length === 0 && (
-            <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>
-          )}
-          {scanTimedOut && devices.length === 0 && (
-            <Text style={styles.scanEmpty}>{t('carForm.obdScanNoneFound')}</Text>
-          )}
+          {scanning && devices.length === 0 && <Text style={styles.scanEmpty}>{t('carForm.obdScanning')}</Text>}
+          {scanTimedOut && devices.length === 0 && <Text style={styles.scanEmpty}>{t('carForm.obdScanNoneFound')}</Text>}
           {devices.map((device) => (
             <Pressable
               key={device.id}
@@ -204,74 +229,37 @@ export function ObdConfigCard({
           ))}
         </View>
       )}
-    </View>
+    </Card>
   );
 }
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    obdCard: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-      borderRadius: 16,
-      overflow: 'hidden',
-    },
-    obdHeader: {
+    body: {
       paddingHorizontal: 14,
-      paddingVertical: 12,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
+      paddingVertical: spacing.md,
+      gap: spacing.sm,
     },
-    obdTitle: {
-      color: colors.textSecondary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    obdBody: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-    },
-    obdDeviceInfo: {
-      flex: 1,
-      paddingRight: 12,
+    deviceInfo: {
       gap: 2,
     },
-    obdDeviceName: {
+    deviceName: {
       color: colors.textPrimary,
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: fontSize.body,
+      fontWeight: fontWeight.semibold,
     },
-    obdSubtitle: {
+    subtitle: {
       color: colors.textFaint,
-      fontSize: 12,
-      flex: 1,
-      paddingRight: 12,
+      fontSize: fontSize.small,
     },
-    scanButton: {
-      backgroundColor: colors.amber,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 10,
-      minWidth: 64,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    scanButtonPressed: {
-      opacity: 0.85,
-    },
-    scanButtonRow: {
+    setupRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
     },
-    scanButtonText: {
-      color: colors.onAmber,
-      fontSize: 12,
-      fontWeight: '700',
+    hint: {
+      color: colors.textFainter,
+      fontSize: fontSize.caption,
+      lineHeight: 15,
     },
     scanList: {
       borderTopWidth: StyleSheet.hairlineWidth,
@@ -279,9 +267,9 @@ function getStyles(colors: ColorTokens) {
     },
     scanEmpty: {
       color: colors.textFaint,
-      fontSize: 12,
+      fontSize: fontSize.small,
       paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingVertical: spacing.md,
     },
     deviceRow: {
       paddingHorizontal: 14,
@@ -292,14 +280,9 @@ function getStyles(colors: ColorTokens) {
     deviceRowPressed: {
       backgroundColor: colors.surfaceAlt,
     },
-    deviceName: {
-      color: colors.textPrimary,
-      fontSize: 13,
-      fontWeight: '600',
-    },
     deviceAddress: {
       color: colors.textFaint,
-      fontSize: 11,
+      fontSize: fontSize.caption,
     },
   });
 }

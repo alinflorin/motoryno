@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { getTextInputStyle } from '@/components/TextField';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 
 /**
  * A plain text input with a dropdown of prior values to pick from — lets a
@@ -15,8 +16,6 @@ export function ComboBoxInput({
   onBlur,
   options,
   placeholder,
-  placeholderTextColor,
-  style,
 }: {
   value: string;
   onChange: (text: string) => void;
@@ -24,11 +23,8 @@ export function ComboBoxInput({
   /** Prior values to suggest, most-recent-first — duplicates and blanks are ignored. */
   options: string[];
   placeholder?: string;
-  placeholderTextColor?: string;
-  style?: object;
 }) {
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { colors, styles } = useStyles(getStyles);
   const [focused, setFocused] = useState(false);
 
   const matches = options.filter((option) => option.toLowerCase().includes(value.trim().toLowerCase()));
@@ -37,9 +33,9 @@ export function ComboBoxInput({
   return (
     <View style={styles.wrapper}>
       <TextInput
-        style={style}
+        style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
+        placeholderTextColor={colors.textFainter}
         value={value}
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
@@ -73,6 +69,7 @@ export function ComboBoxInput({
 
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
+    input: getTextInputStyle(colors),
     wrapper: {
       position: 'relative',
     },

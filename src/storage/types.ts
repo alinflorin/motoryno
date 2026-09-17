@@ -3,6 +3,8 @@
  * in the README's "Technical implementation details" section.
  */
 
+import type { OdometerSource, VinSource } from '@/obd/odometer/source';
+
 export type ThemePreference = 'system' | 'dark' | 'light';
 
 export interface NotificationSettings {
@@ -58,6 +60,20 @@ export interface ObdConfig {
   deviceAddress: string;
   /** Unix epoch milliseconds of the last successful odometer sync, or null. */
   lastSyncedAt: number | null;
+  /**
+   * Extra ELM327 AT commands sent after the standard init on every
+   * connection (one per entry, e.g. 'ATSP6', 'ATST19') - the OBD setup
+   * screen's escape hatch for adapters/cars that need a tweak.
+   */
+  initCommands: string[];
+  /** A hand-configured VIN request, tried before the standard Mode 09 read. Null = use the defaults. */
+  vinSource: VinSource | null;
+  /**
+   * Where this car's odometer was found on its diagnostic bus (which ECU,
+   * which request/frame, which bytes) - set by the post-pairing scan or the
+   * learn flow, replayed by every later silent sync. Null until known.
+   */
+  odometerSource: OdometerSource | null;
 }
 
 export interface Car {

@@ -40,12 +40,13 @@ an OBD adapter and scan - it should show up like any other BLE dongle.
 
 Environment variables, all optional:
 
-| Var                | Default              | Meaning                                          |
-| ------------------ | -------------------- | ------------------------------------------------- |
-| `OBD_NAME`          | `OBDII`               | Advertised BLE device name                        |
-| `OBD_VIN`           | `WDD2050471F123456`   | VIN returned for Mode 09 PID 02                   |
-| `OBD_ODOMETER_KM`   | `123456`              | Odometer returned for Mode 01 PID A6               |
-| `OBD_PROFILE`       | `hm10`                | GATT shape: `hm10`, `fff0`, or `nordic`            |
+| Var               | Default             | Meaning                                                          |
+| ----------------- | ------------------- | ---------------------------------------------------------------- |
+| `OBD_NAME`        | `OBDII`             | Advertised BLE device name                                       |
+| `OBD_VIN`         | `WDD2050471F123456` | VIN returned for Mode 09 PID 02 (`WDD2040471F123456` for `w204`) |
+| `OBD_ODOMETER_KM` | `123458`            | Odometer the simulated car reports                               |
+| `OBD_PROFILE`     | `hm10`              | GATT shape: `hm10`, `fff0`, or `nordic`                          |
+| `OBD_CAR`         | `generic`           | Simulated car: `generic` (answers 01 A6) or `w204` (see below)   |
 
 Example:
 
@@ -59,16 +60,26 @@ checking the app's profile-detection fallback path actually finds each one.
 
 ## What it simulates
 
-- Standard AT command handshake (`ATZ`, `ATE0`, `ATL0`, `ATS0`, `ATH0`,
-  `ATSP0`, `ATSH...`) - always answered `OK` (`ATZ` gets a version banner).
-- `0902` - VIN, per SAE J1979 Mode 09 PID 02.
-- `01A6` - odometer, per SAE J1979-2 Mode 01 PID A6 (0.1 km/bit).
-- Any other Mode 01 or Mode 22 (UDS `ReadDataByIdentifier`) request -
-  `NO DATA`, simulating a car that doesn't support that PID/DID. This is
-  realistic: most cars only expose the odometer through a brand-specific
-  Mode 22 DID that isn't modeled here, so the app's brand-specific
-  candidates (`catalogs/odometerDids.ts`) are expected to mostly miss and
-  fall through to the `01A6` standard PID, same as a real 2022+ vehicle.
+- The ELM327 AT command set the app uses, with the adapter state that
+  matters tracked: `ATSH` transmit header, `ATCRA` receive filter,
+  `ATSP`/`ATDPN` protocol, `ATH`/`ATS`/`ATCAF` formatting flags and `ATMA`
+  monitor mode (frames stream until the app sends any byte, then `STOPPED`).
+- `0902` - VIN, per SAE J1979 Mode 09 PID 02 (multi-frame, like a real adapter).
+- `generic` car: `01A6` odometer per SAE J1979-2 (0.1 km/bit); everything
+  else is `NO DATA`/negative, like a car that doesn't support it.
+- `w204` car - modelled on what `src/obd/odometer/mercedes.ts` expects from
+  a Mercedes W204-generation car, so the app's learn flow ("Find odometer")
+  can be exercised end to end:
+  - no `01A6`;
+  - a UDS engine ECU at `7E0`/`7E8` (`10 03`, `22 F190`, negatives otherwise);
+  - a UDS EZS at `612`/`482` that only answers once the app has set
+    `ATCRA 482`, and serves the km on `22 0100` after `10 03`;
+  - a KWP2000 cluster at `742`/`4A8` that needs Daimler's `10 92` session
+    before `21 42` returns the km (and answers `3E 00` with a negative
+    response, which still proves it's there);
+  - a periodic km broadcast on frame `0A8` (bytes 4-6) in `ATMA` mode.
+    The EZS/cluster identifiers and the cluster's CAN IDs are made up - the
+    real ones aren't public, which is exactly why the app learns them.
 
 It logs every command it receives and response it sends, so the terminal
 running it doubles as a live trace of what the app is asking for.

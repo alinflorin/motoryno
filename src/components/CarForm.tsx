@@ -3,17 +3,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
 
 import { FormButtonRow } from '@/components/FormButtonRow';
 import { FormField } from '@/components/FormField';
 import { ObdConfigCard } from '@/components/ObdConfigCard';
+import { TextField } from '@/components/TextField';
 import type { DecodedVin, VehicleScanResult } from '@/obd';
 import { decodeVin } from '@/obd';
 import type { Car, ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
-import { useThemeColors } from '@/theme/ThemeContext';
+import { useStyles } from '@/theme/useStyles';
 import { useKeyboardVerticalOffset } from '@/utils/useKeyboardVerticalOffset';
 import { sanitizeIntegerInput } from '@/utils/numericInput';
 import { displayToKm, kmToDisplay, type DistanceUnit } from '@/utils/units';
@@ -55,11 +56,7 @@ export interface ParsedCarFormValues {
  * Converts already-validated form text into storage-ready values. Only call
  * this with values that passed `carFormSchema` — it assumes well-formed input.
  */
-export function toParsedCarFormValues(
-  values: CarFormValues,
-  distanceUnit: DistanceUnit,
-  obd: ObdConfig | null
-): ParsedCarFormValues {
+export function toParsedCarFormValues(values: CarFormValues, distanceUnit: DistanceUnit, obd: ObdConfig | null): ParsedCarFormValues {
   return {
     vin: values.vin.trim(),
     displayName: values.nickname.trim(),
@@ -181,6 +178,7 @@ export function CarFormFields({
   distanceUnit,
   obd,
   onObdChange,
+  carId,
 }: {
   control: Control<CarFormValues>;
   errors: FieldErrors<CarFormValues>;
@@ -192,10 +190,11 @@ export function CarFormFields({
   obd: ObdConfig | null;
   /** Called when the user pairs a (different) adapter from the scan list. */
   onObdChange: (obd: ObdConfig) => void;
+  /** The persisted car's VIN when editing - unlocks the OBD setup screen link on the adapter card. */
+  carId?: string;
 }) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   // Don't show a field's error until the user has actually left it (or tried to
   // submit) — otherwise every required field complains the instant the form mounts.
@@ -238,17 +237,20 @@ export function CarFormFields({
 
   return (
     <>
-      <ObdConfigCard obd={obd} onObdChange={onObdChange} onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)} />
+      <ObdConfigCard
+        obd={obd}
+        onObdChange={onObdChange}
+        onScanResult={(result) => applyScanResult(setValue, result, distanceUnit)}
+        carId={carId}
+      />
 
       <FormField label={t('carForm.vin')} error={fieldError('vin')}>
         <Controller
           control={control}
           name="vin"
           render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              style={styles.input}
+            <TextField
               placeholder={t('carForm.vinPlaceholder')}
-              placeholderTextColor={colors.textFainter}
               autoCapitalize="characters"
               maxLength={17}
               value={value}
@@ -267,14 +269,7 @@ export function CarFormFields({
           control={control}
           name="nickname"
           render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              style={styles.input}
-              placeholder={t('carForm.nicknamePlaceholder')}
-              placeholderTextColor={colors.textFainter}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-            />
+            <TextField placeholder={t('carForm.nicknamePlaceholder')} value={value} onChangeText={onChange} onBlur={onBlur} />
           )}
         />
       </FormField>
@@ -284,14 +279,7 @@ export function CarFormFields({
           control={control}
           name="make"
           render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              style={styles.input}
-              placeholder={t('carForm.makePlaceholder')}
-              placeholderTextColor={colors.textFainter}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-            />
+            <TextField placeholder={t('carForm.makePlaceholder')} value={value} onChangeText={onChange} onBlur={onBlur} />
           )}
         />
       </FormField>
@@ -301,14 +289,7 @@ export function CarFormFields({
           control={control}
           name="model"
           render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              style={styles.input}
-              placeholder={t('carForm.modelPlaceholder')}
-              placeholderTextColor={colors.textFainter}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-            />
+            <TextField placeholder={t('carForm.modelPlaceholder')} value={value} onChangeText={onChange} onBlur={onBlur} />
           )}
         />
       </FormField>
@@ -320,10 +301,8 @@ export function CarFormFields({
               control={control}
               name="year"
               render={({ field: { value, onChange, onBlur } }) => (
-                <TextInput
-                  style={styles.input}
+                <TextField
                   placeholder="2019"
-                  placeholderTextColor={colors.textFainter}
                   keyboardType="number-pad"
                   maxLength={4}
                   value={value}
@@ -336,24 +315,20 @@ export function CarFormFields({
         </View>
         <View style={styles.twoColItem}>
           <FormField label={t('carForm.odometer')} error={fieldError('odometer')}>
-            <View style={styles.suffixField}>
-              <Controller
-                control={control}
-                name="odometer"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={[styles.input, styles.suffixInput]}
-                    placeholder="0"
-                    placeholderTextColor={colors.textFainter}
-                    keyboardType="number-pad"
-                    value={value}
-                    onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
-                    onBlur={onBlur}
-                  />
-                )}
-              />
-              <Text style={styles.inputSuffix}>{t(`common.${distanceUnit}`)}</Text>
-            </View>
+            <Controller
+              control={control}
+              name="odometer"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <TextField
+                  suffix={t(`common.${distanceUnit}`)}
+                  placeholder="0"
+                  keyboardType="number-pad"
+                  value={value}
+                  onChangeText={(text) => onChange(sanitizeIntegerInput(text))}
+                  onBlur={onBlur}
+                />
+              )}
+            />
           </FormField>
         </View>
       </View>
@@ -386,8 +361,7 @@ export function CarForm({
     formState: { errors, isValid, touchedFields, isSubmitted },
   } = useCarForm(car, distanceUnit, existingVins);
   const [obd, setObd] = useState<ObdConfig | null>(car?.obd ?? null);
-  const colors = useThemeColors();
-  const styles = getStyles(colors);
+  const { styles } = useStyles(getStyles);
 
   const submit = handleSubmit((values) => {
     onSubmit(toParsedCarFormValues(values, distanceUnit, obd));
@@ -411,15 +385,10 @@ export function CarForm({
           distanceUnit={distanceUnit}
           obd={obd}
           onObdChange={setObd}
+          carId={car?.vin}
         />
       </ScrollView>
-      <FormButtonRow
-        insetBottom={insetBottom}
-        onCancel={onCancel}
-        onSubmit={submit}
-        submitLabel={submitLabel}
-        submitDisabled={!isValid}
-      />
+      <FormButtonRow insetBottom={insetBottom} onCancel={onCancel} onSubmit={submit} submitLabel={submitLabel} submitDisabled={!isValid} />
     </KeyboardAvoidingView>
   );
 }
@@ -431,34 +400,12 @@ function getStyles(colors: ColorTokens) {
       padding: 16,
       gap: 18,
     },
-    input: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      color: colors.textPrimary,
-      fontSize: 14,
-    },
     twoCol: {
       flexDirection: 'row',
       gap: 10,
     },
     twoColItem: {
       flex: 1,
-    },
-    suffixField: {
-      justifyContent: 'center',
-    },
-    suffixInput: {
-      paddingRight: 40,
-    },
-    inputSuffix: {
-      position: 'absolute',
-      right: 14,
-      color: colors.textFaint,
-      fontSize: 12,
     },
     vinStatus: {
       color: colors.textFaint,
