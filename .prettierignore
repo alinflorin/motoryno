@@ -8,3 +8,4 @@ package-lock.json
 obd-ble-sim/node_modules
 obd-ble-sim/dist
 patches
+.claude
