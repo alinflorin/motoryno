@@ -4,6 +4,7 @@ import { AppState, Platform } from 'react-native';
 // Importing this also defines the background task at module scope - see there for why.
 import { syncObdBackgroundTask } from '@/ble/obdBackgroundTask';
 import { startObdMonitor } from '@/ble/obdMonitor';
+import { mergeOdometerSource } from '@/obd';
 import { setObdForceSyncNow } from '@/ble/obdMonitorHandle';
 import { useStorage } from '@/storage';
 import type { Car } from '@/storage/types';
@@ -49,7 +50,7 @@ export function ObdMonitorController() {
         // remembered so the next sync is a single targeted read.
         updateCar(vin, {
           odometerKm: odometerKm ?? car.odometerKm,
-          obd: { ...car.obd, lastSyncedAt: Date.now(), odometerSource: odometerSource ?? car.obd.odometerSource },
+          obd: { ...car.obd, lastSyncedAt: Date.now(), odometerSource: mergeOdometerSource(car.obd.odometerSource, odometerSource) },
         });
       }
     );

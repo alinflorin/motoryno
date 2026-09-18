@@ -8,7 +8,7 @@ import type { ElmConnection } from '@/obd/elm327';
 import { parseMonitorFrames } from '@/obd/elm327';
 import { obdLog } from '@/obd/log';
 import { isPlausibleOdometerKm } from '@/obd/odometer/match';
-import type { OdometerSource, RequestOdometerSource } from '@/obd/odometer/source';
+import type { DiagnosticRequest, OdometerSource } from '@/obd/odometer/source';
 import { decodeField } from '@/obd/odometer/source';
 import { sendRequest, type ObdResponse } from '@/obd/protocol';
 import { MAX_ODOMETER } from '@/utils/validation';
@@ -24,19 +24,35 @@ export interface OdometerReadResult {
   response?: ObdResponse;
 }
 
-/** Points the adapter at the ECU a request source targets (protocol + CAN IDs). */
-export async function applySourceAddressing(connection: ElmConnection, source: RequestOdometerSource): Promise<void> {
-  if (source.protocol === 'can-11-500') await connection.setProtocol('can-11-500');
+/** Points the adapter at the ECU a request targets (protocol + CAN IDs) and applies its own AT tweaks, if any. */
+export async function applySourceAddressing(connection: ElmConnection, source: DiagnosticRequest): Promise<void> {
+  if (source.protocol) await connection.setProtocol(source.protocol);
   await connection.setAddressing(
     source.header || source.receiveAddress ? { header: source.header, receiveAddress: source.receiveAddress } : null
   );
+  for (const command of source.atCommands ?? []) {
+    const ok = await connection.sendAt(command);
+    if (!ok) obdLog('info', `request AT command "${command}" was not acknowledged`);
+  }
 }
 
-/** Opens the diagnostic session a source needs, if any. A refusal isn't fatal - the read may still work in the default session. */
-export async function openSourceSession(connection: ElmConnection, source: RequestOdometerSource): Promise<void> {
-  if (!source.session) return;
-  const response = await sendRequest(connection, source.session);
-  if (response.status !== 'ok') obdLog('info', `session ${source.session} not accepted (${response.status}) - trying the read anyway`);
+/**
+ * Sends the session request and then every setup request a source needs, in
+ * order. A refusal isn't fatal - the read may still work in the default
+ * session, and some setup steps (tester present) never answer "ok".
+ */
+export async function openSourceSession(connection: ElmConnection, source: DiagnosticRequest): Promise<void> {
+  const steps = [...(source.session ? [source.session] : []), ...(source.setup ?? [])];
+  for (const step of steps) {
+    const response = await sendRequest(connection, step);
+    if (response.status !== 'ok') obdLog('info', `setup request ${step} not accepted (${response.status}) - carrying on`);
+  }
+}
+
+/** Addressing + session/setup: everything that has to happen before a source's read request. */
+export async function prepareRequest(connection: ElmConnection, source: DiagnosticRequest): Promise<void> {
+  await applySourceAddressing(connection, source);
+  await openSourceSession(connection, source);
 }
 
 function toKm(raw: number | null): number | null {
@@ -52,8 +68,7 @@ export async function readOdometerSource(connection: ElmConnection, source: Odom
     return { km: toKm(decodeField(frame.data, source.field)), payload: frame.data };
   }
 
-  await applySourceAddressing(connection, source);
-  await openSourceSession(connection, source);
+  await prepareRequest(connection, source);
   const response = await sendRequest(connection, source.request);
   if (response.status !== 'ok') return { km: null, payload: null, response };
   return { km: toKm(decodeField(response.data, source.field)), payload: response.data, response };

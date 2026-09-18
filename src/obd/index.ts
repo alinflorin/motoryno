@@ -5,10 +5,10 @@ export { STANDARD_ODOMETER_SOURCE, vehicleOdometerSources } from '@/obd/odometer
 export { learnOdometerSource } from '@/obd/odometer/learn';
 export type { LearnOptions, LearnProgress, LearnResult, LearnStep } from '@/obd/odometer/learn';
 export { readOdometerSource } from '@/obd/odometer/read';
-export { decodeField, isOdometerSource, isVinSource } from '@/obd/odometer/source';
-export { testOdometerSource, testVinSource } from '@/obd/manualTest';
-export type { ManualTestResult } from '@/obd/manualTest';
-export type { ByteField, DiagnosticRequest, OdometerSource, RequestOdometerSource, VinSource } from '@/obd/odometer/source';
+export { BUS_PROTOCOLS, decodeField, isOdometerSource, isVinSource, mergeOdometerSource } from '@/obd/odometer/source';
+export { captureBus, runRawCommands, testOdometerSource, testVinSource } from '@/obd/manualTest';
+export type { BusCaptureResult, ManualTestResult, RawCommandResult } from '@/obd/manualTest';
+export type { BusProtocol, ByteField, DiagnosticRequest, OdometerSource, RequestOdometerSource, VinSource } from '@/obd/odometer/source';
 export { requestVin, sendRequest } from '@/obd/protocol';
 export type { ObdResponse } from '@/obd/protocol';
 export { DEFAULT_OBD_READ_CONFIG, readVinSource, scanVehicleInfo, syncOdometer } from '@/obd/scanVehicle';

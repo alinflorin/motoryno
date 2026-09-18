@@ -23,6 +23,7 @@ import type { Device, Subscription } from 'react-native-ble-plx';
 
 import { asciiToBase64, base64ToAscii } from '@/obd/base64';
 import { obdLog } from '@/obd/log';
+import { BUS_PROTOCOL_NUMBER, type BusProtocol } from '@/obd/odometer/source';
 
 export interface UartProfile {
   label: string;
@@ -136,10 +137,16 @@ export interface ElmAddressing {
   receiveAddress?: string;
 }
 
-export type ElmProtocol = 'auto' | 'can-11-500' | 'other';
+export type ElmProtocol = 'auto' | BusProtocol | 'other';
 
-/** The ELM327 protocol numbers (`ATSP`/`ATDPN`) - only the two this app selects explicitly. */
-const PROTOCOL_NUMBER: Record<Exclude<ElmProtocol, 'other'>, string> = { auto: '0', 'can-11-500': '6' };
+/** The ELM327 protocol numbers (`ATSP`/`ATDPN`). */
+const PROTOCOL_NUMBER: Record<Exclude<ElmProtocol, 'other'>, string> = { auto: '0', ...BUS_PROTOCOL_NUMBER };
+
+function protocolFromNumber(digit: string): ElmProtocol {
+  if (digit === '0') return 'auto';
+  const match = (Object.keys(BUS_PROTOCOL_NUMBER) as BusProtocol[]).find((name) => BUS_PROTOCOL_NUMBER[name] === digit);
+  return match ?? 'other';
+}
 
 const OBD_FUNCTIONAL_HEADER = '7DF';
 
@@ -337,7 +344,7 @@ export class ElmConnection {
       if (command === 'ATCRA') this.receiveAddress = null;
       const protocol = command.match(/^ATSP([0-9A-C])$/)?.[1];
       if (protocol) {
-        this.protocol = protocol === '6' ? 'can-11-500' : protocol === '0' ? 'auto' : 'other';
+        this.protocol = protocolFromNumber(protocol);
         this.detectedProtocolNumber = null;
       }
     }

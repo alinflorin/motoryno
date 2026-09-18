@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
 import { isDueForSync, OBD_SCAN_SERVICE_UUIDS, OBD_SYNC_TASK_NAME } from '@/ble/obdSync';
-import { syncOdometer } from '@/obd';
+import { mergeOdometerSource, syncOdometer } from '@/obd';
 import type { OdometerSource } from '@/obd/odometer/source';
 import { readAppData, writeAppData } from '@/storage/persistence';
 import type { Car } from '@/storage/types';
@@ -110,7 +110,7 @@ export async function runObdBackgroundSync(): Promise<boolean> {
     return {
       ...car,
       odometerKm: result.odometerKm ?? car.odometerKm,
-      obd: { ...car.obd, lastSyncedAt: now, odometerSource: result.odometerSource ?? car.obd.odometerSource },
+      obd: { ...car.obd, lastSyncedAt: now, odometerSource: mergeOdometerSource(car.obd.odometerSource, result.odometerSource) },
     };
   });
 

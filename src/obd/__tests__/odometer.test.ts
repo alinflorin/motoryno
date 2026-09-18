@@ -3,7 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import { STANDARD_ODOMETER_SOURCE, vehicleOdometerSources } from '@/obd/odometer/candidates';
 import { findFieldMatches, matchTolerance } from '@/obd/odometer/match';
 import { daimlerDiagnosticAddress, isMercedesVehicle, mercedesDiscoveryTargets, mercedesModelSeries } from '@/obd/odometer/mercedes';
-import { decodeField, isOdometerSource } from '@/obd/odometer/source';
+import { decodeField, isOdometerSource, mergeOdometerSource } from '@/obd/odometer/source';
 
 describe('decodeField', () => {
   it('decodes big-endian and little-endian fields with scale', () => {
@@ -16,6 +16,14 @@ describe('decodeField', () => {
   it('returns null for out-of-range fields and the all-0xFF sentinel', () => {
     expect(decodeField([0x01], { offset: 0, length: 3, endian: 'be', scale: 1 })).toBeNull();
     expect(decodeField([0xff, 0xff, 0xff], { offset: 0, length: 3, endian: 'be', scale: 1 })).toBeNull();
+  });
+
+  it('applies BCD encoding, the additive term and the miles unit', () => {
+    expect(decodeField([0x12, 0x34, 0x56], { offset: 0, length: 3, endian: 'be', scale: 1, encoding: 'bcd' })).toBe(123456);
+    expect(decodeField([0x56, 0x34, 0x12], { offset: 0, length: 3, endian: 'le', scale: 1, encoding: 'bcd' })).toBe(123456);
+    expect(decodeField([0x1a, 0x34, 0x56], { offset: 0, length: 3, endian: 'be', scale: 1, encoding: 'bcd' })).toBeNull();
+    expect(decodeField([0x00, 0x00, 0x64], { offset: 0, length: 3, endian: 'be', scale: 1, add: 1000 })).toBe(1100);
+    expect(decodeField([0x00, 0x00, 0x64], { offset: 0, length: 3, endian: 'be', scale: 1, unit: 'mi' })).toBeCloseTo(160.934);
   });
 
   it('decodes the standard PID A6 reply', () => {
@@ -99,5 +107,22 @@ describe('isOdometerSource', () => {
     ).toBe(true);
     expect(isOdometerSource({ kind: 'request', label: 'x', request: '01A6' })).toBe(false);
     expect(isOdometerSource(null)).toBe(false);
+  });
+});
+
+describe('mergeOdometerSource', () => {
+  const learned = {
+    kind: 'request' as const,
+    label: 'learned',
+    request: '2142',
+    field: { offset: 0, length: 3, endian: 'be' as const, scale: 1 },
+  };
+  const manual = { ...learned, label: 'manual', manual: true as const };
+
+  it('never replaces a manual source, otherwise prefers what was just found', () => {
+    expect(mergeOdometerSource(manual, learned)).toBe(manual);
+    expect(mergeOdometerSource(null, learned)).toBe(learned);
+    expect(mergeOdometerSource(learned, null)).toBe(learned);
+    expect(mergeOdometerSource(learned, manual)).toBe(manual);
   });
 });

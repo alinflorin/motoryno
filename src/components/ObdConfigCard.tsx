@@ -5,11 +5,13 @@ import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from '
 import type { Device } from 'react-native-ble-plx';
 
 import { getBleManager, waitForPoweredOn } from '@/ble/bleManager';
+import { connectPairedAdapter } from '@/ble/connectPairedAdapter';
 import { requestBlePermissions } from '@/ble/permissions';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import type { ScanStep, VehicleScanResult } from '@/obd';
-import { scanVehicleInfo } from '@/obd';
+import { ObdSetupSheet } from '@/components/ObdSetupSheet';
+import type { ObdReadConfig, ScanStep, VehicleScanResult } from '@/obd';
+import { DEFAULT_OBD_READ_CONFIG, mergeOdometerSource, scanVehicleInfo } from '@/obd';
 import type { ObdConfig } from '@/storage';
 import type { ColorTokens } from '@/theme/colors';
 import { fontSize, fontWeight, spacing } from '@/theme/tokens';
@@ -39,10 +41,13 @@ function scanStepLabelKey(step: ScanStep) {
  * adapter is briefly connected to read the VIN/make/model/year/odometer,
  * reported back via `onScanResult` for the form to prefill.
  *
- * Everything beyond pairing (finding the odometer, manual request
- * configuration, the log) lives on the OBD setup screen, linked from here
- * once the car exists (`carId`). BLE isn't available on web, so this
- * renders nothing there.
+ * The manual overrides (init commands, custom VIN/odometer requests, the
+ * console) open in a sheet from here at any point - even before an adapter
+ * is paired, for cars whose very first scan needs a tweak - and are kept as
+ * a draft that's merged into the pairing. The learn-by-reference flow needs
+ * a saved car, so it stays on the OBD setup screen, linked once the car
+ * exists (`carId`). BLE isn't available on web, so this renders nothing
+ * there.
  */
 export function ObdConfigCard({
   obd,
@@ -69,6 +74,11 @@ export function ObdConfigCard({
   const [devices, setDevices] = useState<Device[]>([]);
   const [readingStep, setReadingStep] = useState<ScanStep | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  // Overrides configured before an adapter is paired live here until pairing folds them in;
+  // once paired, `obd` itself is the source of truth.
+  const [draft, setDraft] = useState<ObdReadConfig>(DEFAULT_OBD_READ_CONFIG);
+  const config: ObdReadConfig = obd ?? draft;
 
   const stopScan = useCallback(() => {
     if (scanTimeoutRef.current) {
@@ -129,35 +139,65 @@ export function ObdConfigCard({
     }, SCAN_TIMEOUT_MS);
   }, [stopScan, t]);
 
-  const selectDevice = useCallback(
-    async (device: Device) => {
-      stopScan();
-      setScanTimedOut(false);
-      setDevices([]);
-      // A new adapter keeps the car's custom init commands (they're about the car as much as
-      // the dongle) but drops learned/manual request sources that may have been adapter-specific.
-      const paired: ObdConfig = {
-        deviceName: device.name ?? device.id,
-        deviceAddress: device.id,
-        lastSyncedAt: null,
-        initCommands: obd?.initCommands ?? [],
-        vinSource: obd?.vinSource ?? null,
-        odometerSource: null,
-      };
-      onObdChange(paired);
-
+  const readVehicle = useCallback(
+    async (device: Device, paired: ObdConfig) => {
       try {
         const result = await scanVehicleInfo(device, paired, setReadingStep);
         if (result.connectionFailed) {
           notify(t('common.error'), t('carForm.obdScanInfoFailed'));
         }
-        if (result.odometerSource) onObdChange({ ...paired, odometerSource: result.odometerSource });
+        const odometerSource = mergeOdometerSource(paired.odometerSource, result.odometerSource);
+        if (odometerSource !== paired.odometerSource) onObdChange({ ...paired, odometerSource });
         onScanResult(result);
       } finally {
         setReadingStep(null);
       }
     },
-    [stopScan, obd, onObdChange, onScanResult, t]
+    [onObdChange, onScanResult, t]
+  );
+
+  const selectDevice = useCallback(
+    async (device: Device) => {
+      stopScan();
+      setScanTimedOut(false);
+      setDevices([]);
+      // A new adapter keeps the car's overrides (they're about the car as much as the dongle)
+      // but drops a learned/scanned odometer source that may have been adapter-specific.
+      const paired: ObdConfig = {
+        deviceName: device.name ?? device.id,
+        deviceAddress: device.id,
+        lastSyncedAt: null,
+        initCommands: config.initCommands,
+        vinSource: config.vinSource,
+        odometerSource: config.odometerSource?.manual ? config.odometerSource : null,
+      };
+      onObdChange(paired);
+      await readVehicle(device, paired);
+    },
+    [stopScan, config, onObdChange, readVehicle]
+  );
+
+  /** Re-runs the pairing scan against the already-paired adapter, with whatever overrides are configured now. */
+  const rescan = useCallback(async () => {
+    if (!obd) return;
+    setReadingStep('connecting');
+    const connection = await connectPairedAdapter(obd.deviceAddress);
+    if ('error' in connection) {
+      setReadingStep(null);
+      if (connection.error === 'permission-denied') notify(t('common.error'), t('carForm.obdPermissionDenied'));
+      else if (connection.error !== 'unavailable') notify(t('common.error'), t('carForm.obdScanInfoFailed'));
+      return;
+    }
+    await readVehicle(connection.device, obd);
+  }, [obd, readVehicle, t]);
+
+  const saveConfig = useCallback(
+    (next: ObdReadConfig) => {
+      setDraft(next);
+      if (obd) onObdChange({ ...obd, ...next });
+      setSheetOpen(false);
+    },
+    [obd, onObdChange]
   );
 
   if (Platform.OS === 'web') {
@@ -192,9 +232,11 @@ export function ObdConfigCard({
         ) : (
           <Text style={styles.subtitle}>{t('carForm.obdSubtitle')}</Text>
         )}
-        {obd && !readingStep && !scanning && (
+        {!readingStep && !scanning && (
           <View style={styles.setupRow}>
-            {carId ? (
+            {obd && <Button label={t('carForm.obdRescan')} variant="secondary" size="sm" fullWidth={false} onPress={rescan} />}
+            <Button label={t('carForm.obdAdvancedLink')} variant="ghost" size="sm" fullWidth={false} onPress={() => setSheetOpen(true)} />
+            {obd && carId && (
               <Button
                 label={t('carForm.obdSetupLink')}
                 variant="ghost"
@@ -202,12 +244,19 @@ export function ObdConfigCard({
                 fullWidth={false}
                 onPress={() => router.push({ pathname: '/car/[carId]/obd', params: { carId } })}
               />
-            ) : (
-              <Text style={styles.hint}>{t('carForm.obdSetupHint')}</Text>
             )}
           </View>
         )}
+        {!readingStep && !scanning && hasOverrides(config) && <Text style={styles.hint}>{t('carForm.obdOverridesActive')}</Text>}
       </View>
+
+      <ObdSetupSheet
+        visible={sheetOpen}
+        config={config}
+        deviceAddress={obd?.deviceAddress ?? null}
+        onSave={saveConfig}
+        onClose={() => setSheetOpen(false)}
+      />
 
       {(scanning || scanTimedOut) && (
         <View style={styles.scanList}>
@@ -233,6 +282,10 @@ export function ObdConfigCard({
   );
 }
 
+function hasOverrides(config: ObdReadConfig): boolean {
+  return config.initCommands.length > 0 || config.vinSource !== null || config.odometerSource?.manual === true;
+}
+
 function getStyles(colors: ColorTokens) {
   return StyleSheet.create({
     body: {
@@ -254,7 +307,9 @@ function getStyles(colors: ColorTokens) {
     },
     setupRow: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       alignItems: 'center',
+      gap: spacing.xs,
     },
     hint: {
       color: colors.textFainter,

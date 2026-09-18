@@ -9,7 +9,7 @@
 import type { Device } from 'react-native-ble-plx';
 
 import { withAdapterLock } from '@/obd/adapterLock';
-import { ElmConnection, openElmConnection } from '@/obd/elm327';
+import { ElmConnection, openElmConnection, parseMonitorFrames, type CanFrame } from '@/obd/elm327';
 import { readOdometerSource } from '@/obd/odometer/read';
 import type { OdometerSource, VinSource } from '@/obd/odometer/source';
 import { readVinSource } from '@/obd/scanVehicle';
@@ -81,5 +81,55 @@ export function testOdometerSource(device: Device, initCommands: string[], sourc
       return { payloadHex: payload ? toHex(payload) : null, value: km, connectionFailed: false };
     },
     FAILED
+  );
+}
+
+export interface RawCommandResult {
+  command: string;
+  /** The adapter's reply text, or the error message when the command failed. */
+  response: string;
+}
+
+/**
+ * The setup screen's console: sends arbitrary commands (AT or hex requests)
+ * in order through a fresh session and returns each raw reply, so the user
+ * can poke at the car directly and read the bytes off the screen.
+ */
+export function runRawCommands(device: Device, initCommands: string[], commands: string[]): Promise<RawCommandResult[] | null> {
+  return withSession(
+    device,
+    initCommands,
+    async (connection) => {
+      const results: RawCommandResult[] = [];
+      for (const command of commands) {
+        try {
+          const response = await connection.sendCommand(command);
+          results.push({ command, response: response.trim() });
+        } catch (error) {
+          results.push({ command, response: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      return results;
+    },
+    null
+  );
+}
+
+export interface BusCaptureResult {
+  frames: CanFrame[];
+  /** Every raw monitor line, for adapters/protocols whose output doesn't parse as CAN frames. */
+  lines: string[];
+}
+
+/** Listens passively to the bus for `durationMs` (optionally one CAN ID only) and returns what went by. */
+export function captureBus(device: Device, initCommands: string[], durationMs: number, canId?: string): Promise<BusCaptureResult | null> {
+  return withSession(
+    device,
+    initCommands,
+    async (connection) => {
+      const lines = await connection.monitorBus(durationMs, canId || undefined);
+      return { frames: parseMonitorFrames(lines), lines };
+    },
+    null
   );
 }

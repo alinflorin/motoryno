@@ -24,7 +24,7 @@ import { vinDidCandidates } from '@/obd/catalogs/vinDids';
 import { ElmConnection, openElmConnection } from '@/obd/elm327';
 import { obdLog } from '@/obd/log';
 import { vehicleOdometerSources } from '@/obd/odometer/candidates';
-import { applySourceAddressing, openSourceSession, readOdometerSource } from '@/obd/odometer/read';
+import { prepareRequest, readOdometerSource } from '@/obd/odometer/read';
 import type { OdometerSource, VinSource } from '@/obd/odometer/source';
 import { decodeAsciiVin, requestVin, sendRequest } from '@/obd/protocol';
 import { decodeVin } from '@/obd/vin';
@@ -67,8 +67,7 @@ export async function readVinSource(
   connection: ElmConnection,
   source: VinSource
 ): Promise<{ vin: string | null; payload: number[] | null }> {
-  await applySourceAddressing(connection, { ...source, kind: 'request', field: { offset: 0, length: 0, endian: 'be', scale: 1 } });
-  await openSourceSession(connection, { ...source, kind: 'request', field: { offset: 0, length: 0, endian: 'be', scale: 1 } });
+  await prepareRequest(connection, source);
   const response = await sendRequest(connection, source.request);
   if (response.status !== 'ok') return { vin: null, payload: null };
   return { vin: decodeAsciiVin(response.data), payload: response.data };
