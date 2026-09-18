@@ -55,7 +55,7 @@
     "android:standalone": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 expo run:android --device --variant release",
     "ios:standalone": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 expo run:ios --device --configuration Release",
     "build:android": "cd android && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 ./gradlew assembleRelease",
-    "build:ios": "cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 xcodebuild archive -workspace Motoryno.xcworkspace -scheme Motoryno -configuration Release -archivePath ../build/ios/Motoryno.xcarchive -destination 'generic/platform=iOS' && xcodebuild -exportArchive -archivePath ../build/ios/Motoryno.xcarchive -exportPath ../build/ios -exportOptionsPlist ../ios-exportOptions.plist",
+    "build:ios": "cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 xcodebuild archive -workspace Motoryno.xcworkspace -scheme Motoryno -configuration Release -archivePath ../build/ios/Motoryno.xcarchive -destination 'generic/platform=iOS' -allowProvisioningUpdates && xcodebuild -exportArchive -archivePath ../build/ios/Motoryno.xcarchive -exportPath ../build/ios -exportOptionsPlist ../ios-exportOptions.plist -allowProvisioningUpdates",
     "web": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 expo start --web",
     "build:web": "expo export --platform web",
     "prebuild": "expo prebuild",
