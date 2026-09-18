@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Local xcodebuild archive/export output (npm run build:ios)
+build/
