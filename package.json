@@ -47,7 +47,8 @@
     "jest": "^30.5.1",
     "patch-package": "^8.0.1",
     "prettier": "^3.9.7",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "workbox-cli": "^7.4.1"
   },
   "scripts": {
     "start": "expo start",
@@ -58,7 +59,7 @@
     "build:android": "cd android && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 ./gradlew assembleRelease",
     "build:ios": "cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 xcodebuild archive -workspace Motoryno.xcworkspace -scheme Motoryno -configuration Release -archivePath ../build/ios/Motoryno.xcarchive -destination 'generic/platform=iOS' -allowProvisioningUpdates && xcodebuild -exportArchive -archivePath ../build/ios/Motoryno.xcarchive -exportPath ../build/ios -exportOptionsPlist ../ios-exportOptions.plist -allowProvisioningUpdates",
     "web": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 expo start --web",
-    "build:web": "expo export --platform web",
+    "build:web": "expo export --platform web && workbox generateSW workbox-config.js",
     "prebuild": "expo prebuild",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit -p .",

@@ -1,0 +1,42 @@
+import { ScrollViewStyleReset } from 'expo-router/html';
+import { type PropsWithChildren } from 'react';
+
+const swRegistration = `
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
+      console.error('Service worker registration failed:', error);
+    });
+  });
+}
+`;
+
+/**
+ * Root HTML for the static web export (expo-router). Runs in Node at export time only — no
+ * browser APIs here. Adds the PWA manifest, iOS home-screen meta tags and the service worker
+ * registration script; see AGENTS.md/README.md for why the app needs to be installable.
+ */
+export default function Root({ children }: PropsWithChildren) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#f59e0b" />
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Motoryno" />
+
+        <ScrollViewStyleReset />
+
+        <script dangerouslySetInnerHTML={{ __html: swRegistration }} />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
+}
